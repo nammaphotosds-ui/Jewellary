@@ -89,12 +89,14 @@ const CustomerProfileTemplate: React.FC<{customer: Customer, bills: Bill[]}> = (
                          </div>
                     </div>
                 </main>
-                 <footer className="absolute bottom-8 left-12 right-12 text-center text-xs text-gray-600">
-                    <p className="font-bold">DEVAGIRIKAR JEWELLERYS</p>
-                    <p>1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot.</p>
-                    <p className="mt-1">GSTIN: 29BSWPD7616JZ0 | Phone: 9008604004 / 8618748300</p>
+                 <footer className="px-12 pb-8 pt-4 flex justify-between items-end">
+                    <div className="text-left text-xs text-gray-600">
+                        <p className="font-bold">DEVAGIRIKAR JEWELLERYS</p>
+                        <p>1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot.</p>
+                        <p className="mt-1">GSTIN: 29BSWPD7616JZ0 | Phone: 9008604004 / 8618748300</p>
+                    </div>
+                    <img src={logoUrl} alt="Logo" className="w-16 h-16 object-contain" />
                 </footer>
-                <img src={logoUrl} alt="Logo" className="absolute bottom-8 right-12 w-16 h-16 object-contain opacity-50" />
             </div>
         </div>
     );

@@ -156,12 +156,14 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                     </div>
                 </div>
 
-                 <footer className="absolute bottom-4 left-8 right-8 text-center text-[8px] text-gray-500">
-                    <p className="font-bold">DEVAGIRIKAR JEWELLERYS</p>
-                    <p>1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot.</p>
-                    <p className="mt-1">GSTIN: 29BSWPD7616JZ0 | Phone: 9008604004 / 8618748300</p>
+                 <footer className="px-8 pb-4 pt-2 flex justify-between items-end">
+                    <div className="text-left text-xs text-gray-600">
+                        <p className="font-bold">DEVAGIRIKAR JEWELLERYS</p>
+                        <p>1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot.</p>
+                        <p className="mt-1">GSTIN: 29BSWPD7616JZ0 | Phone: 9008604004 / 8618748300</p>
+                    </div>
+                    <img src={logoUrl} alt="Logo" className="w-16 h-16 object-contain" />
                 </footer>
-                <img src={logoUrl} alt="Logo" className="absolute bottom-4 right-8 w-12 h-12 object-contain opacity-50" />
             </div>
         </div>
     );
@@ -294,7 +296,7 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = () => {
   };
 
   const handleRemoveItem = (itemId: string) => {
-    setSelectedItems(prev => prev.filter(item => item.itemId !== itemId));
+    setSelectedItems(prev => prev.filter(item => item.itemId !== item.itemId));
   };
   
     const generatePdfBlob = async (bill: Bill, customer: Customer): Promise<Blob | null> => {

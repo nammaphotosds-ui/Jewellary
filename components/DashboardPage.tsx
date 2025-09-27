@@ -87,10 +87,8 @@ const UsersIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" heigh
 const InventoryIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>;
 const RevenueIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M15 8.5A4.5 4.5 0 0 1 10.5 13H6" />
-        <path d="M6 3h12" />
-        <path d="M6 8.5h12" />
-        <path d="M9 21V3" />
+      <path d="M2 7.64c0-1.18.57-2.29 1.5-2.94A5.5 5.5 0 0 1 8 2.5c2.3 0 4.22 1.41 5.15 3.55C14.07 6.4 15.18 7 16.5 7H20a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7.64z" />
+      <path d="M8 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" />
     </svg>
 );
 const PendingIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="6" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>;
