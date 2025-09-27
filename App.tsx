@@ -15,17 +15,17 @@ import useLocalStorage from './hooks/useLocalStorage';
 const CLIENT_ID = "439419338091-qfb0i2fdjhkbgovuo7q28m6eqa5mr8ko.apps.googleusercontent.com";
 
 const WelcomeScreen: React.FC = () => (
-    <div className="flex h-screen w-screen items-center justify-center bg-brand-charcoal">
+    <div className="flex h-screen w-screen items-center justify-center bg-gradient-to-br from-brand-champagne to-brand-pale-gold">
       <div className="text-center">
-        <div className="relative w-24 h-24 mx-auto mb-6">
+        <div className="relative w-40 h-40 mx-auto mb-8">
           <div className="absolute inset-0 border-2 border-brand-gold/30 rounded-full animate-ping"></div>
           <div className="absolute inset-2 border-2 border-brand-gold/50 rounded-full animate-ping [animation-delay:-0.5s]"></div>
-          <img src="https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163" alt="Logo" className="w-24 h-24 object-contain" />
+          <img src="https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163" alt="Logo" className="w-40 h-40 object-contain" />
         </div>
-        <h1 className="text-3xl font-serif tracking-wider text-white" style={{ textShadow: '0 0 10px #daa520, 0 0 20px #daa520' }}>
+        <h1 className="text-5xl font-serif tracking-wider text-brand-charcoal" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.1)' }}>
           DEVAGIRIKAR
         </h1>
-        <p className="text-lg text-brand-gold-light tracking-[0.2em]">JEWELLERYS</p>
+        <p className="text-2xl text-brand-gold-dark tracking-[0.2em]">JEWELLERYS</p>
       </div>
     </div>
 );
@@ -76,29 +76,41 @@ const GetStartedScreen: React.FC = () => {
         }
     };
     
-    // Creative & Satisfying 3D Button
-    const GoldenButton: React.FC<{ onClick: () => void, disabled: boolean, children: React.ReactNode }> = ({ onClick, disabled, children }) => {
+    // White Diamond Patterned Button
+    const DiamondPatternButton: React.FC<{ onClick: () => void, disabled: boolean, children: React.ReactNode }> = ({ onClick, disabled, children }) => {
         return (
             <button
                 onClick={onClick}
                 disabled={disabled}
-                className="group relative px-12 py-4 text-xl font-semibold rounded-lg text-brand-charcoal
-                           transition-transform duration-150 ease-out 
-                           transform active:translate-y-1
-                           disabled:cursor-wait disabled:opacity-70"
+                className="
+                    relative px-12 py-4 text-xl font-semibold text-brand-charcoal rounded-full
+                    bg-gradient-to-br from-gray-50 to-gray-200
+                    border border-white/50
+                    shadow-lg
+                    overflow-hidden
+                    transition-all duration-200 ease-in-out
+                    transform hover:scale-105 active:scale-95
+                    disabled:cursor-wait disabled:opacity-70
+                "
                 aria-label="Get Started"
             >
-                {/* 3D Depth Layer */}
-                <span className="absolute inset-0 bg-gradient-to-t from-amber-700 to-amber-500 rounded-lg shadow-lg transform translate-y-1 group-active:translate-y-0 transition-transform duration-150 ease-out"></span>
-
-                {/* Button Face Layer */}
-                <span className="absolute inset-0 bg-gradient-to-t from-yellow-400 to-amber-400 rounded-lg border border-amber-500/80 transform group-hover:-translate-y-1 group-active:translate-y-0 transition-transform duration-150 ease-out"></span>
-
-                {/* Text Content */}
-                <span
-                    className="relative"
-                    style={{ textShadow: '0 1px 1px rgba(255, 255, 255, 0.4)' }}
-                >
+                {/* Subtle diamond pattern overlay */}
+                <div
+                    className="absolute inset-0 w-full h-full"
+                    style={{
+                        backgroundImage: `
+                            linear-gradient(45deg, rgba(0,0,0,0.04) 25%, transparent 25%),
+                            linear-gradient(-45deg, rgba(0,0,0,0.04) 25%, transparent 25%),
+                            linear-gradient(45deg, transparent 75%, rgba(0,0,0,0.04) 75%),
+                            linear-gradient(-45deg, transparent 75%, rgba(0,0,0,0.04) 75%)
+                        `,
+                        backgroundSize: '20px 20px',
+                        opacity: 0.8
+                    }}
+                ></div>
+                
+                {/* Text content */}
+                <span className="relative z-10" style={{ textShadow: '0 1px 1px rgba(255, 255, 255, 0.5)' }}>
                     {children}
                 </span>
             </button>
@@ -108,29 +120,33 @@ const GetStartedScreen: React.FC = () => {
 
     return (
         <div 
-            className="flex h-screen w-screen flex-col items-center justify-center bg-brand-charcoal p-8 text-white relative overflow-hidden"
-            style={{ backgroundImage: 'radial-gradient(circle at 15% 25%, rgba(218, 165, 32, 0.15), transparent 40%), radial-gradient(circle at 85% 75%, rgba(253, 251, 246, 0.1), transparent 40%)' }}
+            className="flex h-screen w-screen flex-col items-center justify-center bg-gradient-to-br from-brand-champagne to-brand-pale-gold p-8 text-brand-charcoal relative"
         >
             {/* Main Content */}
             <div className="flex flex-col items-center text-center z-10 absolute top-1/4">
-                <img src="https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163" alt="Logo" className="w-40 h-40 object-contain mb-6 animate-pulse" style={{ animationDuration: '3s' }}/>
+                <img 
+                  src="https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163" 
+                  alt="Logo" 
+                  className="w-40 h-40 object-contain mb-6"
+                  style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))' }}
+                />
 
-                <h1 className="text-5xl font-serif tracking-wider text-white" style={{ textShadow: '0 0 10px #daa520, 0 0 20px #daa520' }}>
+                <h1 className="text-5xl font-serif tracking-wider text-brand-charcoal" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.1)' }}>
                   DEVAGIRIKAR
                 </h1>
-                <p className="text-2xl text-brand-gold-light tracking-[0.2em]">JEWELLERYS</p>
+                <p className="text-2xl text-brand-gold-dark tracking-[0.2em]">JEWELLERYS</p>
             </div>
             
             {/* Action Area */}
             <div className="absolute bottom-24 left-0 right-0 px-8 flex flex-col items-center z-10">
-                 <GoldenButton onClick={handleConnect} disabled={isConnecting}>
+                 <DiamondPatternButton onClick={handleConnect} disabled={isConnecting}>
                     {isConnecting ? 'Connecting...' : 'Get Started'}
-                 </GoldenButton>
-                 {error && <p className="text-red-400 mt-6 text-sm text-center">{error}</p>}
+                 </DiamondPatternButton>
+                 {error && <p className="text-red-600 mt-6 text-sm text-center">{error}</p>}
             </div>
             
             <footer className="absolute bottom-8 w-full text-center z-10">
-                <p className="text-gray-400 text-sm">Powered By Nano Neptune</p>
+                <p className="text-brand-gray/80 text-sm">Powered By Nano Neptune</p>
             </footer>
         </div>
     );
@@ -181,7 +197,7 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-brand-cream font-sans text-brand-charcoal">
+    <div className="flex h-screen font-sans text-brand-charcoal">
       <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />
       <div className="flex flex-col flex-1">
         <MobileHeader page={currentPage} />
