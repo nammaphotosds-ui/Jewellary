@@ -214,10 +214,15 @@ const AppContent: React.FC = () => {
 
 
 const MobileHeader: React.FC<{ page: Page }> = ({ page }) => (
-  <header className="md:hidden sticky top-0 bg-transparent backdrop-blur-md z-10 p-3 flex justify-between items-center">
-    <Logo />
-    <h1 className="text-lg font-bold text-brand-charcoal-light">{pageTitles[page]}</h1>
-  </header>
+    <header
+        className="md:hidden sticky top-0 left-0 right-0 bg-brand-champagne/70 backdrop-blur-md z-10"
+        style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+    >
+        <div className="p-3 flex justify-between items-center">
+            <Logo />
+            <h1 className="text-lg font-bold text-brand-charcoal-light">{pageTitles[page]}</h1>
+        </div>
+    </header>
 );
 
 const BottomNav: React.FC<{ currentPage: Page; setCurrentPage: (page: Page) => void; }> = ({ currentPage, setCurrentPage }) => {
@@ -228,13 +233,18 @@ const BottomNav: React.FC<{ currentPage: Page; setCurrentPage: (page: Page) => v
     { page: 'BILLING', label: 'Billing', icon: <BillingIcon /> },
   ];
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-transparent backdrop-blur-md z-20 flex justify-around items-start pt-2 pb-1">
-      {navItems.map(item => (
-        <button key={item.page} onClick={() => setCurrentPage(item.page)} className="flex flex-col items-center justify-center gap-1 w-20">
-          <span className={`${currentPage === item.page ? 'text-brand-gold' : 'text-gray-500'} transition-colors`}>{item.icon}</span>
-          <span className={`text-xs ${currentPage === item.page ? 'text-brand-gold font-semibold' : 'text-gray-600'} transition-colors`}>{item.label}</span>
-        </button>
-      ))}
+    <nav
+        className="md:hidden fixed bottom-0 left-0 right-0 bg-brand-champagne/70 backdrop-blur-md z-20"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+    >
+        <div className="flex justify-around items-start pt-2 pb-1">
+            {navItems.map(item => (
+                <button key={item.page} onClick={() => setCurrentPage(item.page)} className="flex flex-col items-center justify-center gap-1 w-20">
+                    <span className={`${currentPage === item.page ? 'text-brand-gold' : 'text-gray-500'} transition-colors`}>{item.icon}</span>
+                    <span className={`text-xs ${currentPage === item.page ? 'text-brand-gold font-semibold' : 'text-gray-600'} transition-colors`}>{item.label}</span>
+                </button>
+            ))}
+        </div>
     </nav>
   );
 };
