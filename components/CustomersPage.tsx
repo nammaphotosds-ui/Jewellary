@@ -57,7 +57,7 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
     return (
         <div className="bg-white text-black font-sans relative" style={{ width: '794px', minHeight: '1123px', boxSizing: 'border-box' }}>
             {/* Watermark */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-0 opacity-[0.07]">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-0 opacity-[0.12]">
                 <img src={logoUrl} alt="Watermark" className="w-[450px]"/>
             </div>
             
@@ -153,7 +153,7 @@ const CustomerProfileTemplate: React.FC<{customer: Customer, bills: Bill[]}> = (
     return (
         <div className="bg-white text-black font-sans relative" style={{ width: '794px', minHeight: '1123px', boxSizing: 'border-box' }}>
             {/* Watermark */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-0 opacity-[0.07]">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-0 opacity-[0.12]">
                 <img src={logoUrl} alt="Watermark" className="w-[450px]"/>
             </div>
             <div className="relative z-10 p-10 flex flex-col h-full">
@@ -320,14 +320,30 @@ const CustomerDetailsView: React.FC<{customer: Customer, onBack: () => void}> = 
             root.render(<InvoiceTemplate bill={bill} customer={customer} />);
         }
 
-        // Wait for rendering to complete
-        await new Promise(resolve => setTimeout(resolve, 500)); 
         const elementToCapture = tempContainer.children[0] as HTMLElement;
 
         if (!elementToCapture) {
             root.unmount();
             document.body.removeChild(tempContainer);
             return null;
+        }
+
+        // Wait for all images inside the element to load
+        const images = Array.from(elementToCapture.getElementsByTagName('img'));
+        const imageLoadPromises = images.map(img => 
+            new Promise((resolve, reject) => {
+                if (img.complete) resolve(true);
+                else {
+                    img.onload = () => resolve(true);
+                    img.onerror = reject;
+                }
+            })
+        );
+        
+        try {
+            await Promise.all(imageLoadPromises);
+        } catch (error) {
+            console.error("An image failed to load for PDF generation:", error);
         }
 
         const canvas = await html2canvas(elementToCapture, { scale: 2, useCORS: true });
