@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { useAppContext } from '../context/AppContext';
@@ -13,57 +14,6 @@ const Avatar: React.FC<{ name: string; className?: string }> = ({ name, classNam
         <div className={`flex items-center justify-center rounded-full bg-brand-gold-light text-brand-gold-dark ${className}`}>
             <span className="font-serif text-xl">{initial}</span>
         </div>
-    );
-};
-
-const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: string; children: React.ReactNode }> = ({ isOpen, onClose, title, children }) => {
-    if (!isOpen) return null;
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
-            <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md relative max-h-[90vh] overflow-y-auto">
-                <h2 className="text-2xl font-bold mb-4">{title}</h2>
-                <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-                </button>
-                {children}
-            </div>
-        </div>
-    );
-};
-
-const AddCustomerForm: React.FC<{onClose: () => void}> = ({ onClose }) => {
-    const { addCustomer } = useAppContext();
-    const [name, setName] = useState('');
-    const [phone, setPhone] = useState('');
-    const [dob, setDob] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-        if (name && phone) {
-            await addCustomer({
-                name,
-                phone,
-                dob: dob || undefined,
-            });
-            onClose();
-        }
-        setIsSubmitting(false);
-    };
-
-    return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <input type="text" placeholder="Customer Name" value={name} onChange={e => setName(e.target.value)} className="w-full p-2 border rounded" required />
-            <input type="tel" placeholder="Phone Number" value={phone} onChange={e => setPhone(e.target.value)} className="w-full p-2 border rounded" required />
-            <div>
-                <label htmlFor="dob" className="block text-sm font-medium text-gray-700">Date of Birth (Optional)</label>
-                <input type="date" id="dob" value={dob} onChange={e => setDob(e.target.value)} className="w-full p-2 border rounded mt-1" />
-            </div>
-            <button type="submit" disabled={isSubmitting} className="w-full bg-brand-gold text-brand-charcoal p-3 rounded-lg font-semibold hover:bg-brand-gold-dark transition disabled:bg-gray-400">
-              {isSubmitting ? 'Saving...' : 'Add Customer'}
-            </button>
-        </form>
     );
 };
 
@@ -203,7 +153,7 @@ const OnScreenCustomerProfile: React.FC<{customer: Customer, bills: Bill[]}> = (
 
 
 const CustomerDetailsView: React.FC<{customer: Customer, onBack: () => void}> = ({customer, onBack}) => {
-    const { getBillsByCustomerId } = useAppContext();
+    const { getBillsByCustomerId, deleteCustomer } = useAppContext();
     const bills = getBillsByCustomerId(customer.id);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
@@ -237,6 +187,15 @@ const CustomerDetailsView: React.FC<{customer: Customer, onBack: () => void}> = 
         document.body.removeChild(tempContainer);
         setIsGeneratingPdf(false);
     };
+    
+    const handleDelete = async () => {
+        if (window.confirm(`Are you sure you want to delete ${customer.name}? This will also delete all their transaction history. This action cannot be undone.`)) {
+            await deleteCustomer(customer.id);
+            alert('Customer deleted successfully.');
+            onBack();
+        }
+    };
+
 
     return (
         <div>
@@ -247,12 +206,17 @@ const CustomerDetailsView: React.FC<{customer: Customer, onBack: () => void}> = 
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
                         Back to Customers
                     </button>
-                    <h1 className="text-2xl md:text-3xl font-serif font-bold text-brand-charcoal">Customer Profile</h1>
                 </div>
-                <button onClick={generatePdf} disabled={isGeneratingPdf} className="bg-brand-gold text-brand-charcoal px-6 py-2 rounded-lg font-semibold hover:bg-brand-gold-dark transition flex items-center justify-center shadow-md disabled:bg-gray-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                    {isGeneratingPdf ? 'Generating...' : 'Generate PDF Profile'}
-                </button>
+                <div className="flex items-center gap-4">
+                    <button onClick={generatePdf} disabled={isGeneratingPdf} className="bg-brand-gold text-brand-charcoal px-6 py-2 rounded-lg font-semibold hover:bg-brand-gold-dark transition flex items-center justify-center shadow-md disabled:bg-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        {isGeneratingPdf ? 'Generating...' : 'PDF Profile'}
+                    </button>
+                    <button onClick={handleDelete} className="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition flex items-center justify-center shadow-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        Delete
+                    </button>
+                </div>
             </div>
             <OnScreenCustomerProfile customer={customer} bills={bills}/>
         </div>
@@ -262,7 +226,6 @@ const CustomerDetailsView: React.FC<{customer: Customer, onBack: () => void}> = 
 // --- Main CustomersPage ---
 const CustomersPage: React.FC = () => {
   const { customers } = useAppContext();
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
   if (selectedCustomer) {
@@ -271,26 +234,6 @@ const CustomersPage: React.FC = () => {
 
   return (
     <div>
-        <div className="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-4">
-            <div className="text-center md:text-left">
-                <h1 className="text-4xl md:text-5xl font-serif tracking-wide text-brand-charcoal" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.1)' }}>
-                    Customers
-                </h1>
-            </div>
-            <button onClick={() => setIsModalOpen(true)} className="hidden md:flex bg-brand-gold text-brand-charcoal px-6 py-2 rounded-lg font-semibold hover:bg-brand-gold-dark transition flex items-center shadow-md">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-                Add New Customer
-            </button>
-        </div>
-
-        <button onClick={() => setIsModalOpen(true)} className="md:hidden fixed bottom-24 right-6 bg-brand-gold text-brand-charcoal w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-20" style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-        </button>
-
-        <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add New Customer">
-            <AddCustomerForm onClose={() => setIsModalOpen(false)} />
-        </Modal>
-
         {/* Desktop Table View */}
         <div className="hidden md:block bg-white p-6 rounded-lg shadow-md">
             <div className="overflow-x-auto">

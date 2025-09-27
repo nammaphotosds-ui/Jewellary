@@ -176,19 +176,14 @@ const InventoryPage: React.FC = () => {
 
     return (
     <div>
-        <div className="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-4">
-             <div className="text-center md:text-left">
-                <h1 className="text-4xl md:text-5xl font-serif tracking-wide text-brand-charcoal" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.1)' }}>
-                    Inventory
-                </h1>
-            </div>
+        <div className="flex flex-col md:flex-row justify-end md:items-center mb-6 gap-4">
             <button onClick={() => setIsModalOpen(true)} className="hidden md:flex bg-brand-gold text-brand-charcoal px-6 py-2 rounded-lg font-semibold hover:bg-brand-gold-dark transition items-center shadow-md">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
                 Add New Item
             </button>
         </div>
         
-        <button onClick={() => setIsModalOpen(true)} className="md:hidden fixed bottom-24 right-6 bg-brand-gold text-brand-charcoal w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-20" style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+        <button onClick={() => setIsModalOpen(true)} className="md:hidden fixed bottom-28 right-6 bg-brand-gold text-brand-charcoal w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-20">
             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
         </button>
 

@@ -62,7 +62,7 @@ export interface Bill {
 }
 
 
-export type Page = 'DASHBOARD' | 'INVENTORY' | 'CUSTOMERS' | 'BILLING' | 'PENDING_PAYMENTS' | 'SETTINGS';
+export type Page = 'DASHBOARD' | 'INVENTORY' | 'CUSTOMERS' | 'BILLING' | 'PENDING_PAYMENTS' | 'SETTINGS' | 'REVENUE';
 
 export const pageTitles: Record<Page, string> = {
   DASHBOARD: 'Dashboard',
@@ -71,6 +71,7 @@ export const pageTitles: Record<Page, string> = {
   BILLING: 'Create Bill',
   PENDING_PAYMENTS: 'Pending Payments',
   SETTINGS: 'Settings',
+  REVENUE: 'Revenue Details',
 };
 
 export interface GoogleTokenResponse {

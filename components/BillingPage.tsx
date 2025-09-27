@@ -1,9 +1,67 @@
+
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import { useAppContext } from '../context/AppContext';
 import { BillType, Page } from '../types';
 import type { JewelryItem, BillItem, Customer, Bill } from '../types';
 import Logo from './Logo';
+
+// Helper function to convert numbers to Indian currency words
+const numberToWords = (num: number): string => {
+    const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+    const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+    const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+    const convertLessThanOneThousand = (n: number): string => {
+        let result = '';
+        if (n >= 100) {
+            result += ones[Math.floor(n / 100)] + ' Hundred';
+            n %= 100;
+            if (n > 0) result += ' ';
+        }
+        if (n >= 20) {
+            result += tens[Math.floor(n / 10)];
+            n %= 10;
+            if (n > 0) result += ' ';
+        }
+        if (n >= 10) {
+            return result + teens[n - 10];
+        }
+        if (n > 0) {
+            result += ones[n];
+        }
+        return result;
+    };
+    
+    if (num === 0) return 'Rupees Zero Only';
+
+    const [integerPartStr, decimalPartStr] = num.toFixed(2).split('.');
+    const integerPart = parseInt(integerPartStr, 10);
+    const decimalPart = parseInt(decimalPartStr, 10);
+
+    let integerWords = '';
+    if (integerPart > 0) {
+        const crores = Math.floor(integerPart / 10000000);
+        const lakhs = Math.floor((integerPart % 10000000) / 100000);
+        const thousands = Math.floor((integerPart % 100000) / 1000);
+        const remainder = integerPart % 1000;
+        
+        if (crores > 0) integerWords += convertLessThanOneThousand(crores) + ' Crore ';
+        if (lakhs > 0) integerWords += convertLessThanOneThousand(lakhs) + ' Lakh ';
+        if (thousands > 0) integerWords += convertLessThanOneThousand(thousands) + ' Thousand ';
+        if (remainder > 0) integerWords += convertLessThanOneThousand(remainder);
+    } else {
+        integerWords = 'Zero';
+    }
+
+
+    let words = 'Rupees ' + integerWords.trim();
+    if (decimalPart > 0) {
+        words += ' and ' + convertLessThanOneThousand(decimalPart) + ' Paise';
+    }
+    return words.trim().replace(/\s+/g, ' ') + ' Only';
+};
+
 
 // This is the template that will be rendered for PDF generation
 const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, customer}) => {
@@ -66,24 +124,28 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                     </table>
                 </main>
                 
-                <footer className="flex justify-end mt-2">
-                    <div className="w-1/2 text-xs">
-                        <div className="flex justify-between py-0.5"><span>Total Gross Wt:</span><span>{totalWeight.toFixed(3)} g</span></div>
-                        <div className="flex justify-between py-0.5 text-blue-600"><span>Less Wt:</span><span>- {bill.lessWeight.toFixed(3)} g</span></div>
-                        <div className="flex justify-between py-0.5 font-bold border-t mt-1 pt-1"><span>Net Wt:</span><span>{bill.netWeight.toFixed(3)} g</span></div>
-                        <hr className="my-1"/>
-                        <div className="flex justify-between py-0.5"><span>Subtotal:</span><span>₹{bill.totalAmount.toLocaleString('en-IN')}</span></div>
-                        <div className="flex justify-between py-0.5 text-green-600"><span>Discount:</span><span>- ₹{bill.bargainedAmount.toLocaleString('en-IN')}</span></div>
-                        <div className="flex justify-between py-0.5 font-bold"><span>Amount:</span><span>₹{bill.finalAmount.toLocaleString('en-IN')}</span></div>
-                        <div className="flex justify-between py-0.5 text-orange-600"><span>Extra Charges ({bill.extraChargePercentage}%):</span><span>+ ₹{bill.extraChargeAmount.toLocaleString('en-IN')}</span></div>
-                        <div className="flex justify-between py-1 font-bold text-base border-t-2 border-b-2 border-brand-charcoal my-1"><span>Grand Total:</span><span>₹{bill.grandTotal.toLocaleString('en-IN')}</span></div>
-                        <div className="flex justify-between py-0.5 text-green-600 font-semibold"><span>Amount Paid:</span><span>₹{bill.amountPaid.toLocaleString('en-IN')}</span></div>
-                        <div className="flex justify-between py-0.5 text-red-600 font-semibold"><span>Balance Due:</span><span>₹{bill.balance.toLocaleString('en-IN')}</span></div>
+                <div className="mt-auto pt-2">
+                    <div className="flex justify-end">
+                        <div className="w-1/2 text-xs">
+                            <div className="flex justify-between py-0.5"><span>Total Gross Wt:</span><span>{totalWeight.toFixed(3)} g</span></div>
+                            <div className="flex justify-between py-0.5 text-blue-600"><span>Less Wt:</span><span>- {bill.lessWeight.toFixed(3)} g</span></div>
+                            <div className="flex justify-between py-0.5 font-bold border-t mt-1 pt-1"><span>Net Wt:</span><span>{bill.netWeight.toFixed(3)} g</span></div>
+                            <hr className="my-1"/>
+                            <div className="flex justify-between py-0.5"><span>Subtotal:</span><span>₹{bill.totalAmount.toLocaleString('en-IN')}</span></div>
+                            <div className="flex justify-between py-0.5 text-green-600"><span>Discount:</span><span>- ₹{bill.bargainedAmount.toLocaleString('en-IN')}</span></div>
+                            <div className="flex justify-between py-0.5 font-bold"><span>Amount:</span><span>₹{bill.finalAmount.toLocaleString('en-IN')}</span></div>
+                            <div className="flex justify-between py-0.5 text-orange-600"><span>Extra Charges ({bill.extraChargePercentage}%):</span><span>+ ₹{bill.extraChargeAmount.toLocaleString('en-IN')}</span></div>
+                            <div className="flex justify-between py-1 font-bold text-base border-t-2 border-b-2 border-brand-charcoal my-1"><span>Grand Total:</span><span>₹{bill.grandTotal.toLocaleString('en-IN')}</span></div>
+                            <div className="flex justify-between py-0.5 text-green-600 font-semibold"><span>Amount Paid:</span><span>₹{bill.amountPaid.toLocaleString('en-IN')}</span></div>
+                            <div className="flex justify-between py-0.5 text-red-600 font-semibold"><span>Balance Due:</span><span>₹{bill.balance.toLocaleString('en-IN')}</span></div>
+                        </div>
                     </div>
-                </footer>
-                 <div className="text-center text-[9px] text-gray-500 mt-2">
-                    Thank you for your business!
+                     <div className="text-xs border-t pt-1 mt-1">
+                        <p><span className="font-semibold">In Words:</span> {numberToWords(bill.grandTotal)}</p>
+                        <p><span className="font-semibold">Paid Amount in Words:</span> {numberToWords(bill.amountPaid)}</p>
+                    </div>
                 </div>
+
                  <footer className="absolute bottom-4 left-8 right-8 text-center text-[8px] text-gray-500">
                     <p className="font-bold">DEVAGIRIKAR JEWELLERYS</p>
                     <p>1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot.</p>
@@ -278,11 +340,6 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = () => {
 
   return (
     <div>
-      <div className="text-center md:text-left mb-8">
-        <h1 className="text-4xl md:text-5xl font-serif tracking-wide text-brand-charcoal" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.1)' }}>
-            Create Bill
-        </h1>
-      </div>
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Side: Customer and Item Selection */}
         <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-md space-y-4">

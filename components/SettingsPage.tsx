@@ -18,11 +18,6 @@ const SettingsPage: React.FC = () => {
 
     return (
         <div>
-            <div className="text-center md:text-left mb-8">
-                <h1 className="text-4xl md:text-5xl font-serif tracking-wide text-brand-charcoal" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.1)' }}>Settings</h1>
-                 <p className="text-md text-brand-gray mt-2">Manage integrations and application settings.</p>
-            </div>
-
             <div className="bg-white p-6 rounded-lg shadow-md border">
                 <h2 className="text-xl font-bold mb-2">Google Drive Integration</h2>
                 <p className="text-gray-600 mb-4">Your application data is securely stored and synced with your connected Google Drive account.</p>

@@ -11,6 +11,7 @@ interface AppContextType {
   addInventoryItem: (item: Omit<JewelryItem, 'id' | 'serialNo' | 'dateAdded'>) => Promise<void>;
   deleteInventoryItem: (itemId: string) => Promise<void>;
   addCustomer: (customer: Omit<Customer, 'id' | 'joinDate' | 'pendingBalance'>) => Promise<void>;
+  deleteCustomer: (customerId: string) => Promise<void>;
   createBill: (bill: Omit<Bill, 'id' | 'balance' | 'date' | 'customerName' | 'finalAmount' | 'netWeight' | 'extraChargeAmount' | 'grandTotal'>) => Promise<Bill>;
   getCustomerById: (id: string) => Customer | undefined;
   getBillsByCustomerId: (id: string) => Bill[];
@@ -19,6 +20,7 @@ interface AppContextType {
   isInitialized: boolean;
   isAuthenticated: boolean;
   error: string | null;
+  recordPayment: (customerId: string, amount: number) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -130,6 +132,56 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setCustomers(newCustomers);
     await saveDataToDrive({ inventory, customers: newCustomers, bills });
   };
+  
+  const deleteCustomer = async (customerId: string) => {
+    const newCustomers = customers.filter(c => c.id !== customerId);
+    const newBills = bills.filter(b => b.customerId !== customerId);
+
+    setCustomers(newCustomers);
+    setBills(newBills);
+    await saveDataToDrive({ inventory, customers: newCustomers, bills: newBills });
+  };
+
+  const recordPayment = async (customerId: string, paymentAmount: number) => {
+    const customer = customers.find(c => c.id === customerId);
+    if (!customer || paymentAmount <= 0) return;
+
+    const unpaidBills = bills
+        .filter(b => b.customerId === customerId && b.balance > 0)
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    let remainingPayment = paymentAmount;
+    const updatedBills = [...bills];
+
+    for (const bill of unpaidBills) {
+        if (remainingPayment <= 0) break;
+        const billIndex = updatedBills.findIndex(b => b.id === bill.id);
+        if (billIndex === -1) continue;
+
+        const paymentForThisBill = Math.min(remainingPayment, bill.balance);
+        const currentBill = updatedBills[billIndex];
+        
+        const updatedBill = {
+            ...currentBill,
+            amountPaid: currentBill.amountPaid + paymentForThisBill,
+            balance: currentBill.balance - paymentForThisBill,
+        };
+
+        updatedBills[billIndex] = updatedBill;
+        remainingPayment -= paymentForThisBill;
+    }
+
+    const newPendingBalance = updatedBills
+        .filter(b => b.customerId === customerId)
+        .reduce((sum, b) => sum + b.balance, 0);
+
+    const updatedCustomer = { ...customer, pendingBalance: newPendingBalance };
+    const newCustomers = customers.map(c => c.id === customerId ? updatedCustomer : c);
+
+    setCustomers(newCustomers);
+    setBills(updatedBills);
+    await saveDataToDrive({ inventory, customers: newCustomers, bills: updatedBills });
+  };
 
   const createBill = async (billData: Omit<Bill, 'id' | 'balance' | 'date' | 'customerName' | 'finalAmount' | 'netWeight' | 'extraChargeAmount' | 'grandTotal'>): Promise<Bill> => {
     const finalAmount = billData.totalAmount - billData.bargainedAmount;
@@ -190,7 +242,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const getInventoryItemById = (id: string) => inventory.find(i => i.id === id);
 
   return (
-    <AppContext.Provider value={{ isInitialized, isAuthenticated, error, inventory, customers, bills, addInventoryItem, deleteInventoryItem, addCustomer, createBill, getCustomerById, getBillsByCustomerId, getInventoryItemById, getNextCustomerId }}>
+    <AppContext.Provider value={{ isInitialized, isAuthenticated, error, inventory, customers, bills, addInventoryItem, deleteInventoryItem, addCustomer, deleteCustomer, createBill, getCustomerById, getBillsByCustomerId, getInventoryItemById, getNextCustomerId, recordPayment }}>
       {children}
     </AppContext.Provider>
   );
