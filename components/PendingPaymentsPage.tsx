@@ -12,7 +12,7 @@ const PendingPaymentsPage: React.FC = () => {
   return (
     <div>
         <div className="mb-8">
-             <h1 className="text-3xl md:text-4xl font-serif font-bold text-brand-dark">Pending Payments</h1>
+             <h1 className="text-3xl md:text-4xl font-serif font-bold text-brand-charcoal">Pending Payments</h1>
         </div>
         
         {/* Desktop Table View */}

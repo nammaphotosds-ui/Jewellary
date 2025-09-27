@@ -1,17 +1,8 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import type { JewelryItem, Customer, Bill, BillType } from '../types';
+import type { JewelryItem, Customer, Bill, BillType, GoogleTokenResponse } from '../types';
 import useLocalStorage from '../hooks/useLocalStorage';
 import * as drive from '../utils/googleDrive';
-
-export interface GoogleTokenResponse {
-  access_token: string;
-  expires_in: number;
-  scope: string;
-  token_type: string;
-  // This will be added manually
-  expires_at?: number;
-}
 
 interface AppContextType {
   inventory: JewelryItem[];
@@ -20,7 +11,7 @@ interface AppContextType {
   addInventoryItem: (item: Omit<JewelryItem, 'id' | 'serialNo' | 'dateAdded'>) => Promise<void>;
   deleteInventoryItem: (itemId: string) => Promise<void>;
   addCustomer: (customer: Omit<Customer, 'id' | 'joinDate' | 'pendingBalance'>) => Promise<void>;
-  createBill: (bill: Omit<Bill, 'id' | 'balance' | 'date' | 'customerName' | 'finalAmount'>) => Promise<Bill>;
+  createBill: (bill: Omit<Bill, 'id' | 'balance' | 'date' | 'customerName' | 'finalAmount' | 'netWeight' | 'makingChargeAmount' | 'grandTotal'>) => Promise<Bill>;
   getCustomerById: (id: string) => Customer | undefined;
   getBillsByCustomerId: (id: string) => Bill[];
   getInventoryItemById: (id: string) => JewelryItem | undefined;
@@ -140,9 +131,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     await saveDataToDrive({ inventory, customers: newCustomers, bills });
   };
 
-  const createBill = async (billData: Omit<Bill, 'id' | 'balance' | 'date' | 'customerName' | 'finalAmount'>): Promise<Bill> => {
+  const createBill = async (billData: Omit<Bill, 'id' | 'balance' | 'date' | 'customerName' | 'finalAmount' | 'netWeight' | 'makingChargeAmount' | 'grandTotal'>): Promise<Bill> => {
     const finalAmount = billData.totalAmount - billData.bargainedAmount;
-    const balance = finalAmount - billData.amountPaid;
+    const makingChargeAmount = finalAmount * (billData.makingChargePercentage / 100);
+    const grandTotal = finalAmount + makingChargeAmount;
+    const balance = grandTotal - billData.amountPaid;
+    
+    const totalWeight = billData.items.reduce((sum, item) => sum + item.weight, 0);
+    const netWeight = totalWeight - billData.lessWeight;
+
     const customer = customers.find(c => c.id === billData.customerId);
     if(!customer) throw new Error("Customer not found");
 
@@ -151,6 +148,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       id: `BILL-${Date.now()}`,
       customerName: customer.name,
       finalAmount,
+      netWeight,
+      makingChargeAmount,
+      grandTotal,
       balance,
       date: new Date().toISOString(),
     };

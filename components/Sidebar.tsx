@@ -1,3 +1,4 @@
+
 import React from 'react';
 import type { Page } from '../types';
 import Logo from './Logo';
@@ -18,8 +19,8 @@ const NavItem: React.FC<{
     onClick={onClick}
     className={`flex items-center w-full px-4 py-3 text-left transition-colors duration-200 ${
       isActive
-        ? 'bg-brand-gold text-brand-dark rounded-lg shadow-md'
-        : 'text-gray-400 hover:bg-brand-dark-light hover:text-white rounded-lg'
+        ? 'bg-brand-gold text-brand-charcoal rounded-lg shadow-md'
+        : 'text-gray-300 hover:bg-brand-charcoal-light hover:text-white rounded-lg'
     }`}
   >
     <span className="mr-4">{icon}</span>
@@ -38,7 +39,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage }) => {
   ];
 
   return (
-    <aside className="hidden md:flex w-64 bg-brand-dark text-white flex-col p-4">
+    <aside className="hidden md:flex w-64 bg-brand-charcoal text-white flex-col p-4">
       <div className="p-4 mb-8">
         <Logo />
       </div>
@@ -61,7 +62,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage }) => {
             onClick={() => setCurrentPage('SETTINGS')}
         />
         <div className="text-center text-gray-500 text-xs pt-2">
-            <p>&copy; {new Date().getFullYear()} DEVAGIRIKAR JEWELLERYS</p>
+            <p>&copy; {new Date().getFullYear()} powered by Nano Neptune</p>
         </div>
       </div>
     </aside>

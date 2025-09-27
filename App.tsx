@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import DashboardPage from './components/DashboardPage';
 import InventoryPage from './components/InventoryPage';
@@ -7,30 +7,111 @@ import CustomersPage from './components/CustomersPage';
 import BillingPage from './components/BillingPage';
 import PendingPaymentsPage from './components/PendingPaymentsPage';
 import SettingsPage from './components/SettingsPage';
-import type { Page } from './types';
+import type { Page, GoogleTokenResponse } from './types';
 import { pageTitles } from './types';
 import Logo from './components/Logo';
 import { useAppContext } from './context/AppContext';
+import useLocalStorage from './hooks/useLocalStorage';
 
-const LoadingScreen: React.FC<{ message?: string }> = ({ message = "Loading..." }) => (
-    <div className="flex h-screen w-screen items-center justify-center bg-brand-light">
+const CLIENT_ID = "439419338091-qfb0i2fdjhkbgovuo7q28m6eqa5mr8ko.apps.googleusercontent.com";
+
+const WelcomeScreen: React.FC = () => (
+    <div className="flex h-screen w-screen items-center justify-center bg-brand-charcoal">
       <div className="text-center">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-brand-gold animate-spin mx-auto mb-4">
-            <path d="M12 2L2 7l10 5 10-5-10-5z" />
-            <path d="M2 17l10 5 10-5" />
-            <path d="M2 12l10 5 10-5" />
-        </svg>
-        <p className="text-brand-dark-light font-semibold">{message}</p>
+        <div className="relative w-24 h-24 mx-auto mb-6">
+          <div className="absolute inset-0 border-2 border-brand-gold/30 rounded-full animate-ping"></div>
+          <div className="absolute inset-2 border-2 border-brand-gold/50 rounded-full animate-ping [animation-delay:-0.5s]"></div>
+          <img src="https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163" alt="Logo" className="w-24 h-24 object-contain" />
+        </div>
+        <h1 className="text-3xl font-serif tracking-wider text-white" style={{ textShadow: '0 0 10px #daa520, 0 0 20px #daa520' }}>
+          DEVAGIRIKAR
+        </h1>
+        <p className="text-lg text-brand-gold-light tracking-[0.2em]">JEWELLERYS</p>
       </div>
     </div>
 );
+
+const GetStartedScreen: React.FC = () => {
+    const [gsiClient, setGsiClient] = useState<any>(null);
+    const [, setTokenResponse] = useLocalStorage<GoogleTokenResponse | null>('googleTokenResponse', null);
+    const [error, setError] = useState<string | null>(null);
+    const [isConnecting, setIsConnecting] = useState(false);
+
+    useEffect(() => {
+        // @ts-ignore
+        if (window.google) {
+            // @ts-ignore
+            const client = window.google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: 'https://www.googleapis.com/auth/drive.appdata',
+                callback: (response: any) => {
+                    setIsConnecting(false);
+                    if (response.error) {
+                         console.error('Error from Google:', response);
+                         setError(`Failed to connect: ${response.error_description || response.error}. Please try again.`);
+                         setTokenResponse(null);
+                         return;
+                    }
+                    if (response.access_token) {
+                        console.log('Received Access Token.');
+                        const tokenData = {
+                            ...response,
+                            expires_at: Date.now() + (response.expires_in * 1000)
+                        };
+                        setTokenResponse(tokenData);
+                        setError(null);
+                        window.location.reload();
+                    }
+                },
+            });
+            setGsiClient(client);
+        }
+    }, []);
+
+    const handleConnect = () => {
+        if (gsiClient) {
+            setIsConnecting(true);
+            gsiClient.requestAccessToken();
+        } else {
+            setError('Google Sign-In is not ready yet. Please wait a moment and try again.');
+        }
+    };
+
+    return (
+        <div className="flex h-screen w-screen flex-col items-center justify-between bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-brand-charcoal-light to-brand-charcoal p-8 text-white">
+            <div /> {/* Spacer to push content to center */}
+            
+            <div className="flex flex-col items-center text-center">
+                <img src="https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163" alt="Logo" className="w-40 h-40 object-contain mb-6 animate-pulse" style={{ animationDuration: '3s' }}/>
+
+                <h1 className="text-5xl font-serif tracking-wider text-white" style={{ textShadow: '0 0 10px #daa520, 0 0 20px #daa520' }}>
+                  DEVAGIRIKAR
+                </h1>
+                <p className="text-2xl text-brand-gold-light tracking-[0.2em] mb-12">JEWELLERYS</p>
+
+                <button 
+                    onClick={handleConnect} 
+                    disabled={isConnecting}
+                    className="bg-brand-gold text-brand-charcoal px-12 py-4 rounded-lg font-semibold hover:bg-brand-gold-dark transition-transform hover:scale-105 shadow-lg text-xl disabled:bg-gray-400 disabled:cursor-wait">
+                    {isConnecting ? 'Connecting...' : 'Get Started'}
+                </button>
+                 {error && <p className="text-red-400 mt-4 text-sm">{error}</p>}
+            </div>
+            
+            <footer className="w-full text-center">
+                <p className="text-gray-400 text-sm">Powered By Nano Neptune</p>
+            </footer>
+        </div>
+    );
+};
+
 
 const AppContent: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<Page>('DASHBOARD');
   const { isInitialized, isAuthenticated, error } = useAppContext();
 
   if (!isInitialized) {
-      return <LoadingScreen message="Initializing Application..." />;
+      return <WelcomeScreen />;
   }
 
   if (error) {
@@ -46,23 +127,7 @@ const AppContent: React.FC = () => {
   }
 
   if (!isAuthenticated) {
-      // Force user to the settings page to connect to Google Drive
-      return (
-           <div className="flex h-screen bg-brand-light font-sans text-brand-dark">
-              <Sidebar currentPage={'SETTINGS'} setCurrentPage={() => {}} />
-              <div className="flex flex-col flex-1">
-                 <main className="flex-1 overflow-y-auto">
-                    <div className="p-4 md:p-8">
-                       <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 rounded-r-lg shadow-sm">
-                            <h3 className="font-bold text-yellow-800">Connection Required</h3>
-                            <p className="text-yellow-700">Please connect to Google Drive to load your data and use the application.</p>
-                        </div>
-                        <SettingsPage />
-                    </div>
-                 </main>
-              </div>
-           </div>
-      );
+      return <GetStartedScreen />;
   }
 
   const renderPage = () => {
@@ -85,7 +150,7 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-brand-light font-sans text-brand-dark">
+    <div className="flex h-screen bg-brand-cream font-sans text-brand-charcoal">
       <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />
       <div className="flex flex-col flex-1">
         <MobileHeader page={currentPage} />
@@ -104,7 +169,7 @@ const AppContent: React.FC = () => {
 const MobileHeader: React.FC<{ page: Page }> = ({ page }) => (
   <header className="md:hidden sticky top-0 bg-white/80 backdrop-blur-sm z-10 shadow-sm p-3 flex justify-between items-center">
     <Logo />
-    <h1 className="text-lg font-bold text-brand-dark-light">{pageTitles[page]}</h1>
+    <h1 className="text-lg font-bold text-brand-charcoal-light">{pageTitles[page]}</h1>
   </header>
 );
 

@@ -98,7 +98,7 @@ const AddInventoryItemForm: React.FC<{onClose: ()=>void}> = ({onClose}) => {
                 <input type="number" placeholder="Quantity" value={quantity} onChange={e => setQuantity(e.target.value)} className="w-full p-2 border rounded" required min="1"/>
             </div>
             <FileInput label="Item Photo (Optional)" file={photo} onFileChange={setPhoto} id="item-photo-upload"/>
-            <button type="submit" disabled={isSubmitting} className="w-full bg-brand-gold text-brand-dark p-3 rounded-lg font-semibold hover:bg-brand-gold-dark transition disabled:bg-gray-400">
+            <button type="submit" disabled={isSubmitting} className="w-full bg-brand-gold text-brand-charcoal p-3 rounded-lg font-semibold hover:bg-brand-gold-dark transition disabled:bg-gray-400">
               {isSubmitting ? 'Saving...' : 'Add Item'}
             </button>
         </form>
@@ -110,22 +110,53 @@ const InventoryStatCard: React.FC<{ title: string; value: string | number; icon:
         <div className="p-3 bg-brand-gold-light text-brand-gold-dark rounded-full mr-4">{icon}</div>
         <div>
             <p className="text-sm text-gray-500">{title}</p>
-            <p className="text-2xl font-bold text-brand-dark">{value}</p>
+            <p className="text-2xl font-bold text-brand-charcoal">{value}</p>
         </div>
     </div>
 );
 
+const ProductCard: React.FC<{ item: JewelryItem; onDelete: (itemId: string, itemName: string) => void; }> = ({ item, onDelete }) => {
+    return (
+        <div className="bg-white rounded-lg shadow-md border overflow-hidden group relative transition-shadow hover:shadow-xl">
+            <div className="aspect-square w-full overflow-hidden">
+                 <img src={item.imageUrl || `https://via.placeholder.com/300/D4AF37/FFFFFF?text=${item.name.charAt(0)}`} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"/>
+            </div>
+            <div className="p-3 text-sm">
+                <h3 className="font-bold text-brand-charcoal truncate" title={item.name}>{item.name}</h3>
+                <div className="flex justify-between items-center mt-2">
+                    <p className="text-gray-800 font-semibold">₹{item.price.toLocaleString('en-IN')}</p>
+                    <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${item.quantity > 0 ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+                        {item.quantity > 0 ? `Qty: ${item.quantity}` : 'Sold Out'}
+                    </span>
+                </div>
+            </div>
+             <button 
+                onClick={() => onDelete(item.id, item.name)} 
+                className="absolute top-2 right-2 bg-white/70 backdrop-blur-sm text-red-500 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 hover:text-white"
+                aria-label={`Delete ${item.name}`}
+             >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+            </button>
+        </div>
+    );
+};
+
 const InventoryPage: React.FC = () => {
     const { inventory, deleteInventoryItem } = useAppContext();
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+    const [selectedCategory, setSelectedCategory] = useState<string>('All');
 
-    const groupedInventory = useMemo(() => {
-        return inventory.reduce((acc, item) => {
-            (acc[item.category] = acc[item.category] || []).push(item);
-            return acc;
-        }, {} as Record<string, JewelryItem[]>);
+    const categories = useMemo(() => {
+        const allCategories = inventory.map(item => item.category);
+        return ['All', ...Array.from(new Set(allCategories)).sort()];
     }, [inventory]);
+
+    const filteredInventory = useMemo(() => {
+        if (selectedCategory === 'All') {
+            return inventory;
+        }
+        return inventory.filter(item => item.category === selectedCategory);
+    }, [inventory, selectedCategory]);
 
     const inventoryStats = useMemo(() => {
         const totalStock = inventory.reduce((sum, item) => sum + item.quantity, 0);
@@ -142,22 +173,18 @@ const InventoryPage: React.FC = () => {
             deleteInventoryItem(itemId);
         }
     };
-    
-    const toggleCategory = (category: string) => {
-        setExpandedCategory(prev => (prev === category ? null : category));
-    };
 
     return (
     <div>
         <div className="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-4">
-            <h1 className="text-3xl md:text-4xl font-serif font-bold text-brand-dark">Inventory</h1>
-            <button onClick={() => setIsModalOpen(true)} className="hidden md:flex bg-brand-gold text-brand-dark px-6 py-2 rounded-lg font-semibold hover:bg-brand-gold-dark transition items-center shadow-md">
+            <h1 className="text-3xl md:text-4xl font-serif font-bold text-brand-charcoal">Inventory</h1>
+            <button onClick={() => setIsModalOpen(true)} className="hidden md:flex bg-brand-gold text-brand-charcoal px-6 py-2 rounded-lg font-semibold hover:bg-brand-gold-dark transition items-center shadow-md">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
                 Add New Item
             </button>
         </div>
         
-        <button onClick={() => setIsModalOpen(true)} className="md:hidden fixed bottom-24 right-4 bg-brand-gold text-brand-dark w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-20">
+        <button onClick={() => setIsModalOpen(true)} className="md:hidden fixed bottom-24 right-4 bg-brand-gold text-brand-charcoal w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-20">
             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
         </button>
 
@@ -171,58 +198,40 @@ const InventoryPage: React.FC = () => {
             <InventoryStatCard title="Inventory Value" value={`₹${inventoryStats.totalValue.toLocaleString('en-IN')}`} icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>} />
         </div>
 
-        <div className="space-y-4">
-        {Object.keys(groupedInventory).sort().map(category => (
-            <div key={category} className="bg-white rounded-lg shadow-md border overflow-hidden">
-                <button onClick={() => toggleCategory(category)} className="w-full flex justify-between items-center p-4 text-left">
-                    <h2 className="text-xl font-bold">{category} <span className="text-base font-normal text-gray-500">({groupedInventory[category].length} items)</span></h2>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${expandedCategory === category ? 'rotate-180' : ''}`}><polyline points="6 9 12 15 18 9"/></svg>
-                </button>
-                {expandedCategory === category && (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead className="bg-gray-50">
-                                <tr className="border-b">
-                                    <th className="p-4 hidden sm:table-cell">Image</th>
-                                    <th className="p-4">Name</th>
-                                    <th className="p-4 hidden md:table-cell">Serial</th>
-                                    <th className="p-4">Price (₹)</th>
-                                    <th className="p-4">Qty</th>
-                                    <th className="p-4 hidden sm:table-cell">Status</th>
-                                    <th className="p-4"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {groupedInventory[category].map(item => (
-                                    <tr key={item.id} className="border-b hover:bg-gray-50">
-                                        <td className="p-2 hidden sm:table-cell">
-                                            <img src={item.imageUrl || `https://via.placeholder.com/150/D4AF37/FFFFFF?text=${item.name.charAt(0)}`} alt={item.name} className="w-12 h-12 object-cover rounded-md"/>
-                                        </td>
-                                        <td className="p-4 font-semibold">{item.name}</td>
-                                        <td className="p-4 font-mono text-gray-600 hidden md:table-cell">{item.serialNo}</td>
-                                        <td className="p-4">{item.price.toLocaleString('en-IN')}</td>
-                                        <td className="p-4 font-bold text-center">{item.quantity}</td>
-                                        <td className="p-4 hidden sm:table-cell">
-                                            <span className={`px-3 py-1 text-xs font-semibold rounded-full ${item.quantity > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                                {item.quantity > 0 ? 'In Stock' : 'Sold Out'}
-                                            </span>
-                                        </td>
-                                        <td className="p-4 text-right">
-                                            <button onClick={() => handleDelete(item.id, item.name)} className="text-gray-400 hover:text-red-600 p-1"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
+        {/* Category Filters */}
+        <div className="mb-6">
+            <div className="flex space-x-2 overflow-x-auto pb-2 -mx-4 px-4">
+                {categories.map(category => (
+                    <button
+                        key={category}
+                        onClick={() => setSelectedCategory(category)}
+                        className={`px-4 py-2 rounded-full font-semibold text-sm whitespace-nowrap transition ${
+                            selectedCategory === category
+                                ? 'bg-brand-gold text-brand-charcoal shadow'
+                                : 'bg-white text-gray-700 border hover:bg-gray-100'
+                        }`}
+                    >
+                        {category}
+                    </button>
+                ))}
             </div>
-        ))}
-        {inventory.length === 0 && (
-            <div className="text-center p-16 bg-white rounded-lg shadow-md">
-                <p className="text-gray-500">No items in inventory. Add one to get started!</p>
-            </div>
-        )}
+        </div>
+
+        {/* Inventory Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {filteredInventory.length > 0 ? (
+                filteredInventory.map(item => (
+                    <ProductCard key={item.id} item={item} onDelete={handleDelete} />
+                ))
+            ) : (
+                <div className="text-center py-16 bg-white rounded-lg shadow-md col-span-full">
+                    <p className="text-gray-500">
+                        {inventory.length === 0
+                            ? 'No items in inventory. Add one to get started!'
+                            : `No items found in the "${selectedCategory}" category.`}
+                    </p>
+                </div>
+            )}
         </div>
     </div>
     );

@@ -1,3 +1,4 @@
+
 // FIX: Removed circular self-import of `JewelryCategory` to resolve declaration conflicts.
 export enum JewelryCategory {
   RING = 'Ring',
@@ -24,8 +25,6 @@ export interface Customer {
   id: string;
   name: string;
   phone: string;
-  photoUrl?: string;
-  addressProofUrl?: string;
   joinDate: string;
   pendingBalance: number;
 }
@@ -49,13 +48,19 @@ export interface Bill {
   customerName: string;
   type: BillType;
   items: BillItem[];
-  totalAmount: number; // Subtotal
-  bargainedAmount: number;
+  totalAmount: number; // Subtotal of items
+  bargainedAmount: number; // Discount
   finalAmount: number; // totalAmount - bargainedAmount
+  lessWeight: number;
+  netWeight: number;
+  makingChargePercentage: number;
+  makingChargeAmount: number;
+  grandTotal: number; // finalAmount + makingChargeAmount
   amountPaid: number;
-  balance: number;
+  balance: number; // grandTotal - amountPaid
   date: string;
 }
+
 
 export type Page = 'DASHBOARD' | 'INVENTORY' | 'CUSTOMERS' | 'BILLING' | 'PENDING_PAYMENTS' | 'SETTINGS';
 
@@ -67,3 +72,11 @@ export const pageTitles: Record<Page, string> = {
   PENDING_PAYMENTS: 'Pending Payments',
   SETTINGS: 'Settings',
 };
+
+export interface GoogleTokenResponse {
+  access_token: string;
+  expires_in: number;
+  scope: string;
+  token_type: string;
+  expires_at?: number;
+}

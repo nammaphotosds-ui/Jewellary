@@ -16,7 +16,7 @@ const StatCard: React.FC<{ title: string; value: string | number; icon: React.Re
           </div>
           <div>
             <p className="text-sm text-gray-500">{title}</p>
-            <p className="text-2xl font-bold text-brand-dark">{value}</p>
+            <p className="text-2xl font-bold text-brand-charcoal">{value}</p>
           </div>
       </div>
     );
@@ -43,7 +43,7 @@ const DashboardPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCur
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl md:text-4xl font-serif font-bold text-brand-dark mb-1">Dashboard</h1>
+        <h1 className="text-3xl md:text-4xl font-serif font-bold text-brand-charcoal mb-1">Dashboard</h1>
         <p className="text-gray-600">Welcome back! Here's a summary of your business.</p>
       </div>
       
@@ -64,7 +64,7 @@ const DashboardPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCur
                   <p className="font-semibold">{bill.customerName}</p>
                   <p className="text-xs text-gray-500">{new Date(bill.date).toLocaleDateString()}</p>
                 </div>
-                <p className="font-bold text-brand-dark-light">₹{bill.totalAmount.toLocaleString('en-IN')}</p>
+                <p className="font-bold text-brand-charcoal-light">₹{bill.totalAmount.toLocaleString('en-IN')}</p>
               </div>
             ))}
              {bills.length === 0 && <p className="text-gray-500 text-center py-4">No recent invoices.</p>}
@@ -76,7 +76,7 @@ const DashboardPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCur
            <div className="space-y-3">
               {customers.slice(-5).reverse().map(customer => (
                 <div key={customer.id} className="flex items-center p-3 bg-gray-50 rounded-md">
-                  <img src={customer.photoUrl || 'https://picsum.photos/40'} alt={customer.name} className="w-10 h-10 rounded-full mr-4 object-cover" />
+                   <div className="w-10 h-10 rounded-full mr-4 bg-brand-gold-light flex items-center justify-center font-bold text-brand-gold-dark">{customer.name.charAt(0)}</div>
                   <div>
                     <p className="font-semibold">{customer.name}</p>
                     <p className="text-xs text-gray-500">{customer.phone}</p>
@@ -91,9 +91,9 @@ const DashboardPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCur
   );
 };
 
-const UsersIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
-const InventoryIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>;
-const RevenueIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>;
-const PendingIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="6" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>;
+const UsersIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
+const InventoryIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>;
+const RevenueIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>;
+const PendingIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="6" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>;
 
 export default DashboardPage;

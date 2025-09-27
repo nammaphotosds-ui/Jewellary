@@ -7,13 +7,13 @@ import Logo from './Logo';
 
 // --- Helper Functions & Components ---
 
-const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = error => reject(error);
-    });
+const Avatar: React.FC<{ name: string; className?: string }> = ({ name, className = '' }) => {
+    const initial = name ? name.charAt(0).toUpperCase() : '?';
+    return (
+        <div className={`flex items-center justify-center rounded-full bg-brand-gold-light text-brand-gold-dark ${className}`}>
+            <span className="font-serif text-xl">{initial}</span>
+        </div>
+    );
 };
 
 const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: string; children: React.ReactNode }> = ({ isOpen, onClose, title, children }) => {
@@ -35,49 +35,26 @@ const AddCustomerForm: React.FC<{onClose: () => void}> = ({ onClose }) => {
     const { addCustomer } = useAppContext();
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
-    const [photo, setPhoto] = useState<File | null>(null);
-    const [addressProof, setAddressProof] = useState<File | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
         if (name && phone) {
-            const photoUrl = photo ? await fileToBase64(photo) : undefined;
-            const addressProofUrl = addressProof ? await fileToBase64(addressProof) : undefined;
-
-            addCustomer({
+            await addCustomer({
                 name,
                 phone,
-                photoUrl,
-                addressProofUrl
             });
             onClose();
         }
         setIsSubmitting(false);
     };
-    
-    const FileInput: React.FC<{label: string, file: File | null, onFileChange: (file: File | null) => void, id: string}> = ({label, file, onFileChange, id}) => (
-         <div>
-            <label htmlFor={id} className="block text-sm font-medium text-gray-700">{label}</label>
-            <div className="mt-1 flex items-center space-x-4">
-                {file && <img src={URL.createObjectURL(file)} alt="preview" className="w-12 h-12 rounded-full object-cover"/>}
-                <label htmlFor={id} className="cursor-pointer bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50">
-                    <span>{file ? 'Change' : 'Upload'}</span>
-                    <input id={id} name={id} type="file" className="sr-only" onChange={e => onFileChange(e.target.files ? e.target.files[0] : null)}/>
-                </label>
-                 {file && <button type="button" onClick={() => onFileChange(null)} className="text-sm text-red-600">Remove</button>}
-            </div>
-        </div>
-    );
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             <input type="text" placeholder="Customer Name" value={name} onChange={e => setName(e.target.value)} className="w-full p-2 border rounded" required />
             <input type="tel" placeholder="Phone Number" value={phone} onChange={e => setPhone(e.target.value)} className="w-full p-2 border rounded" required />
-            <FileInput label="Customer Photo" file={photo} onFileChange={setPhoto} id="photo-upload"/>
-            <FileInput label="Address Proof" file={addressProof} onFileChange={setAddressProof} id="address-proof-upload"/>
-            <button type="submit" disabled={isSubmitting} className="w-full bg-brand-gold text-brand-dark p-3 rounded-lg font-semibold hover:bg-brand-gold-dark transition disabled:bg-gray-400">
+            <button type="submit" disabled={isSubmitting} className="w-full bg-brand-gold text-brand-charcoal p-3 rounded-lg font-semibold hover:bg-brand-gold-dark transition disabled:bg-gray-400">
               {isSubmitting ? 'Saving...' : 'Add Customer'}
             </button>
         </form>
@@ -90,34 +67,23 @@ const CustomerProfileTemplate: React.FC<{customer: Customer, bills: Bill[]}> = (
         <div className="bg-white text-gray-800" style={{ width: '1123px', height: '794px', display: 'flex', flexDirection: 'column' }}>
             <header className="px-12 pt-8 pb-4 flex justify-between items-center border-b-2 border-brand-gold">
                 <div>
-                    <Logo className="text-brand-dark" simple={true} />
+                    <Logo className="text-brand-charcoal" simple={true} />
                     <p className="text-sm text-gray-600 mt-1">Jewelry store in Ilkal, Karnataka</p>
                 </div>
-                <h2 className="text-3xl font-serif font-bold text-brand-dark-light">Customer Profile</h2>
+                <h2 className="text-3xl font-serif font-bold text-brand-charcoal-light">Customer Profile</h2>
             </header>
             <main className="flex-1 flex px-12 py-6 gap-8">
                 {/* Left Column */}
                 <div className="w-1/3 flex flex-col gap-6">
-                    <div className="bg-gray-50 p-4 rounded-lg border">
-                        <div className="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-white shadow-md bg-gray-200 flex items-center justify-center">
-                            <img src={customer.photoUrl || 'https://picsum.photos/200'} alt={customer.name} className="w-full h-full rounded-full" style={{objectFit: 'contain'}}/>
-                        </div>
-                        <h3 className="text-2xl font-bold text-center">{customer.name}</h3>
-                        <p className="text-center text-gray-500 font-mono">{customer.id}</p>
-                    </div>
-                     <div className="bg-gray-50 p-4 rounded-lg border flex-1">
+                    <div className="bg-gray-50 p-4 rounded-lg border flex-1">
+                        <h3 className="text-2xl font-bold text-center mb-1">{customer.name}</h3>
+                        <p className="text-center text-gray-500 font-mono mb-4">{customer.id}</p>
                         <h4 className="font-bold border-b pb-2 mb-2">Contact Details</h4>
                         <p><strong>Phone:</strong> {customer.phone}</p>
                         <p><strong>Joined:</strong> {new Date(customer.joinDate).toLocaleDateString()}</p>
                         <h4 className="font-bold border-b pb-2 mb-2 mt-4">Financials</h4>
                         <p><strong>Pending:</strong> <span className="font-bold text-red-600">₹{customer.pendingBalance.toLocaleString('en-IN')}</span></p>
                     </div>
-                    {customer.addressProofUrl && (
-                        <div className="bg-gray-50 p-4 rounded-lg border">
-                             <h4 className="font-bold border-b pb-2 mb-2">Address Proof</h4>
-                             <img src={customer.addressProofUrl} alt="Address Proof" className="w-full rounded-md object-contain max-h-32 bg-gray-200" style={{objectFit: 'contain'}}/>
-                        </div>
-                    )}
                 </div>
                 {/* Right Column */}
                 <div className="w-2/3 bg-gray-50 p-4 rounded-lg border">
@@ -158,9 +124,9 @@ const OnScreenCustomerProfile: React.FC<{customer: Customer, bills: Bill[]}> = (
     return (
         <div className="space-y-6">
             <div className="bg-white p-6 rounded-lg shadow-md flex flex-col md:flex-row items-center gap-6 border">
-                <img src={customer.photoUrl || 'https://picsum.photos/128'} alt={customer.name} className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-brand-gold-light shadow-lg" />
+                <Avatar name={customer.name} className="w-24 h-24 md:w-32 md:h-32 !text-5xl border-4 border-brand-gold-light shadow-lg"/>
                 <div className="text-center md:text-left">
-                    <h2 className="text-3xl font-bold font-serif text-brand-dark">{customer.name}</h2>
+                    <h2 className="text-3xl font-bold font-serif text-brand-charcoal">{customer.name}</h2>
                     <p className="font-mono text-gray-500">{customer.id}</p>
                     <p className="text-gray-600 mt-2">{customer.phone}</p>
                     <p className="text-sm text-gray-500">Member since {new Date(customer.joinDate).toLocaleDateString()}</p>
@@ -171,43 +137,32 @@ const OnScreenCustomerProfile: React.FC<{customer: Customer, bills: Bill[]}> = (
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {customer.addressProofUrl && (
-                    <div className="lg:col-span-1 bg-white p-6 rounded-lg shadow-md border">
-                        <h3 className="text-xl font-bold mb-4 text-brand-dark">Address Proof</h3>
-                        <img src={customer.addressProofUrl} alt="Address Proof" className="w-full rounded-md object-contain max-h-64"/>
-                    </div>
-                )}
-                
-                <div className={customer.addressProofUrl ? "lg:col-span-2" : "lg:col-span-3"}>
-                    <div className="bg-white p-6 rounded-lg shadow-md border">
-                        <h3 className="text-xl font-bold mb-4 text-brand-dark">Transaction History</h3>
-                        <div className="max-h-[400px] overflow-y-auto">
-                             <table className="w-full text-left">
-                                <thead className="sticky top-0 bg-gray-100 z-10">
-                                    <tr>
-                                        <th className="p-2 text-sm font-semibold text-gray-600">Bill ID</th>
-                                        <th className="p-2 text-sm font-semibold text-gray-600">Date</th>
-                                        <th className="p-2 text-sm font-semibold text-gray-600">Type</th>
-                                        <th className="p-2 text-sm font-semibold text-gray-600 text-right">Total (₹)</th>
-                                        <th className="p-2 text-sm font-semibold text-gray-600 text-right">Balance (₹)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {bills.map(bill => (
-                                        <tr key={bill.id} className="border-b">
-                                            <td className="p-2 text-xs font-mono">{bill.id}</td>
-                                            <td className="p-2 text-sm">{new Date(bill.date).toLocaleDateString()}</td>
-                                            <td className="p-2 text-sm">{bill.type}</td>
-                                            <td className="p-2 text-sm text-right">{bill.finalAmount.toLocaleString('en-IN')}</td>
-                                            <td className="p-2 text-sm text-right font-semibold">{bill.balance > 0 ? <span className="text-red-600">{bill.balance.toLocaleString('en-IN')}</span> : 'Paid'}</td>
-                                        </tr>
-                                    ))}
-                                    {bills.length === 0 && (<tr><td colSpan={5} className="text-center p-8 text-gray-500">No transactions found.</td></tr>)}
-                                </tbody>
-                             </table>
-                        </div>
-                    </div>
+            <div className="bg-white p-6 rounded-lg shadow-md border">
+                <h3 className="text-xl font-bold mb-4 text-brand-charcoal">Transaction History</h3>
+                <div className="max-h-[400px] overflow-y-auto">
+                     <table className="w-full text-left">
+                        <thead className="sticky top-0 bg-gray-100 z-10">
+                            <tr>
+                                <th className="p-2 text-sm font-semibold text-gray-600">Bill ID</th>
+                                <th className="p-2 text-sm font-semibold text-gray-600">Date</th>
+                                <th className="p-2 text-sm font-semibold text-gray-600">Type</th>
+                                <th className="p-2 text-sm font-semibold text-gray-600 text-right">Total (₹)</th>
+                                <th className="p-2 text-sm font-semibold text-gray-600 text-right">Balance (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {bills.map(bill => (
+                                <tr key={bill.id} className="border-b">
+                                    <td className="p-2 text-xs font-mono">{bill.id}</td>
+                                    <td className="p-2 text-sm">{new Date(bill.date).toLocaleDateString()}</td>
+                                    <td className="p-2 text-sm">{bill.type}</td>
+                                    <td className="p-2 text-sm text-right">{bill.finalAmount.toLocaleString('en-IN')}</td>
+                                    <td className="p-2 text-sm text-right font-semibold">{bill.balance > 0 ? <span className="text-red-600">{bill.balance.toLocaleString('en-IN')}</span> : 'Paid'}</td>
+                                </tr>
+                            ))}
+                            {bills.length === 0 && (<tr><td colSpan={5} className="text-center p-8 text-gray-500">No transactions found.</td></tr>)}
+                        </tbody>
+                     </table>
                 </div>
             </div>
         </div>
@@ -255,14 +210,14 @@ const CustomerDetailsView: React.FC<{customer: Customer, onBack: () => void}> = 
         <div>
             <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
                 <div>
-                     <button onClick={onBack} className="flex items-center text-gray-600 hover:text-brand-dark transition mb-2">
+                     <button onClick={onBack} className="flex items-center text-gray-600 hover:text-brand-charcoal transition mb-2">
                         {/* FIX: Corrected a malformed `viewBox` attribute in an SVG element that was causing a parsing error. */}
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
                         Back to Customers
                     </button>
-                    <h1 className="text-2xl md:text-3xl font-serif font-bold text-brand-dark">Customer Profile</h1>
+                    <h1 className="text-2xl md:text-3xl font-serif font-bold text-brand-charcoal">Customer Profile</h1>
                 </div>
-                <button onClick={generatePdf} disabled={isGeneratingPdf} className="bg-brand-gold text-brand-dark px-6 py-2 rounded-lg font-semibold hover:bg-brand-gold-dark transition flex items-center justify-center shadow-md disabled:bg-gray-400">
+                <button onClick={generatePdf} disabled={isGeneratingPdf} className="bg-brand-gold text-brand-charcoal px-6 py-2 rounded-lg font-semibold hover:bg-brand-gold-dark transition flex items-center justify-center shadow-md disabled:bg-gray-400">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                     {isGeneratingPdf ? 'Generating...' : 'Generate PDF Profile'}
                 </button>
@@ -285,14 +240,14 @@ const CustomersPage: React.FC = () => {
   return (
     <div>
         <div className="hidden md:flex justify-between items-center mb-8">
-            <h1 className="text-4xl font-serif font-bold text-brand-dark">Customers</h1>
-            <button onClick={() => setIsModalOpen(true)} className="bg-brand-gold text-brand-dark px-6 py-2 rounded-lg font-semibold hover:bg-brand-gold-dark transition flex items-center shadow-md">
+            <h1 className="text-4xl font-serif font-bold text-brand-charcoal">Customers</h1>
+            <button onClick={() => setIsModalOpen(true)} className="bg-brand-gold text-brand-charcoal px-6 py-2 rounded-lg font-semibold hover:bg-brand-gold-dark transition flex items-center shadow-md">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
                 Add New Customer
             </button>
         </div>
 
-        <button onClick={() => setIsModalOpen(true)} className="md:hidden fixed bottom-24 right-4 bg-brand-gold text-brand-dark w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-20">
+        <button onClick={() => setIsModalOpen(true)} className="md:hidden fixed bottom-24 right-4 bg-brand-gold text-brand-charcoal w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-20">
             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
         </button>
 
@@ -317,7 +272,7 @@ const CustomersPage: React.FC = () => {
                             <tr key={customer.id} className="border-b hover:bg-gray-50">
                                 <td className="p-4">
                                     <div className="flex items-center">
-                                        <img src={customer.photoUrl || `https://i.pravatar.cc/150?u=${customer.id}`} alt={customer.name} className="w-10 h-10 rounded-full mr-4 object-cover"/>
+                                        <Avatar name={customer.name} className="w-10 h-10 mr-4"/>
                                         <div>
                                             <p className="font-semibold">{customer.name}</p>
                                             <p className="text-xs font-mono text-gray-500">{customer.id}</p>
@@ -348,7 +303,7 @@ const CustomersPage: React.FC = () => {
             {customers.map((customer) => (
                 <div key={customer.id} onClick={() => setSelectedCustomer(customer)} className="bg-white p-4 rounded-lg shadow-md border active:scale-95 transition-transform">
                     <div className="flex items-center">
-                         <img src={customer.photoUrl || `https://i.pravatar.cc/150?u=${customer.id}`} alt={customer.name} className="w-12 h-12 rounded-full mr-4 object-cover"/>
+                         <Avatar name={customer.name} className="w-12 h-12 mr-4"/>
                          <div className="flex-1">
                             <p className="font-bold">{customer.name}</p>
                             <p className="text-sm text-gray-500">{customer.phone}</p>
