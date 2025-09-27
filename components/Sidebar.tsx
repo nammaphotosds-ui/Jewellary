@@ -61,7 +61,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage }) => {
             onClick={() => setCurrentPage('SETTINGS')}
         />
         <div className="text-center text-gray-500 text-xs pt-2">
-            <p>&copy; {new Date().getFullYear()} Devagirikar Jewellers</p>
+            <p>&copy; {new Date().getFullYear()} DEVAGIRIKAR JEWELLERYS</p>
         </div>
       </div>
     </aside>

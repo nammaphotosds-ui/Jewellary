@@ -34,7 +34,7 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                     <img src={customer.photoUrl} alt={customer.name} className="w-24 h-24 rounded-lg object-cover border-2 border-brand-gold-light" />
                 )}
                  <div className="text-right">
-                    <h3 className="font-bold text-lg mb-2">Devagirikar Jewellers</h3>
+                    <h3 className="font-bold text-lg mb-2">DEVAGIRIKAR JEWELLERYS</h3>
                     <p>Main Bazaar, Ilkal</p>
                     <p>Karnataka, India</p>
                 </div>
