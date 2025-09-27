@@ -82,25 +82,25 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
     const logoUrl = "https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163";
     
     return (
-        <div className="p-8 text-gray-800 bg-white relative font-sans" style={{width: '794px', height: '559px', display: 'flex', flexDirection: 'column'}}>
+        <div className="text-gray-800 bg-white relative font-sans" style={{width: '794px', height: '559px', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', padding: '38px'}}>
             {/* Background Logo */}
             <div className="absolute inset-0 flex items-center justify-center z-0">
-                <img src={logoUrl} alt="Logo" className="w-1/2 h-1/2 object-contain opacity-10" />
+                <img src={logoUrl} alt="Logo" className="w-1/2 h-1/2 object-contain opacity-20" />
             </div>
             
             <div className="relative z-10 flex flex-col flex-1">
                  <header className="flex justify-between items-center border-b-2 border-brand-gold pb-4">
-                    <div className="flex items-center">
-                        <img src={logoUrl} alt="Logo" className="w-24 h-24 object-contain mr-4" />
-                        <div>
-                            <h1 className="text-3xl font-serif font-bold text-brand-gold-dark">DEVAGIRIKAR JEWELLERYS</h1>
-                            <p className="text-gray-600 text-sm">EXCLUSIVE JEWELLERY SHOWROOM</p>
-                        </div>
-                    </div>
-                    <div className="text-right flex-shrink-0">
+                    <div className="text-left flex-shrink-0">
                         <h2 className="text-4xl font-serif font-bold uppercase text-brand-charcoal-light tracking-wider">{bill.type}</h2>
                         <p className="text-sm mt-1"><strong>Bill No:</strong> {bill.id}</p>
                         <p className="text-sm"><strong>Date:</strong> {new Date(bill.date).toLocaleDateString()}</p>
+                    </div>
+                    <div className="flex items-center">
+                        <div className="text-right">
+                            <h1 className="text-3xl font-serif font-bold text-brand-gold-dark">DEVAGIRIKAR JEWELLERYS</h1>
+                            <p className="text-gray-600 text-sm">EXCLUSIVE JEWELLERY SHOWROOM</p>
+                        </div>
+                        <img src={logoUrl} alt="Logo" className="w-24 h-24 object-contain ml-4" />
                     </div>
                 </header>
 
@@ -166,7 +166,7 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                     </div>
                 </div>
 
-                 <footer className="px-8 pb-4 pt-2 flex justify-between items-end">
+                 <footer className="pt-2 flex justify-between items-end">
                     <div className="text-left text-xs text-gray-600">
                         <p className="font-bold">DEVAGIRIKAR JEWELLERYS</p>
                         <p>1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot.</p>
@@ -183,26 +183,26 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
 const CustomerProfileTemplate: React.FC<{customer: Customer, bills: Bill[]}> = ({customer, bills}) => {
     const logoUrl = "https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163";
     return (
-        <div className="bg-white text-gray-800 relative font-sans" style={{ width: '1123px', height: '794px', display: 'flex', flexDirection: 'column' }}>
+        <div className="bg-white text-gray-800 relative font-sans" style={{ width: '1123px', height: '794px', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', padding: '54px' }}>
             {/* Background Logo */}
             <div className="absolute inset-0 flex items-center justify-center z-0">
-                <img src={logoUrl} alt="Logo Watermark" className="w-2/3 h-2/3 object-contain opacity-10" />
+                <img src={logoUrl} alt="Logo Watermark" className="w-2/3 h-2/3 object-contain opacity-20" />
             </div>
 
             {/* Content */}
             <div className="relative z-10 flex flex-col flex-1">
-                <header className="px-12 pt-8 pb-4 flex justify-between items-center border-b-2 border-brand-gold">
+                <header className="pb-4 flex justify-between items-center border-b-2 border-brand-gold">
+                    <h2 className="text-4xl font-serif font-bold text-brand-charcoal-light tracking-wider">Customer Profile</h2>
                     <div className="flex items-center">
-                         <img src={logoUrl} alt="DEVAGIRIKAR JEWELLERYS Logo" className="w-24 h-24 object-contain mr-6" />
-                        <div>
+                        <div className="text-right">
                              <h1 className="text-3xl font-bold font-serif tracking-wider text-brand-gold-dark" style={{ textShadow: '0px 1px 1px rgba(0,0,0,0.1)' }}>DEVAGIRIKAR JEWELLERYS</h1>
                              <p className="text-gray-600 text-base">EXCLUSIVE JEWELLERY SHOWROOM</p>
                         </div>
+                         <img src={logoUrl} alt="DEVAGIRIKAR JEWELLERYS Logo" className="w-24 h-24 object-contain ml-6" />
                     </div>
-                    <h2 className="text-4xl font-serif font-bold text-brand-charcoal-light tracking-wider">Customer Profile</h2>
                 </header>
                 
-                <main className="flex-1 px-12 py-6">
+                <main className="flex-1 py-6">
                     {/* Customer Details Card */}
                     <div className="bg-gradient-to-br from-brand-charcoal to-brand-charcoal-light text-white p-6 rounded-xl shadow-lg flex justify-between items-center mb-6">
                         <div>
@@ -222,7 +222,7 @@ const CustomerProfileTemplate: React.FC<{customer: Customer, bills: Bill[]}> = (
                     </div>
 
                     {/* Transaction History */}
-                    <div className="bg-white p-4 rounded-lg border h-[480px] flex flex-col">
+                    <div className="bg-white p-4 rounded-lg border h-[420px] flex flex-col">
                          <h4 className="font-bold border-b pb-2 mb-2 text-xl text-brand-charcoal">Transaction History</h4>
                          <div className="overflow-y-auto flex-1">
                              <table className="w-full text-left">
@@ -251,7 +251,7 @@ const CustomerProfileTemplate: React.FC<{customer: Customer, bills: Bill[]}> = (
                          </div>
                     </div>
                 </main>
-                 <footer className="px-12 pb-8 pt-4 flex justify-between items-end">
+                 <footer className="pt-4 flex justify-between items-end">
                     <div className="text-left text-xs text-gray-600">
                         <p className="font-bold">DEVAGIRIKAR JEWELLERYS</p>
                         <p>1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot.</p>
@@ -360,8 +360,8 @@ const CustomerDetailsView: React.FC<{customer: Customer, onBack: () => void}> = 
 
         const canvas = await html2canvas(elementToCapture, { scale: 3 }); // Increased scale for better quality
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
-        const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [1123, 794] });
-        pdf.addImage(imgData, 'JPEG', 0, 0, 1123, 794);
+        const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a5' });
+        pdf.addImage(imgData, 'JPEG', 0, 0, 210, 148);
         
         root.unmount();
         document.body.removeChild(tempContainer);
@@ -393,8 +393,8 @@ const CustomerDetailsView: React.FC<{customer: Customer, onBack: () => void}> = 
 
         const canvas = await html2canvas(elementToCapture, { scale: 3 });
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
-        const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [794, 559] });
-        pdf.addImage(imgData, 'JPEG', 0, 0, 794, 559);
+        const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a5' });
+        pdf.addImage(imgData, 'JPEG', 0, 0, 210, 148);
 
         root.unmount();
         document.body.removeChild(tempContainer);
