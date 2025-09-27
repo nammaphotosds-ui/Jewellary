@@ -58,12 +58,13 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
             
             <div className="relative z-10 p-8 flex flex-col h-full">
                 {/* Header */}
-                <header className="flex justify-between items-center pb-4 mb-6 border-b border-brand-gold-dark/30">
+                <header className="flex justify-between items-start pb-4 mb-6 border-b border-brand-gold-dark/30">
                     <div className="flex items-center">
                         <img src={logoUrl} alt="Logo" className="w-20 h-20" />
                         <div className="ml-4">
-                            <h2 className="text-3xl font-serif font-bold text-brand-charcoal">DEVAGIRIKAR JEWELLERYS</h2>
-                            <p className="text-xs tracking-widest text-brand-gray">EXCLUSIVE JEWELLERY SHOWROOM</p>
+                            <h2 className="text-4xl font-serif tracking-wider font-bold text-brand-charcoal">DEVAGIRIKAR</h2>
+                            <p className="text-xl text-brand-gold-dark tracking-[0.15em] -mt-1">JEWELLERYS</p>
+                            <p className="text-xs tracking-widest text-brand-gray mt-2">EXCLUSIVE JEWELLERY SHOWROOM</p>
                         </div>
                     </div>
                     <div className="text-right">
@@ -75,7 +76,7 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
 
                 {/* Customer Details */}
                 <section className="text-sm mb-6">
-                    <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">Billed To</p>
+                    <p className="text-brand-gray text-sm font-bold uppercase tracking-wider">Billed To</p>
                     <p className="font-bold text-lg text-brand-charcoal font-serif">{customer.name} ({customer.id})</p>
                     <p className="text-brand-gray">{customer.phone}</p>
                 </section>
@@ -111,7 +112,6 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                              <div className="mt-6 text-xs text-brand-gray">
                                 <p className="font-bold">Terms & Conditions:</p>
                                 <p>1. Goods once sold will not be taken back.</p>
-                                <p>2. Interest will be charged on overdue bills.</p>
                              </div>
                         </div>
                         <div className="col-span-5 text-sm">
@@ -127,7 +127,7 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                                 <div className="flex justify-between font-bold text-lg mt-1 pt-1 border-t-2 border-brand-charcoal"><span>Grand Total:</span><span>₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
                             </div>
                             <div className="space-y-1 mt-2">
-                                 <div className="flex justify-between"><span>Paid:</span><span>₹{amountPaid.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
+                                 <div className="flex justify-between font-bold"><span>Paid:</span><span>₹{amountPaid.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
                                  <div className="flex justify-between font-bold text-red-600"><span>BALANCE DUE:</span><span>₹{bill.balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
                             </div>
                         </div>
@@ -141,8 +141,8 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                     </div>
                 </section>
                 
-                <footer className="absolute bottom-2 left-8 right-8 text-center text-[9px] text-gray-500">
-                    <p className="font-bold font-serif">DEVAGIRIKAR JEWELLERYS</p>
+                <footer className="absolute bottom-6 left-8 right-8 text-center text-[10px] text-brand-charcoal font-semibold">
+                    <p className="font-bold font-serif tracking-wide">DEVAGIRIKAR JEWELLERYS</p>
                     <p>1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot. | Phone: 9008604004 / 8618748300 | GSTIN: 29BSWPD7616JZ0</p>
                 </footer>
             </div>
