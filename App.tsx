@@ -202,7 +202,7 @@ const AppContent: React.FC = () => {
       <div className="flex flex-col flex-1">
         <MobileHeader page={currentPage} />
         <main className="flex-1 overflow-y-auto pb-24 md:pb-0">
-          <div className="p-4 md:p-8">
+          <div className="px-4 pt-20 pb-4 md:p-8">
               {renderPage()}
           </div>
         </main>
@@ -214,7 +214,7 @@ const AppContent: React.FC = () => {
 
 
 const MobileHeader: React.FC<{ page: Page }> = ({ page }) => (
-  <header className="md:hidden sticky top-0 bg-white/80 backdrop-blur-sm z-10 shadow-sm p-3 flex justify-between items-center">
+  <header className="md:hidden sticky top-0 bg-transparent backdrop-blur-md z-10 p-3 flex justify-between items-center">
     <Logo />
     <h1 className="text-lg font-bold text-brand-charcoal-light">{pageTitles[page]}</h1>
   </header>
@@ -228,7 +228,7 @@ const BottomNav: React.FC<{ currentPage: Page; setCurrentPage: (page: Page) => v
     { page: 'BILLING', label: 'Billing', icon: <BillingIcon /> },
   ];
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t z-20 flex justify-around items-start pt-2 pb-1">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-transparent backdrop-blur-md z-20 flex justify-around items-start pt-2 pb-1">
       {navItems.map(item => (
         <button key={item.page} onClick={() => setCurrentPage(item.page)} className="flex flex-col items-center justify-center gap-1 w-20">
           <span className={`${currentPage === item.page ? 'text-brand-gold' : 'text-gray-500'} transition-colors`}>{item.icon}</span>
