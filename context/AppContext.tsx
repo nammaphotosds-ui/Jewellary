@@ -185,8 +185,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const createBill = async (billData: Omit<Bill, 'id' | 'balance' | 'date' | 'customerName' | 'finalAmount' | 'netWeight' | 'extraChargeAmount' | 'grandTotal'>): Promise<Bill> => {
     const finalAmount = billData.totalAmount - billData.bargainedAmount;
-    const extraChargeAmount = finalAmount * (billData.extraChargePercentage / 100);
-    const grandTotal = finalAmount + extraChargeAmount;
+    // Calculate extra charges on the subtotal (pre-discount)
+    const extraChargeAmount = billData.totalAmount * (billData.extraChargePercentage / 100);
+    // Apply discount after adding extra charges
+    const grandTotal = billData.totalAmount + extraChargeAmount - billData.bargainedAmount;
     const balance = grandTotal - billData.amountPaid;
     
     const totalWeight = billData.items.reduce((sum, item) => sum + item.weight, 0);
@@ -199,7 +201,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       ...billData,
       id: `BILL-${Date.now()}`,
       customerName: customer.name,
-      finalAmount,
+      finalAmount, // Kept for reference/PDF, though grandTotal logic changed
       netWeight,
       extraChargeAmount,
       grandTotal,

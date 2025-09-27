@@ -152,9 +152,16 @@ const GetStartedScreen: React.FC = () => {
     );
 };
 
+// --- Icon Components ---
+const HomeIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
+const BillingIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>;
+const AddUserIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/><line x1="20" y1="8" x2="20" y2="14"/></svg>;
+const DoorIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 20V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v14"/><path d="M2 20h20"/><path d="M14 12v.01"/></svg>;
+
+
 // New Global App Header
-const AppHeader: React.FC = () => (
-    <div className="absolute top-0 left-0 right-0 px-4 pt-4 md:px-8 z-10" style={{ paddingTop: `calc(1rem + env(safe-area-inset-top, 0px))` }}>
+const AppHeader: React.FC<{setCurrentPage: (page: Page) => void}> = ({ setCurrentPage }) => (
+    <div className="absolute top-0 left-0 right-0 px-4 pt-4 md:px-8 z-20 flex justify-between items-start" style={{ paddingTop: `calc(1rem + env(safe-area-inset-top, 0px))` }}>
         <div className="flex items-center">
             <img src="https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163" alt="Logo" className="w-12 h-12 object-contain" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }} />
             <div className="ml-2">
@@ -164,15 +171,15 @@ const AppHeader: React.FC = () => (
                 <p className="text-sm text-brand-gold-dark tracking-[0.1em] -mt-1">JEWELLERYS</p>
             </div>
         </div>
+        <button
+            onClick={() => setCurrentPage('DASHBOARD')}
+            className="p-3 bg-white/60 backdrop-blur-md rounded-full shadow-md text-brand-charcoal hover:bg-white transition"
+            aria-label="Go to Dashboard"
+        >
+            <DoorIcon />
+        </button>
     </div>
 );
-
-// --- Icon Components for Navigation ---
-const HomeIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
-const InventoryIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>;
-const UsersIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
-const BillingIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>;
-const AddUserIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/><line x1="20" y1="8" x2="20" y2="14"/></svg>;
 
 // --- Global Modal and Forms ---
 const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: string; children: React.ReactNode }> = ({ isOpen, onClose, title, children }) => {
@@ -226,13 +233,8 @@ const AddCustomerForm: React.FC<{onClose: () => void}> = ({ onClose }) => {
     );
 };
 
-// New Bottom Navigation Bar with FAB
-const BottomNavBar: React.FC<{ currentPage: Page; setCurrentPage: (page: Page) => void; onAddCustomerClick: () => void; }> = ({ currentPage, setCurrentPage, onAddCustomerClick }) => {
-    const navItems: { page: Page; label: string; icon: React.ReactNode }[] = [
-        { page: 'DASHBOARD', label: 'Dashboard', icon: <HomeIcon /> },
-        { page: 'INVENTORY', label: 'Inventory', icon: <InventoryIcon /> },
-        { page: 'CUSTOMERS', label: 'Customers', icon: <UsersIcon /> },
-    ];
+// New Floating Action Button Menu
+const FabMenu: React.FC<{ onAddCustomerClick: () => void; onAddBillClick: () => void }> = ({ onAddCustomerClick, onAddBillClick }) => {
     const [isFabOpen, setIsFabOpen] = useState(false);
     const fabRef = useRef<HTMLDivElement>(null);
 
@@ -252,47 +254,24 @@ const BottomNavBar: React.FC<{ currentPage: Page; setCurrentPage: (page: Page) =
     }
 
     return (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 h-28 z-30 flex justify-center">
-             <div className="absolute bottom-0 left-0 right-0 h-20" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px))' }}>
-                <div className="flex justify-around items-center h-full bg-white/80 backdrop-blur-lg shadow-lg border border-black/5 mx-4 rounded-full">
-                    {navItems.map((item, index) => (
-                         <React.Fragment key={item.page}>
-                            <button
-                                onClick={() => setCurrentPage(item.page)}
-                                className={`flex flex-col items-center justify-center w-20 h-full transition-colors duration-300
-                                    ${currentPage === item.page ? 'text-brand-gold' : 'text-brand-gray'}`}
-                                aria-label={item.label}
-                            >
-                                {item.icon}
-                                <span className="text-xs mt-1">{item.label}</span>
-                            </button>
-                            {/* Spacer for FAB */}
-                            {index === 1 && <div className="w-20 h-full" />}
-                         </React.Fragment>
-                    ))}
+        <div ref={fabRef} className="md:hidden fixed bottom-6 right-6 z-40" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px))' }}>
+            {isFabOpen && (
+                 <div className="absolute bottom-full mb-4 w-52 right-0 flex flex-col items-end gap-3">
+                    <button onClick={() => handleFabAction(onAddCustomerClick)} className="w-full flex items-center justify-start bg-white shadow-lg rounded-full text-left p-3 font-semibold hover:bg-gray-100 transition">
+                        <AddUserIcon /> <span className="ml-3">Add Customer</span>
+                    </button>
+                     <button onClick={() => handleFabAction(onAddBillClick)} className="w-full flex items-center justify-start bg-white shadow-lg rounded-full text-left p-3 font-semibold hover:bg-gray-100 transition">
+                        <BillingIcon /> <span className="ml-3">Create Bill</span>
+                    </button>
                 </div>
-            </div>
-
-            {/* FAB and Menu */}
-            <div ref={fabRef} className="absolute bottom-4 z-40">
-                {isFabOpen && (
-                     <div className="absolute bottom-full mb-4 w-52 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3">
-                        <button onClick={() => handleFabAction(onAddCustomerClick)} className="w-full flex items-center justify-start bg-white shadow-lg rounded-full text-left p-3 font-semibold hover:bg-gray-100 transition">
-                            <AddUserIcon /> <span className="ml-3">Add Customer</span>
-                        </button>
-                         <button onClick={() => handleFabAction(() => setCurrentPage('BILLING'))} className="w-full flex items-center justify-start bg-white shadow-lg rounded-full text-left p-3 font-semibold hover:bg-gray-100 transition">
-                            <BillingIcon /> <span className="ml-3">Create Bill</span>
-                        </button>
-                    </div>
-                )}
-                <button
-                    onClick={() => setIsFabOpen(!isFabOpen)}
-                    className={`w-16 h-16 rounded-full bg-brand-gold text-brand-charcoal shadow-lg flex items-center justify-center transform transition-transform duration-300 ${isFabOpen ? 'rotate-45' : ''}`}
-                    aria-label="Create new item"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-                </button>
-            </div>
+            )}
+            <button
+                onClick={() => setIsFabOpen(!isFabOpen)}
+                className={`w-16 h-16 rounded-full bg-brand-gold text-brand-charcoal shadow-lg flex items-center justify-center transform transition-transform duration-300 ${isFabOpen ? 'rotate-45' : ''}`}
+                aria-label="Create new item"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+            </button>
         </div>
     );
 };
@@ -348,13 +327,13 @@ const AppContent: React.FC = () => {
     <div className="flex h-screen font-sans text-brand-charcoal">
       <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />
       <div className="flex flex-col flex-1 relative">
-        <AppHeader />
+        <AppHeader setCurrentPage={setCurrentPage} />
         <main className="flex-1 overflow-y-auto">
           <div 
             className="px-4 md:p-8 h-full"
              style={{ 
                 paddingTop: `calc(6rem + env(safe-area-inset-top, 0px))`, 
-                paddingBottom: `calc(8rem + env(safe-area-inset-bottom, 0px))` 
+                paddingBottom: `calc(2rem + env(safe-area-inset-bottom, 0px))` 
             }}
            >
               {renderPage()}
@@ -363,7 +342,7 @@ const AppContent: React.FC = () => {
         <Modal isOpen={isAddCustomerModalOpen} onClose={() => setIsAddCustomerModalOpen(false)} title="Add New Customer">
             <AddCustomerForm onClose={() => setIsAddCustomerModalOpen(false)} />
         </Modal>
-        <BottomNavBar currentPage={currentPage} setCurrentPage={setCurrentPage} onAddCustomerClick={() => setIsAddCustomerModalOpen(true)} />
+        <FabMenu onAddCustomerClick={() => setIsAddCustomerModalOpen(true)} onAddBillClick={() => setCurrentPage('BILLING')} />
       </div>
     </div>
   );

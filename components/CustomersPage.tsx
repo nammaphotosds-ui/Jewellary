@@ -226,10 +226,12 @@ const CustomerDetailsView: React.FC<{customer: Customer, onBack: () => void}> = 
 // --- Main CustomersPage ---
 const CustomersPage: React.FC = () => {
   const { customers } = useAppContext();
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
+  
+  const selectedCustomer = selectedCustomerId ? customers.find(c => c.id === selectedCustomerId) : null;
 
   if (selectedCustomer) {
-      return <CustomerDetailsView customer={selectedCustomer} onBack={() => setSelectedCustomer(null)} />;
+      return <CustomerDetailsView customer={selectedCustomer} onBack={() => setSelectedCustomerId(null)} />;
   }
 
   return (
@@ -263,7 +265,7 @@ const CustomersPage: React.FC = () => {
                                     {customer.pendingBalance.toLocaleString('en-IN')}
                                 </td>
                                 <td className="p-4 text-right">
-                                    <button onClick={() => setSelectedCustomer(customer)} className="text-brand-gold hover:underline">View Details</button>
+                                    <button onClick={() => setSelectedCustomerId(customer.id)} className="text-brand-gold hover:underline">View Details</button>
                                 </td>
                             </tr>
                         ))}
@@ -280,7 +282,7 @@ const CustomersPage: React.FC = () => {
         {/* Mobile Card View */}
         <div className="md:hidden space-y-4">
             {customers.map((customer) => (
-                <div key={customer.id} onClick={() => setSelectedCustomer(customer)} className="bg-white p-4 rounded-lg shadow-md border active:scale-95 transition-transform">
+                <div key={customer.id} onClick={() => setSelectedCustomerId(customer.id)} className="bg-white p-4 rounded-lg shadow-md border active:scale-95 transition-transform">
                     <div className="flex items-center">
                          <Avatar name={customer.name} className="w-12 h-12 mr-4"/>
                          <div className="flex-1">

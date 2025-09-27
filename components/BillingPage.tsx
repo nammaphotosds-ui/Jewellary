@@ -132,9 +132,8 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                             <div className="flex justify-between py-0.5 font-bold border-t mt-1 pt-1"><span>Net Wt:</span><span>{bill.netWeight.toFixed(3)} g</span></div>
                             <hr className="my-1"/>
                             <div className="flex justify-between py-0.5"><span>Subtotal:</span><span>₹{bill.totalAmount.toLocaleString('en-IN')}</span></div>
-                            <div className="flex justify-between py-0.5 text-green-600"><span>Discount:</span><span>- ₹{bill.bargainedAmount.toLocaleString('en-IN')}</span></div>
-                            <div className="flex justify-between py-0.5 font-bold"><span>Amount:</span><span>₹{bill.finalAmount.toLocaleString('en-IN')}</span></div>
                             <div className="flex justify-between py-0.5 text-orange-600"><span>Extra Charges ({bill.extraChargePercentage}%):</span><span>+ ₹{bill.extraChargeAmount.toLocaleString('en-IN')}</span></div>
+                            <div className="flex justify-between py-0.5 text-green-600"><span>Discount:</span><span>- ₹{bill.bargainedAmount.toLocaleString('en-IN')}</span></div>
                             <div className="flex justify-between py-1 font-bold text-base border-t-2 border-b-2 border-brand-charcoal my-1"><span>Grand Total:</span><span>₹{bill.grandTotal.toLocaleString('en-IN')}</span></div>
                             <div className="flex justify-between py-0.5 text-green-600 font-semibold"><span>Amount Paid:</span><span>₹{bill.amountPaid.toLocaleString('en-IN')}</span></div>
                             <div className="flex justify-between py-0.5 text-red-600 font-semibold"><span>Balance Due:</span><span>₹{bill.balance.toLocaleString('en-IN')}</span></div>
@@ -252,13 +251,14 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = () => {
 
   const calculations = useMemo(() => {
     const totalAmount = selectedItems.reduce((sum, item) => sum + item.price, 0);
-    const finalAmount = totalAmount - (parseFloat(bargainedAmount) || 0);
-    const extraChargeAmount = finalAmount * ((parseFloat(extraChargePercentage) || 0) / 100);
-    const grandTotal = finalAmount + extraChargeAmount;
+    // Calculate extra charges on subtotal
+    const extraChargeAmount = totalAmount * ((parseFloat(extraChargePercentage) || 0) / 100);
+    // Apply discount after extra charges
+    const grandTotal = totalAmount + extraChargeAmount - (parseFloat(bargainedAmount) || 0);
     const totalWeight = selectedItems.reduce((sum, item) => sum + item.weight, 0);
     const netWeight = totalWeight - (parseFloat(lessWeight) || 0);
 
-    return { totalAmount, finalAmount, extraChargeAmount, grandTotal, totalWeight, netWeight };
+    return { totalAmount, extraChargeAmount, grandTotal, totalWeight, netWeight };
   }, [selectedItems, bargainedAmount, extraChargePercentage, lessWeight]);
 
   const handleAddItem = (item: JewelryItem) => {
@@ -399,9 +399,8 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = () => {
                 </div>
                 <div className="space-y-2 text-sm">
                     <div className="flex justify-between"><span>Subtotal:</span><span>₹{calculations.totalAmount.toLocaleString('en-IN')}</span></div>
+                    <div className="flex justify-between"><span>Extra Charges ({(parseFloat(extraChargePercentage) || 0)}%):</span><span className="text-orange-600">+ ₹{calculations.extraChargeAmount.toLocaleString('en-IN')}</span></div>
                     <div className="flex justify-between"><span>Discount:</span><span className="text-green-600">- ₹{(parseFloat(bargainedAmount) || 0).toLocaleString('en-IN')}</span></div>
-                    <div className="flex justify-between font-semibold"><span>Amount:</span><span>₹{calculations.finalAmount.toLocaleString('en-IN')}</span></div>
-                     <div className="flex justify-between"><span>Extra Charges ({(parseFloat(extraChargePercentage) || 0)}%):</span><span className="text-orange-600">+ ₹{calculations.extraChargeAmount.toLocaleString('en-IN')}</span></div>
                     <div className="flex justify-between font-bold text-lg border-t pt-2 mt-2"><span>Grand Total:</span><span className="text-brand-gold-dark">₹{calculations.grandTotal.toLocaleString('en-IN')}</span></div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
