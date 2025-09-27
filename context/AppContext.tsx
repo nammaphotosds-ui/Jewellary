@@ -1,6 +1,7 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import type { JewelryItem, Customer, Bill, BillType, GoogleTokenResponse } from '../types';
+// FIX: Imported `BillType` as a value to allow its use at runtime, as it's an enum.
+import { BillType } from '../types';
+import type { JewelryItem, Customer, Bill, GoogleTokenResponse } from '../types';
 import useLocalStorage from '../hooks/useLocalStorage';
 import * as drive from '../utils/googleDrive';
 
@@ -21,6 +22,8 @@ interface AppContextType {
   isAuthenticated: boolean;
   error: string | null;
   recordPayment: (customerId: string, amount: number) => Promise<void>;
+  resetTransactions: () => Promise<void>;
+  setRevenue: (newTotal: number) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -184,15 +187,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const createBill = async (billData: Omit<Bill, 'id' | 'balance' | 'date' | 'customerName' | 'finalAmount' | 'netWeight' | 'extraChargeAmount' | 'grandTotal'>): Promise<Bill> => {
-    const finalAmount = billData.totalAmount - billData.bargainedAmount;
-    // Calculate extra charges on the subtotal (pre-discount)
-    const extraChargeAmount = billData.totalAmount * (billData.extraChargePercentage / 100);
-    // Apply discount after adding extra charges
-    const grandTotal = billData.totalAmount + extraChargeAmount - billData.bargainedAmount;
+    // Correctly calculate price based on net weight
+    const totalGrossWeight = billData.items.reduce((sum, item) => sum + item.weight, 0);
+    const subtotalBeforeLessWeight = billData.totalAmount; // This is the sum of item prices
+
+    const averageRatePerGram = totalGrossWeight > 0 ? subtotalBeforeLessWeight / totalGrossWeight : 0;
+    const lessWeightValue = billData.lessWeight * averageRatePerGram;
+
+    const actualSubtotal = subtotalBeforeLessWeight - lessWeightValue;
+
+    const extraChargeAmount = actualSubtotal * (billData.extraChargePercentage / 100);
+    const grandTotal = actualSubtotal + extraChargeAmount - billData.bargainedAmount;
     const balance = grandTotal - billData.amountPaid;
     
-    const totalWeight = billData.items.reduce((sum, item) => sum + item.weight, 0);
-    const netWeight = totalWeight - billData.lessWeight;
+    const netWeight = totalGrossWeight - billData.lessWeight;
 
     const customer = customers.find(c => c.id === billData.customerId);
     if(!customer) throw new Error("Customer not found");
@@ -201,7 +209,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       ...billData,
       id: `BILL-${Date.now()}`,
       customerName: customer.name,
-      finalAmount, // Kept for reference/PDF, though grandTotal logic changed
+      finalAmount: actualSubtotal, // Repurposing finalAmount to be the net subtotal
       netWeight,
       extraChargeAmount,
       grandTotal,
@@ -238,13 +246,75 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     
     return newBill;
   };
+  
+  const resetTransactions = async () => {
+    const updatedCustomers = customers.map(c => ({ ...c, pendingBalance: 0 }));
+    
+    setBills([]);
+    setCustomers(updatedCustomers);
+
+    await saveDataToDrive({ inventory, customers: updatedCustomers, bills: [] });
+  };
+
+  const setRevenue = async (newTotal: number) => {
+    const currentTotalRevenue = bills.reduce((sum, bill) => sum + bill.amountPaid, 0);
+    const adjustmentAmount = newTotal - currentTotalRevenue;
+
+    if (adjustmentAmount === 0) {
+      return; // No change needed
+    }
+
+    let adminCustomer = customers.find(c => c.id === 'ADMIN_ADJUSTMENT');
+    let updatedCustomers = [...customers];
+
+    if (!adminCustomer) {
+      adminCustomer = {
+        id: 'ADMIN_ADJUSTMENT',
+        name: 'Manual Adjustments',
+        phone: 'N/A',
+        joinDate: new Date().toISOString(),
+        pendingBalance: 0,
+      };
+      updatedCustomers.push(adminCustomer);
+      setCustomers(updatedCustomers);
+    }
+    
+    const adjustmentBill: Bill = {
+      id: `ADJ-${Date.now()}`,
+      customerId: adminCustomer.id,
+      customerName: adminCustomer.name,
+      type: BillType.INVOICE,
+      items: [{
+          itemId: 'ADJUSTMENT',
+          name: adjustmentAmount > 0 ? 'Manual Revenue Increase' : 'Manual Revenue Decrease',
+          weight: 0,
+          price: adjustmentAmount
+      }],
+      totalAmount: adjustmentAmount,
+      bargainedAmount: 0,
+      finalAmount: adjustmentAmount,
+      lessWeight: 0,
+      netWeight: 0,
+      extraChargePercentage: 0,
+      extraChargeAmount: 0,
+      grandTotal: adjustmentAmount,
+      amountPaid: adjustmentAmount,
+      balance: 0,
+      date: new Date().toISOString(),
+    };
+    
+    const newBills = [...bills, adjustmentBill];
+    setBills(newBills);
+
+    await saveDataToDrive({ inventory, customers: updatedCustomers, bills: newBills });
+  };
 
   const getCustomerById = (id: string) => customers.find(c => c.id === id);
   const getBillsByCustomerId = (id: string) => bills.filter(b => b.customerId === id).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   const getInventoryItemById = (id: string) => inventory.find(i => i.id === id);
 
   return (
-    <AppContext.Provider value={{ isInitialized, isAuthenticated, error, inventory, customers, bills, addInventoryItem, deleteInventoryItem, addCustomer, deleteCustomer, createBill, getCustomerById, getBillsByCustomerId, getInventoryItemById, getNextCustomerId, recordPayment }}>
+    <AppContext.Provider value={{ isInitialized, isAuthenticated, error, inventory, customers, bills, addInventoryItem, deleteInventoryItem, addCustomer, deleteCustomer, createBill, getCustomerById, getBillsByCustomerId, getInventoryItemById, getNextCustomerId, recordPayment, resetTransactions, setRevenue }}>
       {children}
     </AppContext.Provider>
   );

@@ -138,14 +138,14 @@ const GetStartedScreen: React.FC = () => {
             </div>
             
             {/* Action Area */}
-            <div className="absolute bottom-24 left-0 right-0 px-8 flex flex-col items-center z-10">
+            <div className="absolute left-0 right-0 px-8 flex flex-col items-center z-10" style={{ bottom: 'calc(6rem + env(safe-area-inset-bottom, 0rem))' }}>
                  <DiamondPatternButton onClick={handleConnect} disabled={isConnecting}>
                     {isConnecting ? 'Connecting...' : 'Get Started'}
                  </DiamondPatternButton>
                  {error && <p className="text-red-600 mt-6 text-sm text-center">{error}</p>}
             </div>
             
-            <footer className="absolute bottom-8 w-full text-center z-10">
+            <footer className="absolute w-full text-center z-10" style={{ bottom: 'calc(2rem + env(safe-area-inset-bottom, 0rem))' }}>
                 <p className="text-brand-gray/80 text-sm">Powered By Nano Neptune</p>
             </footer>
         </div>
@@ -153,10 +153,11 @@ const GetStartedScreen: React.FC = () => {
 };
 
 // --- Icon Components ---
-const HomeIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
-const BillingIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>;
-const AddUserIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/><line x1="20" y1="8" x2="20" y2="14"/></svg>;
+export const BillingIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>;
+export const AddUserIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/><line x1="20" y1="8" x2="20" y2="14"/></svg>;
 const DoorIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 20V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v14"/><path d="M2 20h20"/><path d="M14 12v.01"/></svg>;
+const PencilIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>;
+export const SendIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>;
 
 
 // New Global App Header
@@ -267,10 +268,10 @@ const FabMenu: React.FC<{ onAddCustomerClick: () => void; onAddBillClick: () => 
             )}
             <button
                 onClick={() => setIsFabOpen(!isFabOpen)}
-                className={`w-16 h-16 rounded-full bg-brand-gold text-brand-charcoal shadow-lg flex items-center justify-center transform transition-transform duration-300 ${isFabOpen ? 'rotate-45' : ''}`}
+                className={`w-16 h-16 rounded-full bg-brand-gold text-brand-charcoal shadow-lg flex items-center justify-center transform transition-transform duration-300`}
                 aria-label="Create new item"
             >
-                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+               <PencilIcon />
             </button>
         </div>
     );
@@ -342,7 +343,7 @@ const AppContent: React.FC = () => {
         <Modal isOpen={isAddCustomerModalOpen} onClose={() => setIsAddCustomerModalOpen(false)} title="Add New Customer">
             <AddCustomerForm onClose={() => setIsAddCustomerModalOpen(false)} />
         </Modal>
-        <FabMenu onAddCustomerClick={() => setIsAddCustomerModalOpen(true)} onAddBillClick={() => setCurrentPage('BILLING')} />
+        {currentPage === 'DASHBOARD' && <FabMenu onAddCustomerClick={() => setIsAddCustomerModalOpen(true)} onAddBillClick={() => setCurrentPage('BILLING')} />}
       </div>
     </div>
   );

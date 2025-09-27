@@ -1,9 +1,9 @@
-
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { useAppContext } from '../context/AppContext';
 import type { Customer, Bill } from '../types';
 import Logo from './Logo';
+import { SendIcon } from '../App';
 
 
 // --- Helper Functions & Components ---
@@ -21,23 +21,23 @@ const Avatar: React.FC<{ name: string; className?: string }> = ({ name, classNam
 const CustomerProfileTemplate: React.FC<{customer: Customer, bills: Bill[]}> = ({customer, bills}) => {
     const logoUrl = "https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163";
     return (
-        <div className="bg-white text-gray-800 relative" style={{ width: '1123px', height: '794px', display: 'flex', flexDirection: 'column' }}>
+        <div className="bg-white text-gray-800 relative font-sans" style={{ width: '1123px', height: '794px', display: 'flex', flexDirection: 'column' }}>
             {/* Background Logo */}
             <div className="absolute inset-0 flex items-center justify-center z-0">
-                <img src={logoUrl} alt="Logo" className="w-2/3 h-2/3 object-contain opacity-5" />
+                <img src={logoUrl} alt="Logo Watermark" className="w-2/3 h-2/3 object-contain opacity-10" />
             </div>
 
             {/* Content */}
             <div className="relative z-10 flex flex-col flex-1">
                 <header className="px-12 pt-8 pb-4 flex justify-between items-center border-b-2 border-brand-gold">
                     <div className="flex items-center">
-                         <img src={logoUrl} alt="DEVAGIRIKAR JEWELLERYS Logo" className="w-20 h-20 object-contain mr-4" />
+                         <img src={logoUrl} alt="DEVAGIRIKAR JEWELLERYS Logo" className="w-24 h-24 object-contain mr-6" />
                         <div>
-                             <h1 className="text-2xl font-bold font-serif tracking-wider text-brand-gold-dark" style={{ textShadow: '0px 1px 1px rgba(0,0,0,0.1)' }}>DEVAGIRIKAR JEWELLERYS</h1>
-                            <p className="text-sm text-gray-600 mt-1">Jewelry store in Ilkal, Karnataka</p>
+                             <h1 className="text-3xl font-bold font-serif tracking-wider text-brand-gold-dark" style={{ textShadow: '0px 1px 1px rgba(0,0,0,0.1)' }}>DEVAGIRIKAR JEWELLERYS</h1>
+                             <p className="text-gray-600 text-base">EXCLUSIVE JEWELLERY SHOWROOM</p>
                         </div>
                     </div>
-                    <h2 className="text-3xl font-serif font-bold text-brand-charcoal-light">Customer Profile</h2>
+                    <h2 className="text-4xl font-serif font-bold text-brand-charcoal-light tracking-wider">Customer Profile</h2>
                 </header>
                 
                 <main className="flex-1 px-12 py-6">
@@ -49,7 +49,7 @@ const CustomerProfileTemplate: React.FC<{customer: Customer, bills: Bill[]}> = (
                             <p className="font-mono text-gray-300 mt-1">{customer.id}</p>
                         </div>
                         <div className="text-right">
-                             <p className="font-semibold">{customer.phone}</p>
+                             <p className="font-semibold text-lg">{customer.phone}</p>
                              {customer.dob && <p className="text-sm text-gray-400">Birthday: {new Date(customer.dob).toLocaleDateString()}</p>}
                              <p className="text-sm text-gray-400">Joined: {new Date(customer.joinDate).toLocaleDateString()}</p>
                              <div className="mt-2 bg-red-500/20 text-red-200 px-4 py-2 rounded-lg">
@@ -64,23 +64,23 @@ const CustomerProfileTemplate: React.FC<{customer: Customer, bills: Bill[]}> = (
                          <h4 className="font-bold border-b pb-2 mb-2 text-xl text-brand-charcoal">Transaction History</h4>
                          <div className="overflow-y-auto flex-1">
                              <table className="w-full text-left">
-                                <thead className="sticky top-0 bg-gray-100 z-10">
+                                <thead className="sticky top-0 bg-brand-charcoal text-white z-10">
                                     <tr>
-                                        <th className="p-2 font-semibold">Bill ID</th>
-                                        <th className="p-2 font-semibold">Date</th>
-                                        <th className="p-2 font-semibold">Type</th>
-                                        <th className="p-2 font-semibold text-right">Total (₹)</th>
-                                        <th className="p-2 font-semibold text-right">Balance (₹)</th>
+                                        <th className="p-3 font-bold">Bill ID</th>
+                                        <th className="p-3 font-bold">Date</th>
+                                        <th className="p-3 font-bold">Type</th>
+                                        <th className="p-3 font-bold text-right">Total (₹)</th>
+                                        <th className="p-3 font-bold text-right">Balance (₹)</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {bills.map(bill => (
                                         <tr key={bill.id} className="border-b odd:bg-gray-50">
-                                            <td className="p-2 text-xs font-mono">{bill.id}</td>
-                                            <td className="p-2">{new Date(bill.date).toLocaleDateString()}</td>
-                                            <td className="p-2"><span className={`px-2 py-1 text-xs rounded-full ${bill.type === 'INVOICE' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>{bill.type}</span></td>
-                                            <td className="p-2 text-right">{bill.grandTotal.toLocaleString('en-IN')}</td>
-                                            <td className="p-2 text-right font-semibold">{bill.balance > 0 ? <span className="text-red-600">{bill.balance.toLocaleString('en-IN')}</span> : 'Paid'}</td>
+                                            <td className="p-3 text-sm font-mono">{bill.id}</td>
+                                            <td className="p-3 text-sm">{new Date(bill.date).toLocaleDateString()}</td>
+                                            <td className="p-3"><span className={`px-2 py-1 text-xs rounded-full ${bill.type === 'INVOICE' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>{bill.type}</span></td>
+                                            <td className="p-3 text-sm text-right">{bill.grandTotal.toLocaleString('en-IN')}</td>
+                                            <td className="p-3 text-sm text-right font-semibold">{bill.balance > 0 ? <span className="text-red-600">{bill.balance.toLocaleString('en-IN')}</span> : 'Paid'}</td>
                                         </tr>
                                     ))}
                                     {bills.length === 0 && (<tr><td colSpan={5} className="text-center p-8 text-gray-500">No transactions found.</td></tr>)}
@@ -92,7 +92,7 @@ const CustomerProfileTemplate: React.FC<{customer: Customer, bills: Bill[]}> = (
                  <footer className="absolute bottom-8 left-12 right-12 text-center text-xs text-gray-600">
                     <p className="font-bold">DEVAGIRIKAR JEWELLERYS</p>
                     <p>1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot.</p>
-                    <p>GSTIN: 29BSWPD7616JZ0 | Phone: 9008604004 / 8618748300</p>
+                    <p className="mt-1">GSTIN: 29BSWPD7616JZ0 | Phone: 9008604004 / 8618748300</p>
                 </footer>
                 <img src={logoUrl} alt="Logo" className="absolute bottom-8 right-12 w-16 h-16 object-contain opacity-50" />
             </div>
@@ -155,15 +155,14 @@ const OnScreenCustomerProfile: React.FC<{customer: Customer, bills: Bill[]}> = (
 const CustomerDetailsView: React.FC<{customer: Customer, onBack: () => void}> = ({customer, onBack}) => {
     const { getBillsByCustomerId, deleteCustomer } = useAppContext();
     const bills = getBillsByCustomerId(customer.id);
-    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
 
-    const generatePdf = async () => {
-        setIsGeneratingPdf(true);
+    const generatePdfBlob = async (): Promise<Blob | null> => {
         // @ts-ignore
         const { jsPDF } = window.jspdf;
         // @ts-ignore
         const html2canvas = window.html2canvas;
-
+    
         const tempContainer = document.createElement('div');
         tempContainer.style.position = 'fixed';
         tempContainer.style.left = '-9999px';
@@ -174,18 +173,65 @@ const CustomerDetailsView: React.FC<{customer: Customer, onBack: () => void}> = 
         
         await new Promise(resolve => setTimeout(resolve, 500));
         const elementToCapture = tempContainer.children[0] as HTMLElement;
-
-        if (elementToCapture) {
-            const canvas = await html2canvas(elementToCapture, { scale: 2 });
-            const imgData = canvas.toDataURL('image/jpeg', 0.9);
-            const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [1123, 794] });
-            pdf.addImage(imgData, 'JPEG', 0, 0, 1123, 794);
-            pdf.save(`profile-${customer.id}.pdf`);
+    
+        if (!elementToCapture) {
+            root.unmount();
+            document.body.removeChild(tempContainer);
+            return null;
         }
 
+        const canvas = await html2canvas(elementToCapture, { scale: 3 }); // Increased scale for better quality
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [1123, 794] });
+        pdf.addImage(imgData, 'JPEG', 0, 0, 1123, 794);
+        
         root.unmount();
         document.body.removeChild(tempContainer);
-        setIsGeneratingPdf(false);
+        return pdf.output('blob');
+    };
+
+    const handleDownloadPdf = async () => {
+        setIsProcessing(true);
+        const blob = await generatePdfBlob();
+        if (blob) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `profile-${customer.id}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } else {
+            alert('Failed to generate PDF.');
+        }
+        setIsProcessing(false);
+    };
+
+    const handleSharePdf = async () => {
+        setIsProcessing(true);
+        try {
+            const blob = await generatePdfBlob();
+            if (!blob) throw new Error("Failed to generate PDF blob.");
+
+            const file = new File([blob], `profile-${customer.id}.pdf`, { type: 'application/pdf' });
+            if (navigator.share && navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    files: [file],
+                    title: `Customer Profile - ${customer.name}`,
+                    text: `Here is the customer profile for ${customer.name} from DEVAGIRIKAR JEWELLERYS.`
+                });
+            } else {
+                alert('Sharing is not supported on this browser. Try downloading the file instead.');
+            }
+        } catch (error) {
+            console.error('Error sharing PDF:', error);
+            if ((error as DOMException).name !== 'AbortError') {
+                 alert('An error occurred while trying to share the PDF.');
+            }
+        } finally {
+            setIsProcessing(false);
+        }
     };
     
     const handleDelete = async () => {
@@ -208,9 +254,13 @@ const CustomerDetailsView: React.FC<{customer: Customer, onBack: () => void}> = 
                     </button>
                 </div>
                 <div className="flex items-center gap-4">
-                    <button onClick={generatePdf} disabled={isGeneratingPdf} className="bg-brand-gold text-brand-charcoal px-6 py-2 rounded-lg font-semibold hover:bg-brand-gold-dark transition flex items-center justify-center shadow-md disabled:bg-gray-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                        {isGeneratingPdf ? 'Generating...' : 'PDF Profile'}
+                    <button onClick={handleDownloadPdf} disabled={isProcessing} className="bg-brand-gold text-brand-charcoal px-6 py-2 rounded-lg font-semibold hover:bg-brand-gold-dark transition flex items-center justify-center shadow-md disabled:bg-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        {isProcessing ? 'Processing...' : 'Download'}
+                    </button>
+                    <button onClick={handleSharePdf} disabled={isProcessing} className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition flex items-center justify-center shadow-md disabled:bg-gray-400">
+                        <SendIcon />
+                        {isProcessing ? 'Processing...' : 'Send'}
                     </button>
                     <button onClick={handleDelete} className="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition flex items-center justify-center shadow-md">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>

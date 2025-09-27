@@ -1,9 +1,11 @@
 import React from 'react';
 import useLocalStorage from '../hooks/useLocalStorage';
 import type { GoogleTokenResponse } from '../types';
+import { useAppContext } from '../context/AppContext';
 
 const SettingsPage: React.FC = () => {
     const [tokenResponse, setTokenResponse] = useLocalStorage<GoogleTokenResponse | null>('googleTokenResponse', null);
+    const { resetTransactions } = useAppContext();
 
     const handleDisconnect = () => {
         if (tokenResponse) {
@@ -14,6 +16,18 @@ const SettingsPage: React.FC = () => {
         }
         setTokenResponse(null);
         window.location.reload();
+    };
+
+    const handleResetTransactions = async () => {
+        if (window.confirm("Are you sure you want to delete ALL bills and transaction history? This will reset all revenue and pending payments to zero. This action CANNOT be undone.")) {
+            try {
+                await resetTransactions();
+                alert("All transaction data has been reset successfully.");
+            } catch (error) {
+                alert("An error occurred while resetting data. Please try again.");
+                console.error("Reset data error:", error);
+            }
+        }
     };
 
     return (
@@ -34,6 +48,17 @@ const SettingsPage: React.FC = () => {
                         Disconnect and clear local data
                     </button>
                 </div>
+            </div>
+
+            <div className="mt-8 bg-red-50 p-6 rounded-lg shadow-inner border border-red-200">
+                <h2 className="text-xl font-bold text-red-800 mb-2">Danger Zone</h2>
+                <p className="text-red-700 mb-4">Permanently delete all transaction data. This will reset revenue and pending balances to zero. This action cannot be undone.</p>
+                <button 
+                    onClick={handleResetTransactions} 
+                    className="bg-red-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-700 transition"
+                >
+                    Reset All Transactions
+                </button>
             </div>
         </div>
     );

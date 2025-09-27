@@ -1,11 +1,39 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Page } from '../types';
 
 // FIX: Destructured `setCurrentPage` from props to make it available within the component's scope.
 const RevenuePage: React.FC<{ setCurrentPage: (page: Page) => void }> = ({ setCurrentPage }) => {
-    const { bills } = useAppContext();
+    const { bills, setRevenue } = useAppContext();
     const sortedBills = [...bills].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    const [isEditing, setIsEditing] = useState(false);
+    const [newRevenue, setNewRevenue] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
+
+    const totalRevenue = bills.reduce((sum, bill) => sum + bill.amountPaid, 0);
+
+    const handleEditClick = () => {
+        setNewRevenue(totalRevenue.toString());
+        setIsEditing(true);
+    };
+
+    const handleCancelClick = () => {
+        setIsEditing(false);
+        setNewRevenue('');
+    };
+
+    const handleSaveClick = async () => {
+        const newTotal = parseFloat(newRevenue);
+        if (isNaN(newTotal) || newTotal < 0) {
+            alert('Please enter a valid, non-negative number.');
+            return;
+        }
+        setIsSaving(true);
+        await setRevenue(newTotal);
+        setIsSaving(false);
+        setIsEditing(false);
+    };
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('en-IN', {
@@ -43,7 +71,44 @@ const RevenuePage: React.FC<{ setCurrentPage: (page: Page) => void }> = ({ setCu
             </div>
             
             <div className="bg-white p-4 md:p-6 rounded-lg shadow-md border">
-                <h1 className="text-2xl font-bold mb-4">Revenue Details</h1>
+                <div className="flex flex-col md:flex-row justify-between md:items-center mb-4 gap-4">
+                    <h1 className="text-2xl font-bold">Revenue Details</h1>
+                     <div className="flex items-center gap-2">
+                        {isEditing ? (
+                            <>
+                                <input
+                                    type="number"
+                                    value={newRevenue}
+                                    onChange={(e) => setNewRevenue(e.target.value)}
+                                    className="p-2 border rounded-md w-40 text-right font-semibold"
+                                    disabled={isSaving}
+                                    autoFocus
+                                />
+                                <button
+                                    onClick={handleSaveClick}
+                                    disabled={isSaving}
+                                    className="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-semibold hover:bg-green-700 disabled:bg-gray-400"
+                                >
+                                    {isSaving ? 'Saving...' : 'Save'}
+                                </button>
+                                <button
+                                    onClick={handleCancelClick}
+                                    disabled={isSaving}
+                                    className="px-4 py-2 bg-gray-200 rounded-md text-sm"
+                                >
+                                    Cancel
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <span className="text-2xl font-bold text-brand-gold-dark">{formatCurrency(totalRevenue)}</span>
+                                <button onClick={handleEditClick} className="p-2 text-gray-500 hover:text-brand-charcoal" aria-label="Edit total revenue">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
+                            </>
+                        )}
+                    </div>
+                </div>
                 
                 {/* Desktop Table View */}
                 <div className="hidden md:block">
