@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import { useAppContext } from '../context/AppContext';
@@ -280,64 +281,70 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = () => {
     setSelectedItems(prev => prev.filter(item => item.itemId !== itemId));
   };
   
-    const generatePdfBlob = async (bill: Bill, customer: Customer): Promise<Blob | null> => {
-        // @ts-ignore
-        const { jsPDF } = window.jspdf;
-        // @ts-ignore
-        const html2canvas = window.html2canvas;
+    const generatePdfBlob = (componentToRender: React.ReactElement): Promise<Blob | null> => {
+        return new Promise(resolve => {
+            // @ts-ignore
+            const { jsPDF } = window.jspdf;
+            // @ts-ignore
+            const html2canvas = window.html2canvas;
 
-        const tempContainer = document.createElement('div');
-        tempContainer.style.position = 'absolute';
-        tempContainer.style.left = '-9999px';
-        tempContainer.style.top = '0';
-        tempContainer.style.zIndex = '-1';
-        document.body.appendChild(tempContainer);
+            const tempContainer = document.createElement('div');
+            tempContainer.style.position = 'absolute';
+            tempContainer.style.left = '-9999px';
+            tempContainer.style.top = '0';
+            tempContainer.style.zIndex = '-1';
+            document.body.appendChild(tempContainer);
 
-        const root = ReactDOM.createRoot(tempContainer);
-        root.render(<InvoiceTemplate bill={bill} customer={customer} />);
-        
-        const invoiceElement = tempContainer.children[0] as HTMLElement;
+            const root = ReactDOM.createRoot(tempContainer);
 
-        if (!invoiceElement) {
-            root.unmount();
-            document.body.removeChild(tempContainer);
-            return null;
-        }
+            const captureAndCleanup = async () => {
+                try {
+                    const elementToCapture = tempContainer.children[0] as HTMLElement;
+                    if (!elementToCapture) {
+                        console.error("PDF generation failed: Component did not render.");
+                        resolve(null);
+                        return;
+                    }
+                    
+                    // Wait for images to load
+                    const images = Array.from(elementToCapture.getElementsByTagName('img'));
+                    await Promise.all(images.map(img => new Promise<void>(res => {
+                        if (img.complete) return res();
+                        img.onload = () => res();
+                        img.onerror = () => res(); // Resolve even on error to not block PDF
+                    })));
 
-        const images = Array.from(invoiceElement.getElementsByTagName('img'));
-        const imageLoadPromises = images.map(img => 
-            new Promise((resolve, reject) => {
-                if (img.complete) resolve(true);
-                else {
-                    img.onload = () => resolve(true);
-                    img.onerror = reject;
+                    // Added delay for fonts and final rendering
+                    await new Promise(r => setTimeout(r, 200));
+
+                    const canvas = await html2canvas(elementToCapture, { scale: 2, useCORS: true, windowWidth: elementToCapture.scrollWidth, windowHeight: elementToCapture.scrollHeight });
+                    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                    
+                    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a5' });
+                    const margin = 8;
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = pdf.internal.pageSize.getHeight();
+                    const contentWidth = pdfWidth - margin * 2;
+                    const contentHeight = pdfHeight - margin * 2;
+                    
+                    pdf.addImage(imgData, 'JPEG', margin, margin, contentWidth, contentHeight);
+                    resolve(pdf.output('blob'));
+
+                } catch (error) {
+                    console.error("Error during PDF generation process:", error);
+                    resolve(null);
+                } finally {
+                    root.unmount();
+                    if (document.body.contains(tempContainer)) {
+                        document.body.removeChild(tempContainer);
+                    }
                 }
-            })
-        );
-        
-        try {
-            await Promise.all(imageLoadPromises);
-            // A small delay to ensure rendering is complete, especially for web fonts
-            await new Promise(resolve => setTimeout(resolve, 200));
-        } catch (error) {
-            console.error("An image failed to load for PDF generation:", error);
-        }
+            };
 
-        const canvas = await html2canvas(invoiceElement, { scale: 2, useCORS: true, windowWidth: invoiceElement.scrollWidth, windowHeight: invoiceElement.scrollHeight });
-        const imgData = canvas.toDataURL('image/jpeg', 0.95);
-        
-        const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a5' });
-        const margin = 8; // 8mm margin
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        const contentWidth = pdfWidth - margin * 2;
-        const contentHeight = pdfHeight - margin * 2;
-        
-        pdf.addImage(imgData, 'JPEG', margin, margin, contentWidth, contentHeight);
-
-        root.unmount();
-        document.body.removeChild(tempContainer);
-        return pdf.output('blob');
+            root.render(componentToRender);
+            // Use setTimeout to ensure React has flushed the render to the DOM
+            setTimeout(captureAndCleanup, 300);
+        });
     };
   
   const resetForm = () => {
@@ -376,7 +383,7 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = () => {
         const customer = getCustomerById(selectedCustomerId);
         if (!customer) throw new Error("Customer not found after creating bill.");
 
-        const blob = await generatePdfBlob(bill, customer);
+        const blob = await generatePdfBlob(<InvoiceTemplate bill={bill} customer={customer} />);
         if (!blob) throw new Error("Failed to generate PDF.");
 
         if (action === 'send') {
