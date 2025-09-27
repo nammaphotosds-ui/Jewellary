@@ -53,9 +53,9 @@ export interface Bill {
   finalAmount: number; // totalAmount - bargainedAmount
   lessWeight: number;
   netWeight: number;
-  makingChargePercentage: number;
-  makingChargeAmount: number;
-  grandTotal: number; // finalAmount + makingChargeAmount
+  extraChargePercentage: number;
+  extraChargeAmount: number;
+  grandTotal: number; // finalAmount + extraChargeAmount
   amountPaid: number;
   balance: number; // grandTotal - amountPaid
   date: string;

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Page } from '../types';
@@ -42,9 +41,11 @@ const DashboardPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCur
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl md:text-4xl font-serif font-bold text-brand-charcoal mb-1">Dashboard</h1>
-        <p className="text-gray-600">Welcome back! Here's a summary of your business.</p>
+      <div className="text-center md:text-left mb-8">
+        <h1 className="text-4xl md:text-5xl font-serif tracking-wide text-brand-charcoal" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.1)' }}>
+            Dashboard
+        </h1>
+        <p className="text-md text-brand-gray mt-2">Welcome back! Here's a summary of your business.</p>
       </div>
       
       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useAppContext } from '../context/AppContext';
 
@@ -11,8 +10,8 @@ const PendingPaymentsPage: React.FC = () => {
 
   return (
     <div>
-        <div className="mb-8">
-             <h1 className="text-3xl md:text-4xl font-serif font-bold text-brand-charcoal">Pending Payments</h1>
+        <div className="text-center md:text-left mb-8">
+             <h1 className="text-4xl md:text-5xl font-serif tracking-wide text-brand-charcoal" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.1)' }}>Pending Payments</h1>
         </div>
         
         {/* Desktop Table View */}

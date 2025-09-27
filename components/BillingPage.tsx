@@ -19,47 +19,47 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
             <div className="relative z-10 flex flex-col flex-1">
                  <header className="flex justify-between items-start border-b-2 border-brand-gold pb-4">
                     <div className="flex items-center">
-                        <img src={logoUrl} alt="Logo" className="w-20 h-20 object-contain mr-4" />
+                        <img src={logoUrl} alt="Logo" className="w-16 h-16 object-contain mr-4" />
                         <div>
-                            <h1 className="text-3xl font-serif font-bold text-brand-gold-dark">DEVAGIRIKAR JEWELLERYS</h1>
-                            <p className="font-semibold text-gray-700">EXCLUSIVE JEWELLERY SHOWROOM</p>
-                            <p className="text-sm text-gray-600">1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot.</p>
+                            <h1 className="text-2xl font-serif font-bold text-brand-gold-dark">DEVAGIRIKAR JEWELLERYS</h1>
+                            <p className="text-gray-600">EXCLUSIVE JEWELLERY SHOWROOM</p>
+                            <p className="text-xs text-gray-500">1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot.</p>
                         </div>
                     </div>
                     <div className="text-right flex-shrink-0">
-                        <h2 className="text-4xl font-serif font-bold uppercase text-brand-charcoal-light">{bill.type}</h2>
+                        <h2 className="text-3xl font-serif font-bold uppercase text-brand-charcoal-light">{bill.type}</h2>
                         <p className="text-xs"><strong>Bill No:</strong> {bill.id}</p>
                         <p className="text-xs"><strong>Date:</strong> {new Date(bill.date).toLocaleDateString()}</p>
                     </div>
                 </header>
 
-                <div className="flex justify-between mt-4">
+                <div className="flex justify-between mt-4 text-xs">
                     <div>
-                        <h3 className="font-bold text-md mb-1">Billed To:</h3>
+                        <h3 className="font-bold text-sm mb-1">Billed To:</h3>
                         <p>{customer.name} ({customer.id})</p>
                         <p>{customer.phone}</p>
                     </div>
-                     <div className="text-right text-xs">
+                     <div className="text-right">
                         <p><strong>GSTIN:</strong> 29BSWPD7616JZ0</p>
                         <p><strong>Phone:</strong> 9008604004 / 8618748300</p>
                     </div>
                 </div>
 
                 <main className="flex-1 mt-4">
-                     <table className="w-full text-left text-sm">
-                        <thead className="bg-brand-charcoal text-white">
+                     <table className="w-full text-left text-xs">
+                        <thead className="bg-gray-100 text-gray-700">
                             <tr>
-                                <th className="p-2">Item Name</th>
-                                <th className="p-2 text-right">Weight (g)</th>
-                                <th className="p-2 text-right">Price (₹)</th>
+                                <th className="px-2 py-1 font-semibold">Item Name</th>
+                                <th className="px-2 py-1 text-right font-semibold">Weight (g)</th>
+                                <th className="px-2 py-1 text-right font-semibold">Price (₹)</th>
                             </tr>
                         </thead>
                         <tbody>
                             {bill.items.map(item => (
-                                <tr key={item.itemId} className="border-b">
-                                    <td className="p-2">{item.name}</td>
-                                    <td className="p-2 text-right">{item.weight.toFixed(3)}</td>
-                                    <td className="p-2 text-right">{item.price.toLocaleString('en-IN')}</td>
+                                <tr key={item.itemId} className="border-b odd:bg-gray-50">
+                                    <td className="px-2 py-1">{item.name}</td>
+                                    <td className="px-2 py-1 text-right">{item.weight.toFixed(3)}</td>
+                                    <td className="px-2 py-1 text-right">{item.price.toLocaleString('en-IN')}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -67,7 +67,7 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                 </main>
                 
                 <footer className="flex justify-end mt-2">
-                    <div className="w-1/2 text-sm">
+                    <div className="w-1/2 text-xs">
                         <div className="flex justify-between py-0.5"><span>Total Gross Wt:</span><span>{totalWeight.toFixed(3)} g</span></div>
                         <div className="flex justify-between py-0.5 text-blue-600"><span>Less Wt:</span><span>- {bill.lessWeight.toFixed(3)} g</span></div>
                         <div className="flex justify-between py-0.5 font-bold border-t mt-1 pt-1"><span>Net Wt:</span><span>{bill.netWeight.toFixed(3)} g</span></div>
@@ -75,15 +75,21 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                         <div className="flex justify-between py-0.5"><span>Subtotal:</span><span>₹{bill.totalAmount.toLocaleString('en-IN')}</span></div>
                         <div className="flex justify-between py-0.5 text-green-600"><span>Discount:</span><span>- ₹{bill.bargainedAmount.toLocaleString('en-IN')}</span></div>
                         <div className="flex justify-between py-0.5 font-bold"><span>Amount:</span><span>₹{bill.finalAmount.toLocaleString('en-IN')}</span></div>
-                        <div className="flex justify-between py-0.5 text-orange-600"><span>Making Charges ({bill.makingChargePercentage}%):</span><span>+ ₹{bill.makingChargeAmount.toLocaleString('en-IN')}</span></div>
-                        <div className="flex justify-between py-1 font-bold text-lg border-t-2 border-b-2 border-brand-charcoal my-1"><span>Grand Total:</span><span>₹{bill.grandTotal.toLocaleString('en-IN')}</span></div>
+                        <div className="flex justify-between py-0.5 text-orange-600"><span>Extra Charges ({bill.extraChargePercentage}%):</span><span>+ ₹{bill.extraChargeAmount.toLocaleString('en-IN')}</span></div>
+                        <div className="flex justify-between py-1 font-bold text-base border-t-2 border-b-2 border-brand-charcoal my-1"><span>Grand Total:</span><span>₹{bill.grandTotal.toLocaleString('en-IN')}</span></div>
                         <div className="flex justify-between py-0.5 text-green-600 font-semibold"><span>Amount Paid:</span><span>₹{bill.amountPaid.toLocaleString('en-IN')}</span></div>
                         <div className="flex justify-between py-0.5 text-red-600 font-semibold"><span>Balance Due:</span><span>₹{bill.balance.toLocaleString('en-IN')}</span></div>
                     </div>
                 </footer>
-                 <div className="text-center text-xs text-gray-500 mt-2">
+                 <div className="text-center text-[9px] text-gray-500 mt-2">
                     Thank you for your business!
                 </div>
+                 <footer className="absolute bottom-4 left-8 right-8 text-center text-[8px] text-gray-500">
+                    <p className="font-bold">DEVAGIRIKAR JEWELLERYS</p>
+                    <p>1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot.</p>
+                    <p>GSTIN: 29BSWPD7616JZ0 | Phone: 9008604004 / 8618748300</p>
+                </footer>
+                <img src={logoUrl} alt="Logo" className="absolute bottom-4 right-8 w-12 h-12 object-contain opacity-50" />
             </div>
         </div>
     );
@@ -172,7 +178,7 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = () => {
   const [billType, setBillType] = useState<BillType>(BillType.ESTIMATE);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [lessWeight, setLessWeight] = useState('');
-  const [makingChargePercentage, setMakingChargePercentage] = useState('');
+  const [extraChargePercentage, setExtraChargePercentage] = useState('');
   
   const selectedCustomer = useMemo(() => {
     return customers.find(c => c.id === selectedCustomerId);
@@ -185,13 +191,13 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = () => {
   const calculations = useMemo(() => {
     const totalAmount = selectedItems.reduce((sum, item) => sum + item.price, 0);
     const finalAmount = totalAmount - (parseFloat(bargainedAmount) || 0);
-    const makingChargeAmount = finalAmount * ((parseFloat(makingChargePercentage) || 0) / 100);
-    const grandTotal = finalAmount + makingChargeAmount;
+    const extraChargeAmount = finalAmount * ((parseFloat(extraChargePercentage) || 0) / 100);
+    const grandTotal = finalAmount + extraChargeAmount;
     const totalWeight = selectedItems.reduce((sum, item) => sum + item.weight, 0);
     const netWeight = totalWeight - (parseFloat(lessWeight) || 0);
 
-    return { totalAmount, finalAmount, makingChargeAmount, grandTotal, totalWeight, netWeight };
-  }, [selectedItems, bargainedAmount, makingChargePercentage, lessWeight]);
+    return { totalAmount, finalAmount, extraChargeAmount, grandTotal, totalWeight, netWeight };
+  }, [selectedItems, bargainedAmount, extraChargePercentage, lessWeight]);
 
   const handleAddItem = (item: JewelryItem) => {
       setSelectedItems(prev => [...prev, { itemId: item.id, name: item.name, weight: item.weight, price: item.price, imageUrl: item.imageUrl }]);
@@ -250,7 +256,7 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = () => {
       totalAmount: calculations.totalAmount,
       bargainedAmount: parseFloat(bargainedAmount) || 0,
       lessWeight: parseFloat(lessWeight) || 0,
-      makingChargePercentage: parseFloat(makingChargePercentage) || 0,
+      extraChargePercentage: parseFloat(extraChargePercentage) || 0,
       amountPaid: parseFloat(amountPaid) || 0,
     });
     
@@ -265,14 +271,18 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = () => {
     setAmountPaid('');
     setBargainedAmount('');
     setLessWeight('');
-    setMakingChargePercentage('');
+    setExtraChargePercentage('');
     setBillType(BillType.ESTIMATE);
     alert('Bill created successfully!');
   };
 
   return (
     <div>
-      <h1 className="text-4xl font-serif font-bold text-brand-charcoal mb-8">Create Bill</h1>
+      <div className="text-center md:text-left mb-8">
+        <h1 className="text-4xl md:text-5xl font-serif tracking-wide text-brand-charcoal" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.1)' }}>
+            Create Bill
+        </h1>
+      </div>
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Side: Customer and Item Selection */}
         <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-md space-y-4">
@@ -334,7 +344,7 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = () => {
                     <div className="flex justify-between"><span>Subtotal:</span><span>₹{calculations.totalAmount.toLocaleString('en-IN')}</span></div>
                     <div className="flex justify-between"><span>Discount:</span><span className="text-green-600">- ₹{(parseFloat(bargainedAmount) || 0).toLocaleString('en-IN')}</span></div>
                     <div className="flex justify-between font-semibold"><span>Amount:</span><span>₹{calculations.finalAmount.toLocaleString('en-IN')}</span></div>
-                     <div className="flex justify-between"><span>Making Charges ({(parseFloat(makingChargePercentage) || 0)}%):</span><span className="text-orange-600">+ ₹{calculations.makingChargeAmount.toLocaleString('en-IN')}</span></div>
+                     <div className="flex justify-between"><span>Extra Charges ({(parseFloat(extraChargePercentage) || 0)}%):</span><span className="text-orange-600">+ ₹{calculations.extraChargeAmount.toLocaleString('en-IN')}</span></div>
                     <div className="flex justify-between font-bold text-lg border-t pt-2 mt-2"><span>Grand Total:</span><span className="text-brand-gold-dark">₹{calculations.grandTotal.toLocaleString('en-IN')}</span></div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -342,7 +352,7 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = () => {
                     <div><label className="block text-sm font-medium">Discount (₹)</label><input type="number" value={bargainedAmount} onChange={e => setBargainedAmount(e.target.value)} className="w-full p-2 border rounded" placeholder="0.00"/></div>
                 </div>
                  <div className="grid grid-cols-2 gap-4">
-                    <div><label className="block text-sm font-medium">Making Charge (%)</label><input type="number" value={makingChargePercentage} onChange={e => setMakingChargePercentage(e.target.value)} className="w-full p-2 border rounded" placeholder="0"/></div>
+                    <div><label className="block text-sm font-medium">Extra Charge (%)</label><input type="number" value={extraChargePercentage} onChange={e => setExtraChargePercentage(e.target.value)} className="w-full p-2 border rounded" placeholder="0"/></div>
                     <div><label className="block text-sm font-medium">Amount Paid (₹)</label><input type="number" value={amountPaid} onChange={e => setAmountPaid(e.target.value)} className="w-full p-2 border rounded" placeholder="0.00"/></div>
                 </div>
                 <div>

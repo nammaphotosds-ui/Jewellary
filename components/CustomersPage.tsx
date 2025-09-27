@@ -139,6 +139,12 @@ const CustomerProfileTemplate: React.FC<{customer: Customer, bills: Bill[]}> = (
                          </div>
                     </div>
                 </main>
+                 <footer className="absolute bottom-8 left-12 right-12 text-center text-xs text-gray-600">
+                    <p className="font-bold">DEVAGIRIKAR JEWELLERYS</p>
+                    <p>1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot.</p>
+                    <p>GSTIN: 29BSWPD7616JZ0 | Phone: 9008604004 / 8618748300</p>
+                </footer>
+                <img src={logoUrl} alt="Logo" className="absolute bottom-8 right-12 w-16 h-16 object-contain opacity-50" />
             </div>
         </div>
     );
@@ -265,15 +271,19 @@ const CustomersPage: React.FC = () => {
 
   return (
     <div>
-        <div className="hidden md:flex justify-between items-center mb-8">
-            <h1 className="text-4xl font-serif font-bold text-brand-charcoal">Customers</h1>
-            <button onClick={() => setIsModalOpen(true)} className="bg-brand-gold text-brand-charcoal px-6 py-2 rounded-lg font-semibold hover:bg-brand-gold-dark transition flex items-center shadow-md">
+        <div className="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-4">
+            <div className="text-center md:text-left">
+                <h1 className="text-4xl md:text-5xl font-serif tracking-wide text-brand-charcoal" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.1)' }}>
+                    Customers
+                </h1>
+            </div>
+            <button onClick={() => setIsModalOpen(true)} className="hidden md:flex bg-brand-gold text-brand-charcoal px-6 py-2 rounded-lg font-semibold hover:bg-brand-gold-dark transition flex items-center shadow-md">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
                 Add New Customer
             </button>
         </div>
 
-        <button onClick={() => setIsModalOpen(true)} className="md:hidden fixed bottom-24 right-4 bg-brand-gold text-brand-charcoal w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-20">
+        <button onClick={() => setIsModalOpen(true)} className="md:hidden fixed bottom-24 right-6 bg-brand-gold text-brand-charcoal w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-20" style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)' }}>
             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
         </button>
 

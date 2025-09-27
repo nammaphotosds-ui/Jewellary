@@ -11,7 +11,7 @@ interface AppContextType {
   addInventoryItem: (item: Omit<JewelryItem, 'id' | 'serialNo' | 'dateAdded'>) => Promise<void>;
   deleteInventoryItem: (itemId: string) => Promise<void>;
   addCustomer: (customer: Omit<Customer, 'id' | 'joinDate' | 'pendingBalance'>) => Promise<void>;
-  createBill: (bill: Omit<Bill, 'id' | 'balance' | 'date' | 'customerName' | 'finalAmount' | 'netWeight' | 'makingChargeAmount' | 'grandTotal'>) => Promise<Bill>;
+  createBill: (bill: Omit<Bill, 'id' | 'balance' | 'date' | 'customerName' | 'finalAmount' | 'netWeight' | 'extraChargeAmount' | 'grandTotal'>) => Promise<Bill>;
   getCustomerById: (id: string) => Customer | undefined;
   getBillsByCustomerId: (id: string) => Bill[];
   getInventoryItemById: (id: string) => JewelryItem | undefined;
@@ -131,10 +131,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     await saveDataToDrive({ inventory, customers: newCustomers, bills });
   };
 
-  const createBill = async (billData: Omit<Bill, 'id' | 'balance' | 'date' | 'customerName' | 'finalAmount' | 'netWeight' | 'makingChargeAmount' | 'grandTotal'>): Promise<Bill> => {
+  const createBill = async (billData: Omit<Bill, 'id' | 'balance' | 'date' | 'customerName' | 'finalAmount' | 'netWeight' | 'extraChargeAmount' | 'grandTotal'>): Promise<Bill> => {
     const finalAmount = billData.totalAmount - billData.bargainedAmount;
-    const makingChargeAmount = finalAmount * (billData.makingChargePercentage / 100);
-    const grandTotal = finalAmount + makingChargeAmount;
+    const extraChargeAmount = finalAmount * (billData.extraChargePercentage / 100);
+    const grandTotal = finalAmount + extraChargeAmount;
     const balance = grandTotal - billData.amountPaid;
     
     const totalWeight = billData.items.reduce((sum, item) => sum + item.weight, 0);
@@ -149,7 +149,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       customerName: customer.name,
       finalAmount,
       netWeight,
-      makingChargeAmount,
+      extraChargeAmount,
       grandTotal,
       balance,
       date: new Date().toISOString(),

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import useLocalStorage from '../hooks/useLocalStorage';
 import type { GoogleTokenResponse } from '../types';
@@ -19,8 +18,10 @@ const SettingsPage: React.FC = () => {
 
     return (
         <div>
-            <h1 className="text-3xl md:text-4xl font-serif font-bold text-brand-charcoal mb-2">Settings</h1>
-            <p className="text-gray-600 mb-8">Manage integrations and application settings.</p>
+            <div className="text-center md:text-left mb-8">
+                <h1 className="text-4xl md:text-5xl font-serif tracking-wide text-brand-charcoal" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.1)' }}>Settings</h1>
+                 <p className="text-md text-brand-gray mt-2">Manage integrations and application settings.</p>
+            </div>
 
             <div className="bg-white p-6 rounded-lg shadow-md border">
                 <h2 className="text-xl font-bold mb-2">Google Drive Integration</h2>
