@@ -17,6 +17,168 @@ const Avatar: React.FC<{ name: string; className?: string }> = ({ name, classNam
     );
 };
 
+// Helper function to convert numbers to Indian currency words (Copied from BillingPage)
+const numberToWords = (num: number): string => {
+    const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+    const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+    const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+    const convertLessThanOneThousand = (n: number): string => {
+        let result = '';
+        if (n >= 100) {
+            result += ones[Math.floor(n / 100)] + ' Hundred';
+            n %= 100;
+            if (n > 0) result += ' ';
+        }
+        if (n >= 20) {
+            result += tens[Math.floor(n / 10)];
+            n %= 10;
+            if (n > 0) result += ' ';
+        }
+        if (n >= 10) {
+            return result + teens[n - 10];
+        }
+        if (n > 0) {
+            result += ones[n];
+        }
+        return result;
+    };
+    
+    if (num === 0) return 'Rupees Zero Only';
+
+    const [integerPartStr, decimalPartStr] = num.toFixed(2).split('.');
+    const integerPart = parseInt(integerPartStr, 10);
+    const decimalPart = parseInt(decimalPartStr, 10);
+
+    let integerWords = '';
+    if (integerPart > 0) {
+        const crores = Math.floor(integerPart / 10000000);
+        const lakhs = Math.floor((integerPart % 10000000) / 100000);
+        const thousands = Math.floor((integerPart % 100000) / 1000);
+        const remainder = integerPart % 1000;
+        
+        if (crores > 0) integerWords += convertLessThanOneThousand(crores) + ' Crore ';
+        if (lakhs > 0) integerWords += convertLessThanOneThousand(lakhs) + ' Lakh ';
+        if (thousands > 0) integerWords += convertLessThanOneThousand(thousands) + ' Thousand ';
+        if (remainder > 0) integerWords += convertLessThanOneThousand(remainder);
+    } else {
+        integerWords = 'Zero';
+    }
+
+
+    let words = 'Rupees ' + integerWords.trim();
+    if (decimalPart > 0) {
+        words += ' and ' + convertLessThanOneThousand(decimalPart) + ' Paise';
+    }
+    return words.trim().replace(/\s+/g, ' ') + ' Only';
+};
+
+// Invoice Template for PDF Generation (Copied from BillingPage)
+const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, customer}) => {
+    const totalGrossWeight = bill.items.reduce((sum, item) => sum + item.weight, 0);
+    const averageRatePerGram = totalGrossWeight > 0 ? bill.totalAmount / totalGrossWeight : 0;
+    const lessWeightValue = bill.lessWeight * averageRatePerGram;
+    const actualSubtotal = bill.totalAmount - lessWeightValue;
+    const logoUrl = "https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163";
+    
+    return (
+        <div className="p-8 text-gray-800 bg-white relative font-sans" style={{width: '794px', height: '559px', display: 'flex', flexDirection: 'column'}}>
+            {/* Background Logo */}
+            <div className="absolute inset-0 flex items-center justify-center z-0">
+                <img src={logoUrl} alt="Logo" className="w-1/2 h-1/2 object-contain opacity-10" />
+            </div>
+            
+            <div className="relative z-10 flex flex-col flex-1">
+                 <header className="flex justify-between items-center border-b-2 border-brand-gold pb-4">
+                    <div className="flex items-center">
+                        <img src={logoUrl} alt="Logo" className="w-24 h-24 object-contain mr-4" />
+                        <div>
+                            <h1 className="text-3xl font-serif font-bold text-brand-gold-dark">DEVAGIRIKAR JEWELLERYS</h1>
+                            <p className="text-gray-600 text-sm">EXCLUSIVE JEWELLERY SHOWROOM</p>
+                        </div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                        <h2 className="text-4xl font-serif font-bold uppercase text-brand-charcoal-light tracking-wider">{bill.type}</h2>
+                        <p className="text-sm mt-1"><strong>Bill No:</strong> {bill.id}</p>
+                        <p className="text-sm"><strong>Date:</strong> {new Date(bill.date).toLocaleDateString()}</p>
+                    </div>
+                </header>
+
+                <div className="flex justify-between mt-6 text-sm">
+                    <div>
+                        <h3 className="font-bold text-gray-500 uppercase tracking-wider text-xs mb-1">Billed To:</h3>
+                        <p className="font-bold text-base">{customer.name} ({customer.id})</p>
+                        <p>{customer.phone}</p>
+                    </div>
+                     <div className="text-right">
+                        <p><strong>GSTIN:</strong> 29BSWPD7616JZ0</p>
+                        <p><strong>Phone:</strong> 9008604004 / 8618748300</p>
+                    </div>
+                </div>
+
+                <main className="flex-1 mt-4">
+                     <table className="w-full text-left text-sm">
+                        <thead className="bg-brand-charcoal text-white rounded-t-lg">
+                            <tr>
+                                <th className="px-3 py-2 font-bold w-1/2">Item Name</th>
+                                <th className="px-3 py-2 text-right font-bold">Weight (g)</th>
+                                <th className="px-3 py-2 text-right font-bold">Price (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {bill.items.map(item => (
+                                <tr key={item.itemId} className="border-b odd:bg-gray-50">
+                                    <td className="px-3 py-2">{item.name}</td>
+                                    <td className="px-3 py-2 text-right">{item.weight.toFixed(3)}</td>
+                                    <td className="px-3 py-2 text-right">{item.price.toLocaleString('en-IN')}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </main>
+                
+                <div className="mt-auto pt-2">
+                    <div className="flex justify-end">
+                        <div className="w-1/2 text-sm">
+                            <div className="flex justify-between py-1"><span>Total Gross Wt:</span><span>{totalGrossWeight.toFixed(3)} g</span></div>
+                            <div className="flex justify-between py-1 text-blue-600"><span>Less Wt:</span><span>- {bill.lessWeight.toFixed(3)} g</span></div>
+                            <div className="flex justify-between py-1 font-bold border-t mt-1 pt-1"><span>Net Wt:</span><span>{bill.netWeight.toFixed(3)} g</span></div>
+                            <hr className="my-1"/>
+                            <div className="flex justify-between py-1"><span>Subtotal (Gross):</span><span>₹{bill.totalAmount.toLocaleString('en-IN')}</span></div>
+                            {bill.lessWeight > 0 && (
+                                <div className="flex justify-between py-1 text-blue-600"><span>Less Wt Value:</span><span>- ₹{lessWeightValue.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></div>
+                            )}
+                            <div className="flex justify-between py-1 font-bold"><span>Net Amount:</span><span>₹{actualSubtotal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></div>
+                            <div className="flex justify-between py-1 text-orange-600"><span>Extra Charges ({bill.extraChargePercentage}%):</span><span>+ ₹{bill.extraChargeAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></div>
+                            <div className="flex justify-between py-1 text-green-600"><span>Discount:</span><span>- ₹{bill.bargainedAmount.toLocaleString('en-IN')}</span></div>
+                            
+                            <div className="border-t-2 border-b-2 border-brand-charcoal my-2 py-1">
+                                <div className="flex justify-between font-bold text-lg"><span>Grand Total:</span><span>₹{bill.grandTotal.toLocaleString('en-IN')}</span></div>
+                                <p className="text-right text-xs italic text-gray-600 pr-1 -mt-1">{numberToWords(bill.grandTotal)}</p>
+                            </div>
+
+                            <div className="mt-1">
+                                <div className="flex justify-between py-0.5 text-green-600 font-semibold"><span>Amount Paid:</span><span>₹{bill.amountPaid.toLocaleString('en-IN')}</span></div>
+                                <p className="text-right text-[10px] italic text-gray-600 pr-1">{numberToWords(bill.amountPaid)}</p>
+                            </div>
+                            <div className="flex justify-between py-0.5 text-red-600 font-semibold"><span>Balance Due:</span><span>₹{bill.balance.toLocaleString('en-IN')}</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                 <footer className="px-8 pb-4 pt-2 flex justify-between items-end">
+                    <div className="text-left text-xs text-gray-600">
+                        <p className="font-bold">DEVAGIRIKAR JEWELLERYS</p>
+                        <p>1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot.</p>
+                        <p className="mt-1">GSTIN: 29BSWPD7616JZ0 | Phone: 9008604004 / 8618748300</p>
+                    </div>
+                    <img src={logoUrl} alt="Logo" className="w-16 h-16 object-contain" />
+                </footer>
+            </div>
+        </div>
+    );
+};
+
 // --- PDF Template (For Generation Only) ---
 const CustomerProfileTemplate: React.FC<{customer: Customer, bills: Bill[]}> = ({customer, bills}) => {
     const logoUrl = "https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163";
@@ -103,7 +265,12 @@ const CustomerProfileTemplate: React.FC<{customer: Customer, bills: Bill[]}> = (
 };
 
 // --- Responsive On-Screen View ---
-const OnScreenCustomerProfile: React.FC<{customer: Customer, bills: Bill[]}> = ({customer, bills}) => {
+const OnScreenCustomerProfile: React.FC<{
+    customer: Customer, 
+    bills: Bill[],
+    onBillClick: (bill: Bill) => void,
+    generatingBillId: string | null
+}> = ({customer, bills, onBillClick, generatingBillId}) => {
     return (
         <div className="space-y-6">
             <div className="bg-white p-6 rounded-lg shadow-md flex flex-col md:flex-row items-center gap-6 border">
@@ -137,7 +304,15 @@ const OnScreenCustomerProfile: React.FC<{customer: Customer, bills: Bill[]}> = (
                         <tbody>
                             {bills.map(bill => (
                                 <tr key={bill.id} className="border-b">
-                                    <td className="p-2 text-xs font-mono">{bill.id}</td>
+                                    <td className="p-2 text-xs font-mono">
+                                         <button
+                                            onClick={() => onBillClick(bill)}
+                                            disabled={!!generatingBillId}
+                                            className="text-blue-600 hover:underline disabled:text-gray-500 disabled:no-underline"
+                                        >
+                                            {generatingBillId === bill.id ? 'Generating...' : bill.id}
+                                        </button>
+                                    </td>
                                     <td className="p-2 text-sm">{new Date(bill.date).toLocaleDateString()}</td>
                                     <td className="p-2 text-sm">{bill.type}</td>
                                     <td className="p-2 text-sm text-right">{bill.grandTotal.toLocaleString('en-IN')}</td>
@@ -158,8 +333,9 @@ const CustomerDetailsView: React.FC<{customer: Customer, onBack: () => void}> = 
     const { getBillsByCustomerId, deleteCustomer } = useAppContext();
     const bills = getBillsByCustomerId(customer.id);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [isGeneratingBillPdf, setIsGeneratingBillPdf] = useState<string | null>(null);
 
-    const generatePdfBlob = async (): Promise<Blob | null> => {
+    const generateProfilePdfBlob = async (): Promise<Blob | null> => {
         // @ts-ignore
         const { jsPDF } = window.jspdf;
         // @ts-ignore
@@ -191,10 +367,43 @@ const CustomerDetailsView: React.FC<{customer: Customer, onBack: () => void}> = 
         document.body.removeChild(tempContainer);
         return pdf.output('blob');
     };
+    
+    const generateBillPdfBlob = async (bill: Bill): Promise<Blob | null> => {
+        // @ts-ignore
+        const { jsPDF } = window.jspdf;
+        // @ts-ignore
+        const html2canvas = window.html2canvas;
+
+        const tempContainer = document.createElement('div');
+        tempContainer.style.position = 'fixed';
+        tempContainer.style.left = '-9999px';
+        document.body.appendChild(tempContainer);
+
+        const root = ReactDOM.createRoot(tempContainer);
+        root.render(<InvoiceTemplate bill={bill} customer={customer} />);
+
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const elementToCapture = tempContainer.children[0] as HTMLElement;
+
+        if (!elementToCapture) {
+            root.unmount();
+            document.body.removeChild(tempContainer);
+            return null;
+        }
+
+        const canvas = await html2canvas(elementToCapture, { scale: 3 });
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [794, 559] });
+        pdf.addImage(imgData, 'JPEG', 0, 0, 794, 559);
+
+        root.unmount();
+        document.body.removeChild(tempContainer);
+        return pdf.output('blob');
+    };
 
     const handleDownloadPdf = async () => {
         setIsProcessing(true);
-        const blob = await generatePdfBlob();
+        const blob = await generateProfilePdfBlob();
         if (blob) {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -213,7 +422,7 @@ const CustomerDetailsView: React.FC<{customer: Customer, onBack: () => void}> = 
     const handleSharePdf = async () => {
         setIsProcessing(true);
         try {
-            const blob = await generatePdfBlob();
+            const blob = await generateProfilePdfBlob();
             if (!blob) throw new Error("Failed to generate PDF blob.");
 
             const file = new File([blob], `profile-${customer.id}.pdf`, { type: 'application/pdf' });
@@ -236,6 +445,30 @@ const CustomerDetailsView: React.FC<{customer: Customer, onBack: () => void}> = 
         }
     };
     
+    const handleBillDownload = async (bill: Bill) => {
+        setIsGeneratingBillPdf(bill.id);
+        try {
+            const blob = await generateBillPdfBlob(bill);
+            if (blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${bill.type.toLowerCase()}-${bill.id}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } else {
+                alert('Failed to generate PDF for this bill.');
+            }
+        } catch (error) {
+            console.error("Error generating bill PDF:", error);
+            alert('An error occurred while generating the PDF.');
+        } finally {
+            setIsGeneratingBillPdf(null);
+        }
+    };
+
     const handleDelete = async () => {
         if (window.confirm(`Are you sure you want to delete ${customer.name}? This will also delete all their transaction history. This action cannot be undone.`)) {
             await deleteCustomer(customer.id);
@@ -270,7 +503,12 @@ const CustomerDetailsView: React.FC<{customer: Customer, onBack: () => void}> = 
                     </button>
                 </div>
             </div>
-            <OnScreenCustomerProfile customer={customer} bills={bills}/>
+            <OnScreenCustomerProfile 
+                customer={customer} 
+                bills={bills}
+                onBillClick={handleBillDownload}
+                generatingBillId={isGeneratingBillPdf}
+            />
         </div>
     );
 };
