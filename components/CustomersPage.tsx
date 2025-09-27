@@ -55,7 +55,7 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
     const logoUrl = "https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163";
 
     return (
-        <div className="bg-white text-black font-sans relative" style={{ width: '794px', minHeight: '1123px', boxSizing: 'border-box' }}>
+        <div className="bg-white text-black font-sans relative" style={{ width: '794px', minHeight: '560px', boxSizing: 'border-box' }}>
             {/* Watermark */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-0 opacity-[0.12]">
                 <img src={logoUrl} alt="Watermark" className="w-[450px]"/>
@@ -63,9 +63,9 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
             
             <div className="relative z-10 p-10 flex flex-col h-full">
                 {/* Header */}
-                <header>
-                    <div className="flex justify-between items-start pb-2">
-                         <img src={logoUrl} alt="Logo" className="w-48 h-auto" />
+                <header className="pb-2">
+                    <div className="flex justify-between items-center">
+                        <img src={logoUrl} alt="Logo" className="w-36 h-auto" />
                         <div className="text-right">
                             <h1 className="text-4xl font-bold font-sans tracking-wide">{bill.type}</h1>
                             <p className="text-sm"><strong>Bill No:</strong> {bill.id}</p>
@@ -114,14 +114,23 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                 <section className="mt-4">
                     <div className="flex justify-between">
                          <div className="w-2/5 text-sm space-y-1 pr-4">
-                             <div className="font-bold border-b pb-1 mb-2">Payment Details</div>
-                             <div className="flex justify-between"><span>Payable Amount:</span> <span>₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
-                             <div className="flex justify-between"><span>Amount Paid:</span> <span>₹{amountPaid.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
-                             <div className="flex justify-between font-bold border-t pt-1 mt-1"><span>Balance Due:</span> <span>₹{bill.balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
-                             <div className="pt-4">
-                                 <p className="text-xs font-bold">Amount in words:</p>
-                                 <p className="text-xs italic">{numberToWords(grandTotal)}</p>
-                             </div>
+                            <div className="font-bold border-b pb-1 mb-2">Payment Details</div>
+                            <div className="flex justify-between font-bold">
+                                <span>Payable Amount:</span> 
+                                <span>₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                            </div>
+                            <p className="text-xs italic">{numberToWords(grandTotal)}</p>
+
+                            <div className="flex justify-between mt-2">
+                                <span>Amount Paid:</span> 
+                                <span>₹{amountPaid.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                            </div>
+                            <p className="text-xs italic">{numberToWords(amountPaid)}</p>
+
+                            <div className="flex justify-between font-bold border-t pt-1 mt-2">
+                                <span>Balance Due:</span> 
+                                <span>₹{bill.balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                            </div>
                          </div>
                         <div className="w-1/2 text-sm">
                             <div className="flex justify-between p-1"><span>Total Gross Wt:</span><span>{totalGrossWeight.toFixed(3)} g</span></div>
@@ -151,15 +160,15 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
 const CustomerProfileTemplate: React.FC<{customer: Customer, bills: Bill[]}> = ({customer, bills}) => {
      const logoUrl = "https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163";
     return (
-        <div className="bg-white text-black font-sans relative" style={{ width: '794px', minHeight: '1123px', boxSizing: 'border-box' }}>
+        <div className="bg-white text-black font-sans relative" style={{ width: '794px', minHeight: '560px', boxSizing: 'border-box' }}>
             {/* Watermark */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-0 opacity-[0.12]">
                 <img src={logoUrl} alt="Watermark" className="w-[450px]"/>
             </div>
             <div className="relative z-10 p-10 flex flex-col h-full">
-                <header>
-                     <div className="flex justify-between items-start pb-2">
-                        <img src={logoUrl} alt="Logo" className="w-48 h-auto" />
+                <header className="pb-2">
+                     <div className="flex justify-between items-center">
+                        <img src={logoUrl} alt="Logo" className="w-36 h-auto" />
                         <div className="text-right">
                             <h1 className="text-4xl font-bold font-sans">Customer Statement</h1>
                             <p className="text-sm">Date Generated: {new Date().toLocaleDateString()}</p>
@@ -348,7 +357,7 @@ const CustomerDetailsView: React.FC<{customer: Customer, onBack: () => void}> = 
 
         const canvas = await html2canvas(elementToCapture, { scale: 2, useCORS: true });
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
-        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a5' });
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = pdf.internal.pageSize.getHeight();
         pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
