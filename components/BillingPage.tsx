@@ -15,7 +15,7 @@ const numberToWords = (num: number): string => {
     const toWords = (n: number): string => {
         if (n < 20) return a[n];
         const digit = n % 10;
-        return b[Math.floor(n / 10)] + (digit !== 0 ? '-' : '') + a[digit];
+        return b[Math.floor(n / 10)] + (digit !== 0 ? '' : '') + a[digit];
     };
     
     if (integerPart === 0) return 'Rupees Zero Only';
@@ -44,100 +44,105 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
     const logoUrl = "https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163";
 
     return (
-        <div className="bg-white text-black font-sans relative" style={{ width: '794px', minHeight: '560px', boxSizing: 'border-box' }}>
+        <div className="bg-brand-cream text-brand-charcoal font-sans relative" style={{ width: '842px', height: '595px', boxSizing: 'border-box' }}>
+            {/* Decorative Border */}
+            <div className="absolute inset-0 border-[1px] border-brand-gold-dark/30 z-0"></div>
+            <div className="absolute inset-2 border-[8px] border-brand-pale-gold z-0"></div>
+            <div className="absolute inset-4 border-[1px] border-brand-gold-dark/50 z-0"></div>
+
             {/* Watermark */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-0 opacity-[0.12]">
-                <img src={logoUrl} alt="Watermark" className="w-[450px]"/>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-0 opacity-[0.06]">
+                <img src={logoUrl} alt="Watermark" className="w-[350px]"/>
             </div>
             
-            <div className="relative z-10 p-10 flex flex-col h-full">
+            <div className="relative z-10 p-8 flex flex-col h-full">
                 {/* Header */}
-                <header className="pb-2">
-                    <div className="flex justify-between items-center">
-                        <img src={logoUrl} alt="Logo" className="w-36 h-auto" />
-                        <div className="text-right">
-                            <h1 className="text-4xl font-bold font-sans tracking-wide">{bill.type}</h1>
-                            <p className="text-sm"><strong>Bill No:</strong> {bill.id}</p>
-                            <p className="text-sm"><strong>Date:</strong> {new Date(bill.date).toLocaleDateString()}</p>
+                <header className="flex justify-between items-center pb-4 mb-6 border-b border-brand-gold-dark/30">
+                    <div className="flex items-center">
+                        <img src={logoUrl} alt="Logo" className="w-20 h-20" />
+                        <div className="ml-4">
+                            <h2 className="text-3xl font-serif font-bold text-brand-charcoal">DEVAGIRIKAR JEWELLERYS</h2>
+                            <p className="text-xs tracking-widest text-brand-gray">EXCLUSIVE JEWELLERY SHOWROOM</p>
                         </div>
                     </div>
-                    <div className="border-b-2 border-[#daa520] mb-6 mt-2"></div>
+                    <div className="text-right">
+                        <h1 className="text-5xl font-serif font-light text-brand-gold-dark tracking-widest">{bill.type}</h1>
+                        <p className="text-sm mt-2 font-mono"><strong>Bill No:</strong> {bill.id}</p>
+                        <p className="text-sm font-mono"><strong>Date:</strong> {new Date(bill.date).toLocaleDateString()}</p>
+                    </div>
                 </header>
 
-                {/* Customer & Shop Details */}
-                <section className="flex justify-between text-sm mb-6">
-                    <div>
-                        <p className="text-gray-500 text-xs font-bold">BILLED TO:</p>
-                        <p className="font-bold text-base">{customer.name} ({customer.id})</p>
-                        <p>{customer.phone}</p>
-                    </div>
-                    <div className="text-right">
-                        <h2 className="text-xl font-serif font-bold text-[#daa520]">DEVAGIRIKAR JEWELLERYS</h2>
-                        <p className="text-xs tracking-widest text-gray-600">EXCLUSIVE JEWELLERY SHOWROOM</p>
-                    </div>
+                {/* Customer Details */}
+                <section className="text-sm mb-6">
+                    <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">Billed To</p>
+                    <p className="font-bold text-lg text-brand-charcoal font-serif">{customer.name} ({customer.id})</p>
+                    <p className="text-brand-gray">{customer.phone}</p>
                 </section>
 
                 {/* Items Table */}
                 <main className="flex-grow">
                      <table className="w-full text-sm">
-                        <thead>
-                            <tr className="bg-brand-charcoal text-white">
-                                <th className="font-normal p-2 text-left">Item Name</th>
-                                <th className="font-normal p-2 text-right w-32">Weight (g)</th>
-                                <th className="font-normal p-2 text-right w-32">Price (₹)</th>
+                        <thead className="border-b-2 border-brand-charcoal">
+                            <tr>
+                                <th className="font-semibold p-3 text-left tracking-wider uppercase text-brand-charcoal">Item Name</th>
+                                <th className="font-semibold p-3 text-right tracking-wider uppercase text-brand-charcoal w-32">Weight (g)</th>
+                                <th className="font-semibold p-3 text-right tracking-wider uppercase text-brand-charcoal w-32">Price (₹)</th>
                             </tr>
                         </thead>
                         <tbody>
                             {bill.items.map(item => (
-                                <tr key={item.itemId} className="border-b">
-                                    <td className="p-2">{item.name}</td>
-                                    <td className="p-2 text-right">{item.weight.toFixed(3)}</td>
-                                    <td className="p-2 text-right">{item.price.toLocaleString('en-IN')}</td>
+                                <tr key={item.itemId} className="border-b border-brand-gold-dark/20">
+                                    <td className="p-3 font-medium">{item.name}</td>
+                                    <td className="p-3 text-right font-mono">{item.weight.toFixed(3)}</td>
+                                    <td className="p-3 text-right font-mono">{item.price.toLocaleString('en-IN')}</td>
                                 </tr>
                             ))}
+                            <tr className="h-4"><td colSpan={3}></td></tr>
                         </tbody>
                     </table>
                 </main>
 
                 {/* Summary Section */}
-                <section className="mt-4">
-                    <div className="flex justify-between">
-                         <div className="w-2/5 text-sm space-y-1 pr-4">
-                            <div className="font-bold border-b pb-1 mb-2">Payment Details</div>
-                            <div className="flex justify-between font-bold">
-                                <span>Payable Amount:</span> 
-                                <span>₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                            </div>
-                            <p className="text-xs italic">{numberToWords(grandTotal)}</p>
-
-                            <div className="flex justify-between mt-2">
-                                <span>Amount Paid:</span> 
-                                <span>₹{amountPaid.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                            </div>
-                            <p className="text-xs italic">{numberToWords(amountPaid)}</p>
-
-                            <div className="flex justify-between font-bold border-t pt-1 mt-2">
-                                <span>Balance Due:</span> 
-                                <span>₹{bill.balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                            </div>
-                         </div>
-                        <div className="w-1/2 text-sm">
-                            <div className="flex justify-between p-1"><span>Total Gross Wt:</span><span>{totalGrossWeight.toFixed(3)} g</span></div>
-                            <div className="flex justify-between p-1 text-blue-600"><span>Less Wt:</span><span>- {bill.lessWeight.toFixed(3)} g</span></div>
-                            <div className="flex justify-between p-1 font-bold border-t"><span>Net Wt:</span><span>{netWeight.toFixed(3)} g</span></div>
-                            <div className="flex justify-between p-1 mt-2"><span>Subtotal (Gross):</span><span>₹{bill.totalAmount.toLocaleString('en-IN')}</span></div>
-                            <div className="flex justify-between p-1 font-bold"><span>Net Amount:</span><span>₹{finalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
-                            {extraChargeAmount > 0 && <div className="flex justify-between p-1 text-orange-600"><span>Extra Charges ({bill.extraChargePercentage}%):</span><span>+ ₹{extraChargeAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
-                            {bargainedAmount > 0 && <div className="flex justify-between p-1 text-green-600"><span>Discount:</span><span>- ₹{bargainedAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
-                             <div className="flex justify-between p-2 mt-2 font-bold text-lg border-t-2 border-black"><span>PAYABLE AMOUNT:</span><span>₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
+                <section className="mt-auto pt-4 border-t border-brand-gold-dark/30">
+                    <div className="grid grid-cols-10 gap-6">
+                        <div className="col-span-5 text-sm space-y-2">
+                             <p className="text-xs italic text-gray-600 capitalize">{numberToWords(grandTotal)}</p>
+                             <div className="mt-6 text-xs text-brand-gray">
+                                <p className="font-bold">Terms & Conditions:</p>
+                                <p>1. Goods once sold will not be taken back.</p>
+                                <p>2. Interest will be charged on overdue bills.</p>
+                             </div>
                         </div>
+                        <div className="col-span-5 text-sm">
+                            <div className="space-y-1">
+                                <div className="flex justify-between"><span>Gross Wt:</span><span>{totalGrossWeight.toFixed(3)} g</span></div>
+                                {bill.lessWeight > 0 && <div className="flex justify-between"><span>Less Wt:</span><span>- {bill.lessWeight.toFixed(3)} g</span></div>}
+                                <div className="flex justify-between font-bold border-t border-gray-200 mt-1 pt-1"><span>Net Wt:</span><span>{netWeight.toFixed(3)} g</span></div>
+                            </div>
+                            <div className="space-y-1 mt-3 pt-3 border-t border-gray-200">
+                                <div className="flex justify-between"><span>Subtotal:</span><span>₹{finalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
+                                {extraChargeAmount > 0 && <div className="flex justify-between"><span>Charges ({bill.extraChargePercentage}%):</span><span>+ ₹{extraChargeAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
+                                {bargainedAmount > 0 && <div className="flex justify-between text-green-600"><span>Discount:</span><span>- ₹{bargainedAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
+                                <div className="flex justify-between font-bold text-lg mt-1 pt-1 border-t-2 border-brand-charcoal"><span>Grand Total:</span><span>₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
+                            </div>
+                            <div className="space-y-1 mt-2">
+                                 <div className="flex justify-between"><span>Paid:</span><span>₹{amountPaid.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
+                                 <div className="flex justify-between font-bold text-red-600"><span>BALANCE DUE:</span><span>₹{bill.balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex justify-between items-end mt-8">
+                         <p className="text-xs text-brand-gray">Thank you for your business!</p>
+                         <div className="text-center">
+                            <div className="w-48 border-t border-brand-charcoal pt-1"></div>
+                            <p className="text-xs">Authorised Signatory</p>
+                         </div>
                     </div>
                 </section>
                 
-                <footer className="mt-auto text-center text-xs text-gray-500 border-t pt-4">
-                    <p className="font-bold">DEVAGIRIKAR JEWELLERYS</p>
-                    <p>1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot.</p>
-                    <p>Phone: 9008604004 / 8618748300 | GSTIN: 29BSWPD7616JZ0</p>
+                <footer className="absolute bottom-2 left-8 right-8 text-center text-[9px] text-gray-500">
+                    <p className="font-bold font-serif">DEVAGIRIKAR JEWELLERYS</p>
+                    <p>1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot. | Phone: 9008604004 / 8618748300 | GSTIN: 29BSWPD7616JZ0</p>
                 </footer>
             </div>
         </div>
@@ -282,7 +287,6 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = () => {
         const html2canvas = window.html2canvas;
 
         const tempContainer = document.createElement('div');
-        // CRITICAL FIX: Render element off-screen instead of visibility:hidden to ensure full rendering.
         tempContainer.style.position = 'absolute';
         tempContainer.style.left = '-9999px';
         tempContainer.style.top = '0';
@@ -300,7 +304,6 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = () => {
             return null;
         }
 
-        // Wait for all images inside the element to load
         const images = Array.from(invoiceElement.getElementsByTagName('img'));
         const imageLoadPromises = images.map(img => 
             new Promise((resolve, reject) => {
@@ -314,16 +317,23 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = () => {
         
         try {
             await Promise.all(imageLoadPromises);
+            // A small delay to ensure rendering is complete, especially for web fonts
+            await new Promise(resolve => setTimeout(resolve, 200));
         } catch (error) {
             console.error("An image failed to load for PDF generation:", error);
         }
 
-        const canvas = await html2canvas(invoiceElement, { scale: 2, useCORS: true });
+        const canvas = await html2canvas(invoiceElement, { scale: 2, useCORS: true, windowWidth: invoiceElement.scrollWidth, windowHeight: invoiceElement.scrollHeight });
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        
         const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a5' });
+        const margin = 8; // 8mm margin
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = pdf.internal.pageSize.getHeight();
-        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+        const contentWidth = pdfWidth - margin * 2;
+        const contentHeight = pdfHeight - margin * 2;
+        
+        pdf.addImage(imgData, 'JPEG', margin, margin, contentWidth, contentHeight);
 
         root.unmount();
         document.body.removeChild(tempContainer);
