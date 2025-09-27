@@ -72,52 +72,56 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
     const logoUrl = "https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163";
     
     return (
-        <div className="text-gray-800 bg-white relative font-sans" style={{width: '794px', height: '559px', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', padding: '38px'}}>
-            {/* Background Logo */}
-            <div className="absolute inset-0 flex items-center justify-center z-0">
-                <img src={logoUrl} alt="Logo" className="w-1/2 h-1/2 object-contain opacity-20" />
-            </div>
-            
-            <div className="relative z-10 flex flex-col flex-1">
-                 <header className="flex justify-between items-center border-b-2 border-brand-gold pb-4">
-                    <div className="text-left flex-shrink-0">
-                        <h2 className="text-4xl font-serif font-bold uppercase text-brand-charcoal-light tracking-wider">{bill.type}</h2>
-                        <p className="text-sm mt-1"><strong>Bill No:</strong> {bill.id}</p>
-                        <p className="text-sm"><strong>Date:</strong> {new Date(bill.date).toLocaleDateString()}</p>
-                    </div>
+        <div className="bg-white text-brand-charcoal font-sans relative" style={{ width: '794px', height: '1123px', boxSizing: 'border-box' }}>
+            {/* Watermark */}
+            <img
+                src={logoUrl}
+                alt="Watermark"
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 object-contain opacity-5 z-0"
+            />
+            <div className="relative z-10 flex flex-col h-full p-10">
+                {/* Header */}
+                <header className="flex justify-between items-start">
                     <div className="flex items-center">
-                        <div className="text-right">
-                            <h1 className="text-3xl font-serif font-bold text-brand-gold-dark">DEVAGIRIKAR JEWELLERYS</h1>
-                            <p className="text-gray-600 text-sm">EXCLUSIVE JEWELLERY SHOWROOM</p>
+                        <img src={logoUrl} alt="Logo" className="w-32 h-32 object-contain" />
+                        <div className="ml-4">
+                            <h1 className="text-4xl font-serif font-bold text-brand-gold-dark">DEVAGIRIKAR JEWELLERYS</h1>
+                            <p className="text-sm text-brand-gray">EXCLUSIVE JEWELLERY SHOWROOM</p>
                         </div>
-                        <img src={logoUrl} alt="Logo" className="w-24 h-24 object-contain ml-4" />
+                    </div>
+                    <div className="text-right">
+                        <h2 className="text-3xl font-serif font-bold text-brand-charcoal-light tracking-wider">{bill.type}</h2>
+                        <p className="mt-1"><strong>Bill No:</strong> {bill.id}</p>
+                        <p><strong>Date:</strong> {new Date(bill.date).toLocaleDateString()}</p>
                     </div>
                 </header>
+                <hr className="my-4 border-t border-brand-gold/50" />
 
-                <div className="flex justify-between mt-6 text-sm">
+                {/* Bill Info */}
+                <section className="flex justify-between items-start text-sm">
                     <div>
-                        <h3 className="font-bold text-gray-500 uppercase tracking-wider text-xs mb-1">Billed To:</h3>
-                        <p className="font-bold text-base">{customer.name} ({customer.id})</p>
-                        <p>{customer.phone}</p>
+                        <h3 className="font-bold text-gray-500 uppercase tracking-wider text-xs mb-1">Bill To:</h3>
+                        <p className="font-bold text-base">{customer.name}</p>
+                        <p className="text-brand-gray">{customer.phone}</p>
+                        <p className="text-brand-gray font-mono text-xs">ID: {customer.id}</p>
                     </div>
-                     <div className="text-right">
-                        <p><strong>GSTIN:</strong> 29BSWPD7616JZ0</p>
-                        <p><strong>Phone:</strong> 9008604004 / 8618748300</p>
-                    </div>
-                </div>
+                </section>
 
-                <main className="flex-1 mt-4">
-                     <table className="w-full text-left text-sm">
-                        <thead className="bg-brand-charcoal text-white rounded-t-lg">
+                {/* Items Table */}
+                <main className="flex-1 mt-6">
+                    <table className="w-full text-left text-sm">
+                        <thead className="bg-brand-charcoal text-white">
                             <tr>
-                                <th className="px-3 py-2 font-bold w-1/2">Item Name</th>
-                                <th className="px-3 py-2 text-right font-bold">Weight (g)</th>
-                                <th className="px-3 py-2 text-right font-bold">Price (₹)</th>
+                                <th className="px-3 py-2 font-semibold w-12">S.No.</th>
+                                <th className="px-3 py-2 font-semibold">Item Description</th>
+                                <th className="px-3 py-2 text-right font-semibold w-28">Weight (g)</th>
+                                <th className="px-3 py-2 text-right font-semibold w-32">Amount (₹)</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {bill.items.map(item => (
-                                <tr key={item.itemId} className="border-b odd:bg-gray-50">
+                            {bill.items.map((item, index) => (
+                                <tr key={item.itemId} className="border-b border-gray-200">
+                                    <td className="px-3 py-2 text-center">{index + 1}.</td>
                                     <td className="px-3 py-2">{item.name}</td>
                                     <td className="px-3 py-2 text-right">{item.weight.toFixed(3)}</td>
                                     <td className="px-3 py-2 text-right">{item.price.toLocaleString('en-IN')}</td>
@@ -126,43 +130,48 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                         </tbody>
                     </table>
                 </main>
-                
-                <div className="mt-auto pt-2">
-                    <div className="flex justify-end">
-                        <div className="w-1/2 text-sm">
-                            <div className="flex justify-between py-1"><span>Total Gross Wt:</span><span>{totalGrossWeight.toFixed(3)} g</span></div>
-                            <div className="flex justify-between py-1 text-blue-600"><span>Less Wt:</span><span>- {bill.lessWeight.toFixed(3)} g</span></div>
-                            <div className="flex justify-between py-1 font-bold border-t mt-1 pt-1"><span>Net Wt:</span><span>{bill.netWeight.toFixed(3)} g</span></div>
-                            <hr className="my-1"/>
-                            <div className="flex justify-between py-1"><span>Subtotal (Gross):</span><span>₹{bill.totalAmount.toLocaleString('en-IN')}</span></div>
-                            {bill.lessWeight > 0 && (
-                                <div className="flex justify-between py-1 text-blue-600"><span>Less Wt Value:</span><span>- ₹{lessWeightValue.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></div>
-                            )}
-                            <div className="flex justify-between py-1 font-bold"><span>Net Amount:</span><span>₹{actualSubtotal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></div>
-                            <div className="flex justify-between py-1 text-orange-600"><span>Extra Charges ({bill.extraChargePercentage}%):</span><span>+ ₹{bill.extraChargeAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></div>
-                            <div className="flex justify-between py-1 text-green-600"><span>Discount:</span><span>- ₹{bill.bargainedAmount.toLocaleString('en-IN')}</span></div>
-                            
-                            <div className="border-t-2 border-b-2 border-brand-charcoal my-2 py-1">
-                                <div className="flex justify-between font-bold text-lg"><span>Grand Total:</span><span>₹{bill.grandTotal.toLocaleString('en-IN')}</span></div>
-                                <p className="text-right text-xs italic text-gray-600 pr-1 -mt-1">{numberToWords(bill.grandTotal)}</p>
-                            </div>
 
-                            <div className="mt-1">
-                                <div className="flex justify-between py-0.5 text-green-600 font-semibold"><span>Amount Paid:</span><span>₹{bill.amountPaid.toLocaleString('en-IN')}</span></div>
-                                <p className="text-right text-[10px] italic text-gray-600 pr-1">{numberToWords(bill.amountPaid)}</p>
-                            </div>
-                            <div className="flex justify-between py-0.5 text-red-600 font-semibold"><span>Balance Due:</span><span>₹{bill.balance.toLocaleString('en-IN')}</span></div>
+                {/* Summary & Footer */}
+                <footer className="mt-auto pt-4">
+                    <div className="flex justify-between items-start text-sm">
+                        <div className="w-1/2 pr-8">
+                            <h4 className="font-semibold mb-1">Payable Amount in Words:</h4>
+                            <p className="text-xs italic text-gray-600">{numberToWords(bill.grandTotal)}</p>
+                            <h4 className="font-semibold mb-1 mt-2">Paid Amount in Words:</h4>
+                            <p className="text-xs italic text-gray-600">{numberToWords(bill.amountPaid)}</p>
+                            <h4 className="font-semibold mt-4 mb-1">Terms & Conditions:</h4>
+                            <p className="text-xs text-gray-500">All items are guaranteed to be as described. Goods once sold will not be taken back.</p>
+                        </div>
+                        <div className="w-1/2">
+                            <table className="w-full">
+                                <tbody>
+                                    <tr><td className="py-1">Gross Weight:</td><td className="text-right">{totalGrossWeight.toFixed(3)} g</td></tr>
+                                    <tr><td className="py-1">Less Weight:</td><td className="text-right">- {bill.lessWeight.toFixed(3)} g</td></tr>
+                                    <tr className="font-bold border-t border-gray-300"><td className="py-1">Net Weight:</td><td className="text-right">{bill.netWeight.toFixed(3)} g</td></tr>
+                                    
+                                    <tr className="border-t-2 border-dashed border-gray-300 mt-2"><td className="pt-2">Subtotal:</td><td className="text-right pt-2">₹{actualSubtotal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td></tr>
+                                    <tr><td className="py-1">Extra Charges ({bill.extraChargePercentage}%):</td><td className="text-right">+ ₹{bill.extraChargeAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td></tr>
+                                    <tr><td className="py-1">Discount:</td><td className="text-right text-green-600">- ₹{bill.bargainedAmount.toLocaleString('en-IN')}</td></tr>
+                                    
+                                    <tr className="font-bold text-lg border-t-2 border-brand-charcoal"><td className="py-2">Grand Total:</td><td className="text-right py-2">₹{bill.grandTotal.toLocaleString('en-IN')}</td></tr>
+                                    
+                                    <tr><td className="py-1">Amount Paid:</td><td className="text-right text-green-700 font-semibold">₹{bill.amountPaid.toLocaleString('en-IN')}</td></tr>
+                                    <tr className="font-bold"><td className="py-1">Balance Due:</td><td className={`text-right ${bill.balance > 0 ? 'text-red-600' : ''}`}>₹{bill.balance.toLocaleString('en-IN')}</td></tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                </div>
-
-                 <footer className="pt-2 flex justify-between items-end">
-                    <div className="text-left text-xs text-gray-600">
-                        <p className="font-bold">DEVAGIRIKAR JEWELLERYS</p>
-                        <p>1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot.</p>
-                        <p className="mt-1">GSTIN: 29BSWPD7616JZ0 | Phone: 9008604004 / 8618748300</p>
+                    <hr className="my-4 border-t border-brand-gold/50" />
+                    <div className="flex justify-between items-end">
+                        <p className="text-sm font-semibold">Thank you for your business!</p>
+                        <div className="text-center text-sm">
+                            <p className="pt-8 border-t-2 border-gray-400 w-48">Authorised Signatory</p>
+                        </div>
                     </div>
-                    <img src={logoUrl} alt="Logo" className="w-16 h-16 object-contain" />
+                     <div className="text-center text-xs text-brand-gray mt-4 pt-4 border-t border-gray-200">
+                        <p className="font-bold">1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot.</p>
+                        <p>Phone: 9008604004 / 8618748300 | GSTIN: 29BSWPD7616JZ0</p>
+                    </div>
                 </footer>
             </div>
         </div>
@@ -296,7 +305,7 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = () => {
   };
 
   const handleRemoveItem = (itemId: string) => {
-    setSelectedItems(prev => prev.filter(item => item.itemId !== item.itemId));
+    setSelectedItems(prev => prev.filter(item => item.itemId !== itemId));
   };
   
     const generatePdfBlob = async (bill: Bill, customer: Customer): Promise<Blob | null> => {
@@ -322,10 +331,12 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = () => {
             return null;
         }
 
-        const canvas = await html2canvas(invoiceElement, { scale: 3 }); // Increased scale for better quality
+        const canvas = await html2canvas(invoiceElement, { scale: 2 });
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
-        const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a5' });
-        pdf.addImage(imgData, 'JPEG', 0, 0, 210, 148);
+        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
 
         root.unmount();
         document.body.removeChild(tempContainer);
