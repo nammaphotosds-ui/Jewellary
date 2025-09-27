@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useRef } from 'react';
 // FIX: Import ReactDOM to fix 'Cannot find name ReactDOM' error.
 import ReactDOM from 'react-dom/client';
@@ -191,7 +192,7 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = () => {
 
     const paid = parseFloat(amountPaid) || 0;
     const bargained = parseFloat(bargainedAmount) || 0;
-    const bill = createBill({
+    const bill = await createBill({
       customerId: selectedCustomerId,
       type: billType,
       items: selectedItems,

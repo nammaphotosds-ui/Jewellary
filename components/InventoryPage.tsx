@@ -53,7 +53,7 @@ const AddInventoryItemForm: React.FC<{onClose: ()=>void}> = ({onClose}) => {
         
         const imageUrl = photo ? await fileToBase64(photo) : undefined;
 
-        addInventoryItem({
+        await addInventoryItem({
             name,
             category: finalCategory,
             weight: parseFloat(weight),

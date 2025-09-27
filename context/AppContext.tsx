@@ -1,28 +1,101 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import type { JewelryItem, Customer, Bill, BillType, JewelryCategory } from '../types';
+
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import type { JewelryItem, Customer, Bill, BillType } from '../types';
 import useLocalStorage from '../hooks/useLocalStorage';
+import * as drive from '../utils/googleDrive';
+
+export interface GoogleTokenResponse {
+  access_token: string;
+  expires_in: number;
+  scope: string;
+  token_type: string;
+  // This will be added manually
+  expires_at?: number;
+}
 
 interface AppContextType {
   inventory: JewelryItem[];
   customers: Customer[];
   bills: Bill[];
-  addInventoryItem: (item: Omit<JewelryItem, 'id' | 'serialNo' | 'dateAdded'>) => void;
-  deleteInventoryItem: (itemId: string) => void;
-  addCustomer: (customer: Omit<Customer, 'id' | 'joinDate' | 'pendingBalance'>) => void;
-  createBill: (bill: Omit<Bill, 'id' | 'balance' | 'date' | 'customerName' | 'finalAmount'>) => Bill;
+  addInventoryItem: (item: Omit<JewelryItem, 'id' | 'serialNo' | 'dateAdded'>) => Promise<void>;
+  deleteInventoryItem: (itemId: string) => Promise<void>;
+  addCustomer: (customer: Omit<Customer, 'id' | 'joinDate' | 'pendingBalance'>) => Promise<void>;
+  createBill: (bill: Omit<Bill, 'id' | 'balance' | 'date' | 'customerName' | 'finalAmount'>) => Promise<Bill>;
   getCustomerById: (id: string) => Customer | undefined;
   getBillsByCustomerId: (id: string) => Bill[];
   getInventoryItemById: (id: string) => JewelryItem | undefined;
   getNextCustomerId: () => string;
+  isInitialized: boolean;
+  isAuthenticated: boolean;
+  error: string | null;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [inventory, setInventory] = useLocalStorage<JewelryItem[]>('inventory', []);
-  const [customers, setCustomers] = useLocalStorage<Customer[]>('customers', []);
-  const [bills, setBills] = useLocalStorage<Bill[]>('bills', []);
+  const [inventory, setInventory] = useState<JewelryItem[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [bills, setBills] = useState<Bill[]>([]);
   
+  const [tokenResponse] = useLocalStorage<GoogleTokenResponse | null>('googleTokenResponse', null);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [driveFileId, setDriveFileId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const init = async () => {
+        setIsInitialized(false);
+        setError(null);
+
+        if (!tokenResponse || !tokenResponse.expires_at || tokenResponse.expires_at < Date.now()) {
+            setIsAuthenticated(false);
+            setIsInitialized(true);
+            return;
+        }
+
+        setIsAuthenticated(true);
+
+        try {
+            const fileId = await drive.getFileId(tokenResponse.access_token);
+            if (fileId) {
+                const content = await drive.getFileContent(tokenResponse.access_token, fileId);
+                setInventory(content.inventory || []);
+                setCustomers(content.customers || []);
+                setBills(content.bills || []);
+                setDriveFileId(fileId);
+            } else {
+                const initialState = { inventory: [], customers: [], bills: [] };
+                const newFileId = await drive.createFile(tokenResponse.access_token, initialState);
+                setDriveFileId(newFileId);
+                setInventory([]);
+                setCustomers([]);
+                setBills([]);
+            }
+        } catch (e: any) {
+            console.error("Google Drive initialization failed", e);
+            setError("Failed to connect to Google Drive. The token might be invalid. Please try reconnecting from the Settings page.");
+            setIsAuthenticated(false);
+        } finally {
+            setIsInitialized(true);
+        }
+    };
+    init();
+  }, [tokenResponse]);
+  
+  const saveDataToDrive = async (data: { inventory: JewelryItem[], customers: Customer[], bills: Bill[] }) => {
+    if (!isAuthenticated || !driveFileId || !tokenResponse) {
+        setError("Not connected to Google Drive. Please reconnect in Settings.");
+        return;
+    }
+    try {
+        await drive.updateFile(tokenResponse.access_token, driveFileId, data);
+    } catch(e) {
+        console.error("Failed to save data to drive", e);
+        setError("Failed to save data. Please check your connection and try again.");
+    }
+  };
+
   const getNextCustomerId = () => {
     const totalCustomers = customers.length;
     const numPart = (totalCustomers % 9) + 1;
@@ -32,7 +105,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return `${firstChar}${secondChar}${numPart}`;
   };
 
-  const addInventoryItem = (item: Omit<JewelryItem, 'id' | 'serialNo' | 'dateAdded'>) => {
+  const addInventoryItem = async (item: Omit<JewelryItem, 'id' | 'serialNo' | 'dateAdded'>) => {
     const categoryItems = inventory.filter(i => i.category === item.category);
     const maxSerial = Math.max(0, ...categoryItems.map(i => parseInt(i.serialNo, 10)));
     const newSerialNo = (maxSerial + 1).toString().padStart(3, '0');
@@ -43,24 +116,31 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       serialNo: newSerialNo,
       dateAdded: new Date().toISOString(),
     };
-    setInventory(prev => [...prev, newItem]);
+
+    const newInventory = [...inventory, newItem];
+    setInventory(newInventory);
+    await saveDataToDrive({ inventory: newInventory, customers, bills });
   };
   
-  const deleteInventoryItem = (itemId: string) => {
-    setInventory(prev => prev.filter(item => item.id !== itemId));
+  const deleteInventoryItem = async (itemId: string) => {
+    const newInventory = inventory.filter(item => item.id !== itemId);
+    setInventory(newInventory);
+    await saveDataToDrive({ inventory: newInventory, customers, bills });
   };
 
-  const addCustomer = (customer: Omit<Customer, 'id' | 'joinDate' | 'pendingBalance'>) => {
+  const addCustomer = async (customer: Omit<Customer, 'id' | 'joinDate' | 'pendingBalance'>) => {
     const newCustomer: Customer = {
       ...customer,
       id: getNextCustomerId(),
       joinDate: new Date().toISOString(),
       pendingBalance: 0,
     };
-    setCustomers(prev => [...prev, newCustomer]);
+    const newCustomers = [...customers, newCustomer];
+    setCustomers(newCustomers);
+    await saveDataToDrive({ inventory, customers: newCustomers, bills });
   };
 
-  const createBill = (billData: Omit<Bill, 'id' | 'balance' | 'date' | 'customerName' | 'finalAmount'>): Bill => {
+  const createBill = async (billData: Omit<Bill, 'id' | 'balance' | 'date' | 'customerName' | 'finalAmount'>): Promise<Bill> => {
     const finalAmount = billData.totalAmount - billData.bargainedAmount;
     const balance = finalAmount - billData.amountPaid;
     const customer = customers.find(c => c.id === billData.customerId);
@@ -75,23 +155,32 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       date: new Date().toISOString(),
     };
     
-    setBills(prev => [...prev, newBill]);
-    
-    setCustomers(prev => prev.map(c => 
-        c.id === billData.customerId 
-        ? { ...c, pendingBalance: c.pendingBalance + balance } 
-        : c
-    ));
+    const updatedCustomer = {
+        ...customer,
+        pendingBalance: customer.pendingBalance + balance
+    };
 
+    let updatedInventoryState = [...inventory];
     if (billData.type === 'INVOICE') {
-      setInventory(prev => prev.map(item => {
-        const itemsToDecrement = billData.items.filter(billItem => billItem.itemId === item.id).length;
-        if (itemsToDecrement > 0) {
-          return { ...item, quantity: Math.max(0, item.quantity - itemsToDecrement) };
-        }
-        return item;
-      }));
+      const inventoryMap = new Map(inventory.map(i => [i.id, i]));
+      for (const billItem of billData.items) {
+          const item = inventoryMap.get(billItem.itemId) as JewelryItem;
+          if (item) {
+              const updatedItem = { ...item, quantity: Math.max(0, item.quantity - 1) };
+              inventoryMap.set(item.id, updatedItem);
+          }
+      }
+      updatedInventoryState = Array.from(inventoryMap.values());
     }
+    
+    const newBills = [...bills, newBill];
+    const newCustomers = customers.map(c => c.id === updatedCustomer.id ? updatedCustomer : c);
+    
+    setBills(newBills);
+    setCustomers(newCustomers);
+    setInventory(updatedInventoryState);
+
+    await saveDataToDrive({ inventory: updatedInventoryState, customers: newCustomers, bills: newBills });
     
     return newBill;
   };
@@ -101,7 +190,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const getInventoryItemById = (id: string) => inventory.find(i => i.id === id);
 
   return (
-    <AppContext.Provider value={{ inventory, customers, bills, addInventoryItem, deleteInventoryItem, addCustomer, createBill, getCustomerById, getBillsByCustomerId, getInventoryItemById, getNextCustomerId }}>
+    <AppContext.Provider value={{ isInitialized, isAuthenticated, error, inventory, customers, bills, addInventoryItem, deleteInventoryItem, addCustomer, createBill, getCustomerById, getBillsByCustomerId, getInventoryItemById, getNextCustomerId }}>
       {children}
     </AppContext.Provider>
   );
