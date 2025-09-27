@@ -1,4 +1,3 @@
-
 // FIX: Removed circular self-import of `JewelryCategory` to resolve declaration conflicts.
 export enum JewelryCategory {
   RING = 'Ring',
@@ -27,6 +26,7 @@ export interface Customer {
   phone: string;
   joinDate: string;
   pendingBalance: number;
+  dob?: string;
 }
 
 export interface BillItem {

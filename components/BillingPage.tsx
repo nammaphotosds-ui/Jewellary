@@ -1,6 +1,4 @@
-
-import React, { useState, useMemo, useRef } from 'react';
-// FIX: Import ReactDOM to fix 'Cannot find name ReactDOM' error.
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import { useAppContext } from '../context/AppContext';
 import { BillType, Page } from '../types';
@@ -10,76 +8,156 @@ import Logo from './Logo';
 // This is the template that will be rendered for PDF generation
 const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, customer}) => {
     const totalWeight = bill.items.reduce((sum, item) => sum + item.weight, 0);
+    const logoUrl = "https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163";
     return (
-        <div className="p-12 text-gray-800 bg-white" style={{width: '1123px', height: '794px', display: 'flex', flexDirection: 'column'}}>
-             <header className="flex justify-between items-start border-b-2 border-brand-gold pb-4">
-                <div className="flex items-center">
-                    <img src="https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163" alt="Logo" className="w-20 h-20 object-contain mr-4" />
+        <div className="p-8 text-gray-800 bg-white relative" style={{width: '794px', height: '559px', display: 'flex', flexDirection: 'column'}}>
+            {/* Background Logo */}
+            <div className="absolute inset-0 flex items-center justify-center z-0">
+                <img src={logoUrl} alt="Logo" className="w-1/2 h-1/2 object-contain opacity-5" />
+            </div>
+            
+            <div className="relative z-10 flex flex-col flex-1">
+                 <header className="flex justify-between items-start border-b-2 border-brand-gold pb-4">
+                    <div className="flex items-center">
+                        <img src={logoUrl} alt="Logo" className="w-20 h-20 object-contain mr-4" />
+                        <div>
+                            <h1 className="text-3xl font-serif font-bold text-brand-gold-dark">DEVAGIRIKAR JEWELLERYS</h1>
+                            <p className="font-semibold text-gray-700">EXCLUSIVE JEWELLERY SHOWROOM</p>
+                            <p className="text-sm text-gray-600">1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot.</p>
+                        </div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                        <h2 className="text-4xl font-serif font-bold uppercase text-brand-charcoal-light">{bill.type}</h2>
+                        <p className="text-xs"><strong>Bill No:</strong> {bill.id}</p>
+                        <p className="text-xs"><strong>Date:</strong> {new Date(bill.date).toLocaleDateString()}</p>
+                    </div>
+                </header>
+
+                <div className="flex justify-between mt-4">
                     <div>
-                        <h1 className="text-3xl font-serif font-bold text-brand-gold-dark">DEVAGIRIKAR JEWELLERYS</h1>
-                        <p className="font-semibold text-gray-700">EXCLUSIVE JEWELLERY SHOWROOM</p>
-                        <p className="text-sm text-gray-600">1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot.</p>
+                        <h3 className="font-bold text-md mb-1">Billed To:</h3>
+                        <p>{customer.name} ({customer.id})</p>
+                        <p>{customer.phone}</p>
+                    </div>
+                     <div className="text-right text-xs">
+                        <p><strong>GSTIN:</strong> 29BSWPD7616JZ0</p>
+                        <p><strong>Phone:</strong> 9008604004 / 8618748300</p>
                     </div>
                 </div>
-                <div className="text-right">
-                    <h2 className="text-4xl font-serif font-bold uppercase text-brand-charcoal-light">{bill.type}</h2>
-                    <p><strong>Bill No:</strong> {bill.id}</p>
-                    <p><strong>Date:</strong> {new Date(bill.date).toLocaleDateString()}</p>
-                </div>
-            </header>
 
-            <div className="flex justify-between mt-6">
-                <div>
-                    <h3 className="font-bold text-lg mb-2">Billed To:</h3>
-                    <p>{customer.name}</p>
-                    <p>{customer.phone}</p>
-                    <p>Customer ID: {customer.id}</p>
-                </div>
-                 <div className="text-right text-sm">
-                    <p><strong>GSTIN:</strong> 29BSWPD7616JZ0</p>
-                    <p><strong>Phone:</strong> 9008604004 / 8618748300</p>
-                </div>
-            </div>
-
-            <main className="flex-1 mt-6">
-                 <table className="w-full text-left">
-                    <thead className="bg-brand-charcoal text-white">
-                        <tr>
-                            <th className="p-3">Item Name</th>
-                            <th className="p-3 text-right">Weight (g)</th>
-                            <th className="p-3 text-right">Price (₹)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {bill.items.map(item => (
-                            <tr key={item.itemId} className="border-b">
-                                <td className="p-3">{item.name}</td>
-                                <td className="p-3 text-right">{item.weight.toFixed(3)}</td>
-                                <td className="p-3 text-right">{item.price.toLocaleString('en-IN')}</td>
+                <main className="flex-1 mt-4">
+                     <table className="w-full text-left text-sm">
+                        <thead className="bg-brand-charcoal text-white">
+                            <tr>
+                                <th className="p-2">Item Name</th>
+                                <th className="p-2 text-right">Weight (g)</th>
+                                <th className="p-2 text-right">Price (₹)</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </main>
-            
-            <footer className="flex justify-end mt-4">
-                <div className="w-2/5">
-                    <div className="flex justify-between py-1"><span>Total Gross Weight:</span><span>{totalWeight.toFixed(3)} g</span></div>
-                    <div className="flex justify-between py-1 text-blue-600"><span>Less Weight:</span><span>- {bill.lessWeight.toFixed(3)} g</span></div>
-                    <div className="flex justify-between py-1 font-bold border-t mt-1 pt-1"><span>Net Weight:</span><span>{bill.netWeight.toFixed(3)} g</span></div>
-                    <hr className="my-2"/>
-                    <div className="flex justify-between py-1"><span>Subtotal:</span><span>₹{bill.totalAmount.toLocaleString('en-IN')}</span></div>
-                    <div className="flex justify-between py-1 text-green-600"><span>Discount:</span><span>- ₹{bill.bargainedAmount.toLocaleString('en-IN')}</span></div>
-                    <div className="flex justify-between py-1 font-bold"><span>Amount:</span><span>₹{bill.finalAmount.toLocaleString('en-IN')}</span></div>
-                    <div className="flex justify-between py-1 text-orange-600"><span>Making Charges ({bill.makingChargePercentage}%):</span><span>+ ₹{bill.makingChargeAmount.toLocaleString('en-IN')}</span></div>
-                    <div className="flex justify-between py-2 font-bold text-xl border-t-2 border-b-2 border-brand-charcoal my-2"><span>Grand Total:</span><span>₹{bill.grandTotal.toLocaleString('en-IN')}</span></div>
-                    <div className="flex justify-between py-1 text-green-600 font-semibold"><span>Amount Paid:</span><span>₹{bill.amountPaid.toLocaleString('en-IN')}</span></div>
-                    <div className="flex justify-between py-1 text-red-600 font-semibold"><span>Balance Due:</span><span>₹{bill.balance.toLocaleString('en-IN')}</span></div>
+                        </thead>
+                        <tbody>
+                            {bill.items.map(item => (
+                                <tr key={item.itemId} className="border-b">
+                                    <td className="p-2">{item.name}</td>
+                                    <td className="p-2 text-right">{item.weight.toFixed(3)}</td>
+                                    <td className="p-2 text-right">{item.price.toLocaleString('en-IN')}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </main>
+                
+                <footer className="flex justify-end mt-2">
+                    <div className="w-1/2 text-sm">
+                        <div className="flex justify-between py-0.5"><span>Total Gross Wt:</span><span>{totalWeight.toFixed(3)} g</span></div>
+                        <div className="flex justify-between py-0.5 text-blue-600"><span>Less Wt:</span><span>- {bill.lessWeight.toFixed(3)} g</span></div>
+                        <div className="flex justify-between py-0.5 font-bold border-t mt-1 pt-1"><span>Net Wt:</span><span>{bill.netWeight.toFixed(3)} g</span></div>
+                        <hr className="my-1"/>
+                        <div className="flex justify-between py-0.5"><span>Subtotal:</span><span>₹{bill.totalAmount.toLocaleString('en-IN')}</span></div>
+                        <div className="flex justify-between py-0.5 text-green-600"><span>Discount:</span><span>- ₹{bill.bargainedAmount.toLocaleString('en-IN')}</span></div>
+                        <div className="flex justify-between py-0.5 font-bold"><span>Amount:</span><span>₹{bill.finalAmount.toLocaleString('en-IN')}</span></div>
+                        <div className="flex justify-between py-0.5 text-orange-600"><span>Making Charges ({bill.makingChargePercentage}%):</span><span>+ ₹{bill.makingChargeAmount.toLocaleString('en-IN')}</span></div>
+                        <div className="flex justify-between py-1 font-bold text-lg border-t-2 border-b-2 border-brand-charcoal my-1"><span>Grand Total:</span><span>₹{bill.grandTotal.toLocaleString('en-IN')}</span></div>
+                        <div className="flex justify-between py-0.5 text-green-600 font-semibold"><span>Amount Paid:</span><span>₹{bill.amountPaid.toLocaleString('en-IN')}</span></div>
+                        <div className="flex justify-between py-0.5 text-red-600 font-semibold"><span>Balance Due:</span><span>₹{bill.balance.toLocaleString('en-IN')}</span></div>
+                    </div>
+                </footer>
+                 <div className="text-center text-xs text-gray-500 mt-2">
+                    Thank you for your business!
                 </div>
-            </footer>
-             <div className="text-center text-xs text-gray-500 mt-6">
-                Thank you for your business!
             </div>
+        </div>
+    );
+};
+
+// A generic searchable select component
+const SearchableSelect = <T extends { id: string; name: string; }>({
+    options,
+    placeholder,
+    onSelect,
+    renderOption,
+    disabled = false
+}: {
+    options: T[];
+    placeholder: string;
+    onSelect: (item: T) => void;
+    renderOption: (item: T) => React.ReactNode;
+    disabled?: boolean;
+}) => {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isOpen, setIsOpen] = useState(false);
+    const wrapperRef = useRef<HTMLDivElement>(null);
+
+    const filteredOptions = useMemo(() => {
+        if (!searchTerm) return [];
+        return options.filter(option =>
+            option.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [searchTerm, options]);
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [wrapperRef]);
+
+    const handleSelect = (item: T) => {
+        onSelect(item);
+        setSearchTerm('');
+        setIsOpen(false);
+    };
+
+    return (
+        <div className="relative" ref={wrapperRef}>
+            <input
+                type="text"
+                placeholder={placeholder}
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                onFocus={() => setIsOpen(true)}
+                disabled={disabled}
+                className="w-full p-2 border rounded"
+            />
+            {isOpen && searchTerm && (
+                <ul className="absolute z-10 w-full bg-white border rounded-b-md shadow-lg max-h-60 overflow-y-auto mt-1">
+                    {filteredOptions.length > 0 ? (
+                        filteredOptions.map(item => (
+                            <li
+                                key={item.id}
+                                onClick={() => handleSelect(item)}
+                                className="px-3 py-2 hover:bg-brand-gold-light cursor-pointer"
+                            >
+                                {renderOption(item)}
+                            </li>
+                        ))
+                    ) : (
+                        <li className="px-3 py-2 text-gray-500">No results found.</li>
+                    )}
+                </ul>
+            )}
         </div>
     );
 };
@@ -87,36 +165,22 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
 
 const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = () => {
   const { inventory, customers, createBill, getCustomerById } = useAppContext();
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<BillItem[]>([]);
   const [amountPaid, setAmountPaid] = useState<string>('');
   const [bargainedAmount, setBargainedAmount] = useState<string>('');
   const [billType, setBillType] = useState<BillType>(BillType.ESTIMATE);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
-  const [customerSearch, setCustomerSearch] = useState('');
-  const [itemSearch, setItemSearch] = useState('');
   const [lessWeight, setLessWeight] = useState('');
   const [makingChargePercentage, setMakingChargePercentage] = useState('');
-
-  const filteredCustomers = useMemo(() => {
-      if (!customerSearch) return customers;
-      return customers.filter(c => 
-          c.name.toLowerCase().includes(customerSearch.toLowerCase()) ||
-          c.id.toLowerCase().includes(customerSearch.toLowerCase())
-      );
-  }, [customers, customerSearch]);
+  
+  const selectedCustomer = useMemo(() => {
+    return customers.find(c => c.id === selectedCustomerId);
+  }, [selectedCustomerId, customers]);
 
   const availableInventory = useMemo(() => {
     return inventory.filter(item => item.quantity > 0 && !selectedItems.some(si => si.itemId === item.id));
   }, [inventory, selectedItems]);
-  
-  const filteredAvailableInventory = useMemo(() => {
-      if (!itemSearch) return availableInventory;
-      return availableInventory.filter(i => 
-          i.name.toLowerCase().includes(itemSearch.toLowerCase()) ||
-          i.serialNo.toLowerCase().includes(itemSearch.toLowerCase())
-      );
-  }, [availableInventory, itemSearch]);
 
   const calculations = useMemo(() => {
     const totalAmount = selectedItems.reduce((sum, item) => sum + item.price, 0);
@@ -129,12 +193,8 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = () => {
     return { totalAmount, finalAmount, makingChargeAmount, grandTotal, totalWeight, netWeight };
   }, [selectedItems, bargainedAmount, makingChargePercentage, lessWeight]);
 
-  const handleAddItem = (itemId: string) => {
-    const item = inventory.find(i => i.id === itemId);
-    if (item) {
+  const handleAddItem = (item: JewelryItem) => {
       setSelectedItems(prev => [...prev, { itemId: item.id, name: item.name, weight: item.weight, price: item.price, imageUrl: item.imageUrl }]);
-    }
-    setItemSearch('');
   };
 
   const handleRemoveItem = (itemId: string) => {
@@ -156,20 +216,18 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = () => {
     const root = ReactDOM.createRoot(tempContainer);
     root.render(<InvoiceTemplate bill={bill} customer={customer} />);
     
-    // Allow content to render
     await new Promise(resolve => setTimeout(resolve, 500));
-
     const invoiceElement = tempContainer.children[0] as HTMLElement;
 
     if (invoiceElement) {
         const canvas = await html2canvas(invoiceElement, { scale: 2 });
-        const imgData = canvas.toDataURL('image/png');
+        const imgData = canvas.toDataURL('image/jpeg', 0.9); // Use JPEG for smaller file size
         const pdf = new jsPDF({
             orientation: 'landscape',
             unit: 'px',
-            format: [1123, 794]
+            format: [794, 559] // A5 landscape
         });
-        pdf.addImage(imgData, 'PNG', 0, 0, 1123, 794);
+        pdf.addImage(imgData, 'JPEG', 0, 0, 794, 559);
         pdf.save(`invoice-${bill.id}.pdf`);
     }
 
@@ -202,7 +260,7 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = () => {
     }
 
     // Reset form
-    setSelectedCustomerId('');
+    setSelectedCustomerId(null);
     setSelectedItems([]);
     setAmountPaid('');
     setBargainedAmount('');
@@ -220,27 +278,44 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = () => {
         <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-md space-y-4">
             <h2 className="text-xl font-bold">1. Customer & Items</h2>
             <div>
-                <label className="block text-sm font-medium mb-1">Search & Select Customer</label>
-                <input type="text" placeholder="Search by name or ID..." value={customerSearch} onChange={e => setCustomerSearch(e.target.value)} className="w-full p-2 border rounded mb-2"/>
-                <select value={selectedCustomerId} onChange={e => setSelectedCustomerId(e.target.value)} className="w-full p-2 border rounded" required>
-                    <option value="" disabled>-- Select a customer --</option>
-                    {filteredCustomers.map(c => <option key={c.id} value={c.id}>{c.name} ({c.id})</option>)}
-                </select>
+                <label className="block text-sm font-medium mb-1">Select Customer</label>
+                 {selectedCustomer ? (
+                    <div className="flex items-center justify-between p-2 bg-gray-100 rounded">
+                        <span>{selectedCustomer.name} ({selectedCustomer.id})</span>
+                        <button type="button" onClick={() => setSelectedCustomerId(null)} className="text-red-500 hover:text-red-700 text-sm">Change</button>
+                    </div>
+                 ) : (
+                    <SearchableSelect<Customer>
+                        options={customers}
+                        placeholder="Search by name or ID..."
+                        onSelect={(customer) => setSelectedCustomerId(customer.id)}
+                        renderOption={(customer) => <span>{customer.name} ({customer.id})</span>}
+                    />
+                 )}
             </div>
              <div>
-                <label className="block text-sm font-medium mb-1">Search & Add Items</label>
-                <input type="text" placeholder="Search by name or serial no..." value={itemSearch} onChange={e => setItemSearch(e.target.value)} className="w-full p-2 border rounded mb-2"/>
-                <select onChange={e => handleAddItem(e.target.value)} value="" className="w-full p-2 border rounded">
-                    <option value="" disabled>-- Select an item --</option>
-                    {filteredAvailableInventory.map(item => <option key={item.id} value={item.id}>{item.name} ({item.serialNo}) - ₹{item.price}</option>)}
-                </select>
+                <label className="block text-sm font-medium mb-1">Add Items</label>
+                <SearchableSelect<JewelryItem>
+                    options={availableInventory}
+                    placeholder="Search by name or serial no..."
+                    onSelect={handleAddItem}
+                    disabled={!selectedCustomerId}
+                    renderOption={(item) => (
+                        <div className="flex justify-between">
+                            <span>{item.name} ({item.serialNo})</span>
+                            <span className="font-semibold">₹{item.price.toLocaleString('en-IN')}</span>
+                        </div>
+                    )}
+                />
             </div>
             <div className="mt-4 max-h-64 overflow-y-auto">
                  {selectedItems.map(item => (
-                    <div key={item.itemId} className="flex justify-between items-center bg-gray-100 p-2 rounded mb-2">
+                    <div key={item.itemId} className="flex justify-between items-center bg-gray-50 p-2 rounded mb-2">
                         <div>{item.name} <span className="text-xs text-gray-500">({item.weight.toFixed(3)}g)</span></div>
-                        <span>₹{item.price.toLocaleString('en-IN')}</span>
-                        <button type="button" onClick={() => handleRemoveItem(item.itemId)} className="text-red-500 hover:text-red-700">Remove</button>
+                        <div className="flex items-center gap-4">
+                            <span>₹{item.price.toLocaleString('en-IN')}</span>
+                            <button type="button" onClick={() => handleRemoveItem(item.itemId)} className="text-red-500 hover:text-red-700">&times;</button>
+                        </div>
                     </div>
                  ))}
             </div>

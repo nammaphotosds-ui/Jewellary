@@ -35,6 +35,7 @@ const AddCustomerForm: React.FC<{onClose: () => void}> = ({ onClose }) => {
     const { addCustomer } = useAppContext();
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
+    const [dob, setDob] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -44,6 +45,7 @@ const AddCustomerForm: React.FC<{onClose: () => void}> = ({ onClose }) => {
             await addCustomer({
                 name,
                 phone,
+                dob: dob || undefined,
             });
             onClose();
         }
@@ -54,6 +56,10 @@ const AddCustomerForm: React.FC<{onClose: () => void}> = ({ onClose }) => {
         <form onSubmit={handleSubmit} className="space-y-4">
             <input type="text" placeholder="Customer Name" value={name} onChange={e => setName(e.target.value)} className="w-full p-2 border rounded" required />
             <input type="tel" placeholder="Phone Number" value={phone} onChange={e => setPhone(e.target.value)} className="w-full p-2 border rounded" required />
+            <div>
+                <label htmlFor="dob" className="block text-sm font-medium text-gray-700">Date of Birth (Optional)</label>
+                <input type="date" id="dob" value={dob} onChange={e => setDob(e.target.value)} className="w-full p-2 border rounded mt-1" />
+            </div>
             <button type="submit" disabled={isSubmitting} className="w-full bg-brand-gold text-brand-charcoal p-3 rounded-lg font-semibold hover:bg-brand-gold-dark transition disabled:bg-gray-400">
               {isSubmitting ? 'Saving...' : 'Add Customer'}
             </button>
@@ -63,58 +69,77 @@ const AddCustomerForm: React.FC<{onClose: () => void}> = ({ onClose }) => {
 
 // --- PDF Template (For Generation Only) ---
 const CustomerProfileTemplate: React.FC<{customer: Customer, bills: Bill[]}> = ({customer, bills}) => {
+    const logoUrl = "https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163";
     return (
-        <div className="bg-white text-gray-800" style={{ width: '1123px', height: '794px', display: 'flex', flexDirection: 'column' }}>
-            <header className="px-12 pt-8 pb-4 flex justify-between items-center border-b-2 border-brand-gold">
-                <div>
-                    <Logo className="text-brand-charcoal" simple={true} />
-                    <p className="text-sm text-gray-600 mt-1">Jewelry store in Ilkal, Karnataka</p>
-                </div>
-                <h2 className="text-3xl font-serif font-bold text-brand-charcoal-light">Customer Profile</h2>
-            </header>
-            <main className="flex-1 flex px-12 py-6 gap-8">
-                {/* Left Column */}
-                <div className="w-1/3 flex flex-col gap-6">
-                    <div className="bg-gray-50 p-4 rounded-lg border flex-1">
-                        <h3 className="text-2xl font-bold text-center mb-1">{customer.name}</h3>
-                        <p className="text-center text-gray-500 font-mono mb-4">{customer.id}</p>
-                        <h4 className="font-bold border-b pb-2 mb-2">Contact Details</h4>
-                        <p><strong>Phone:</strong> {customer.phone}</p>
-                        <p><strong>Joined:</strong> {new Date(customer.joinDate).toLocaleDateString()}</p>
-                        <h4 className="font-bold border-b pb-2 mb-2 mt-4">Financials</h4>
-                        <p><strong>Pending:</strong> <span className="font-bold text-red-600">₹{customer.pendingBalance.toLocaleString('en-IN')}</span></p>
+        <div className="bg-white text-gray-800 relative" style={{ width: '1123px', height: '794px', display: 'flex', flexDirection: 'column' }}>
+            {/* Background Logo */}
+            <div className="absolute inset-0 flex items-center justify-center z-0">
+                <img src={logoUrl} alt="Logo" className="w-2/3 h-2/3 object-contain opacity-5" />
+            </div>
+
+            {/* Content */}
+            <div className="relative z-10 flex flex-col flex-1">
+                <header className="px-12 pt-8 pb-4 flex justify-between items-center border-b-2 border-brand-gold">
+                    <div className="flex items-center">
+                         <img src={logoUrl} alt="DEVAGIRIKAR JEWELLERYS Logo" className="w-20 h-20 object-contain mr-4" />
+                        <div>
+                             <h1 className="text-2xl font-bold font-serif tracking-wider text-brand-gold-dark" style={{ textShadow: '0px 1px 1px rgba(0,0,0,0.1)' }}>DEVAGIRIKAR JEWELLERYS</h1>
+                            <p className="text-sm text-gray-600 mt-1">Jewelry store in Ilkal, Karnataka</p>
+                        </div>
                     </div>
-                </div>
-                {/* Right Column */}
-                <div className="w-2/3 bg-gray-50 p-4 rounded-lg border">
-                     <h4 className="font-bold border-b pb-2 mb-2 text-xl">Transaction History</h4>
-                     <div className="overflow-y-auto h-[550px]">
-                         <table className="w-full text-left">
-                            <thead className="sticky top-0 bg-gray-100">
-                                <tr>
-                                    <th className="p-2">Bill ID</th>
-                                    <th className="p-2">Date</th>
-                                    <th className="p-2">Type</th>
-                                    <th className="p-2 text-right">Total (₹)</th>
-                                    <th className="p-2 text-right">Balance (₹)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {bills.map(bill => (
-                                    <tr key={bill.id} className="border-b">
-                                        <td className="p-2 text-xs font-mono">{bill.id}</td>
-                                        <td className="p-2">{new Date(bill.date).toLocaleDateString()}</td>
-                                        <td className="p-2">{bill.type}</td>
-                                        <td className="p-2 text-right">{bill.finalAmount.toLocaleString('en-IN')}</td>
-                                        <td className="p-2 text-right font-semibold">{bill.balance > 0 ? <span className="text-red-600">{bill.balance.toLocaleString('en-IN')}</span> : 'Paid'}</td>
+                    <h2 className="text-3xl font-serif font-bold text-brand-charcoal-light">Customer Profile</h2>
+                </header>
+                
+                <main className="flex-1 px-12 py-6">
+                    {/* Customer Details Card */}
+                    <div className="bg-gradient-to-br from-brand-charcoal to-brand-charcoal-light text-white p-6 rounded-xl shadow-lg flex justify-between items-center mb-6">
+                        <div>
+                            <p className="text-sm uppercase tracking-widest text-brand-gold-light">Customer</p>
+                            <h3 className="text-4xl font-serif font-bold">{customer.name}</h3>
+                            <p className="font-mono text-gray-300 mt-1">{customer.id}</p>
+                        </div>
+                        <div className="text-right">
+                             <p className="font-semibold">{customer.phone}</p>
+                             {customer.dob && <p className="text-sm text-gray-400">Birthday: {new Date(customer.dob).toLocaleDateString()}</p>}
+                             <p className="text-sm text-gray-400">Joined: {new Date(customer.joinDate).toLocaleDateString()}</p>
+                             <div className="mt-2 bg-red-500/20 text-red-200 px-4 py-2 rounded-lg">
+                                <span className="text-sm">Pending Balance: </span>
+                                <span className="font-bold text-lg">₹{customer.pendingBalance.toLocaleString('en-IN')}</span>
+                             </div>
+                        </div>
+                    </div>
+
+                    {/* Transaction History */}
+                    <div className="bg-white p-4 rounded-lg border h-[480px] flex flex-col">
+                         <h4 className="font-bold border-b pb-2 mb-2 text-xl text-brand-charcoal">Transaction History</h4>
+                         <div className="overflow-y-auto flex-1">
+                             <table className="w-full text-left">
+                                <thead className="sticky top-0 bg-gray-100 z-10">
+                                    <tr>
+                                        <th className="p-2 font-semibold">Bill ID</th>
+                                        <th className="p-2 font-semibold">Date</th>
+                                        <th className="p-2 font-semibold">Type</th>
+                                        <th className="p-2 font-semibold text-right">Total (₹)</th>
+                                        <th className="p-2 font-semibold text-right">Balance (₹)</th>
                                     </tr>
-                                ))}
-                                {bills.length === 0 && (<tr><td colSpan={5} className="text-center p-8 text-gray-500">No transactions found.</td></tr>)}
-                            </tbody>
-                         </table>
-                     </div>
-                </div>
-            </main>
+                                </thead>
+                                <tbody>
+                                    {bills.map(bill => (
+                                        <tr key={bill.id} className="border-b odd:bg-gray-50">
+                                            <td className="p-2 text-xs font-mono">{bill.id}</td>
+                                            <td className="p-2">{new Date(bill.date).toLocaleDateString()}</td>
+                                            <td className="p-2"><span className={`px-2 py-1 text-xs rounded-full ${bill.type === 'INVOICE' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>{bill.type}</span></td>
+                                            <td className="p-2 text-right">{bill.grandTotal.toLocaleString('en-IN')}</td>
+                                            <td className="p-2 text-right font-semibold">{bill.balance > 0 ? <span className="text-red-600">{bill.balance.toLocaleString('en-IN')}</span> : 'Paid'}</td>
+                                        </tr>
+                                    ))}
+                                    {bills.length === 0 && (<tr><td colSpan={5} className="text-center p-8 text-gray-500">No transactions found.</td></tr>)}
+                                </tbody>
+                             </table>
+                         </div>
+                    </div>
+                </main>
+            </div>
         </div>
     );
 };
@@ -129,6 +154,7 @@ const OnScreenCustomerProfile: React.FC<{customer: Customer, bills: Bill[]}> = (
                     <h2 className="text-3xl font-bold font-serif text-brand-charcoal">{customer.name}</h2>
                     <p className="font-mono text-gray-500">{customer.id}</p>
                     <p className="text-gray-600 mt-2">{customer.phone}</p>
+                    {customer.dob && <p className="text-sm text-gray-500">Birthday: {new Date(customer.dob).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>}
                     <p className="text-sm text-gray-500">Member since {new Date(customer.joinDate).toLocaleDateString()}</p>
                 </div>
                 <div className="mt-4 md:mt-0 md:ml-auto text-center md:text-right bg-red-50 p-4 rounded-lg">
@@ -156,7 +182,7 @@ const OnScreenCustomerProfile: React.FC<{customer: Customer, bills: Bill[]}> = (
                                     <td className="p-2 text-xs font-mono">{bill.id}</td>
                                     <td className="p-2 text-sm">{new Date(bill.date).toLocaleDateString()}</td>
                                     <td className="p-2 text-sm">{bill.type}</td>
-                                    <td className="p-2 text-sm text-right">{bill.finalAmount.toLocaleString('en-IN')}</td>
+                                    <td className="p-2 text-sm text-right">{bill.grandTotal.toLocaleString('en-IN')}</td>
                                     <td className="p-2 text-sm text-right font-semibold">{bill.balance > 0 ? <span className="text-red-600">{bill.balance.toLocaleString('en-IN')}</span> : 'Paid'}</td>
                                 </tr>
                             ))}
@@ -195,9 +221,9 @@ const CustomerDetailsView: React.FC<{customer: Customer, onBack: () => void}> = 
 
         if (elementToCapture) {
             const canvas = await html2canvas(elementToCapture, { scale: 2 });
-            const imgData = canvas.toDataURL('image/png');
+            const imgData = canvas.toDataURL('image/jpeg', 0.9);
             const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [1123, 794] });
-            pdf.addImage(imgData, 'PNG', 0, 0, 1123, 794);
+            pdf.addImage(imgData, 'JPEG', 0, 0, 1123, 794);
             pdf.save(`profile-${customer.id}.pdf`);
         }
 

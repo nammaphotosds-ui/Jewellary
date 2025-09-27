@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import DashboardPage from './components/DashboardPage';
@@ -76,29 +75,61 @@ const GetStartedScreen: React.FC = () => {
             setError('Google Sign-In is not ready yet. Please wait a moment and try again.');
         }
     };
+    
+    // Creative & Satisfying 3D Button
+    const GoldenButton: React.FC<{ onClick: () => void, disabled: boolean, children: React.ReactNode }> = ({ onClick, disabled, children }) => {
+        return (
+            <button
+                onClick={onClick}
+                disabled={disabled}
+                className="group relative px-12 py-4 text-xl font-semibold rounded-lg text-brand-charcoal
+                           transition-transform duration-150 ease-out 
+                           transform active:translate-y-1
+                           disabled:cursor-wait disabled:opacity-70"
+                aria-label="Get Started"
+            >
+                {/* 3D Depth Layer */}
+                <span className="absolute inset-0 bg-gradient-to-t from-amber-700 to-amber-500 rounded-lg shadow-lg transform translate-y-1 group-active:translate-y-0 transition-transform duration-150 ease-out"></span>
+
+                {/* Button Face Layer */}
+                <span className="absolute inset-0 bg-gradient-to-t from-yellow-400 to-amber-400 rounded-lg border border-amber-500/80 transform group-hover:-translate-y-1 group-active:translate-y-0 transition-transform duration-150 ease-out"></span>
+
+                {/* Text Content */}
+                <span
+                    className="relative"
+                    style={{ textShadow: '0 1px 1px rgba(255, 255, 255, 0.4)' }}
+                >
+                    {children}
+                </span>
+            </button>
+        );
+    };
+
 
     return (
-        <div className="flex h-screen w-screen flex-col items-center justify-between bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-brand-charcoal-light to-brand-charcoal p-8 text-white">
-            <div /> {/* Spacer to push content to center */}
-            
-            <div className="flex flex-col items-center text-center">
+        <div 
+            className="flex h-screen w-screen flex-col items-center justify-center bg-brand-charcoal p-8 text-white relative overflow-hidden"
+            style={{ backgroundImage: 'radial-gradient(circle at 15% 25%, rgba(218, 165, 32, 0.15), transparent 40%), radial-gradient(circle at 85% 75%, rgba(253, 251, 246, 0.1), transparent 40%)' }}
+        >
+            {/* Main Content */}
+            <div className="flex flex-col items-center text-center z-10 absolute top-1/4">
                 <img src="https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163" alt="Logo" className="w-40 h-40 object-contain mb-6 animate-pulse" style={{ animationDuration: '3s' }}/>
 
                 <h1 className="text-5xl font-serif tracking-wider text-white" style={{ textShadow: '0 0 10px #daa520, 0 0 20px #daa520' }}>
                   DEVAGIRIKAR
                 </h1>
-                <p className="text-2xl text-brand-gold-light tracking-[0.2em] mb-12">JEWELLERYS</p>
-
-                <button 
-                    onClick={handleConnect} 
-                    disabled={isConnecting}
-                    className="bg-brand-gold text-brand-charcoal px-12 py-4 rounded-lg font-semibold hover:bg-brand-gold-dark transition-transform hover:scale-105 shadow-lg text-xl disabled:bg-gray-400 disabled:cursor-wait">
-                    {isConnecting ? 'Connecting...' : 'Get Started'}
-                </button>
-                 {error && <p className="text-red-400 mt-4 text-sm">{error}</p>}
+                <p className="text-2xl text-brand-gold-light tracking-[0.2em]">JEWELLERYS</p>
             </div>
             
-            <footer className="w-full text-center">
+            {/* Action Area */}
+            <div className="absolute bottom-24 left-0 right-0 px-8 flex flex-col items-center z-10">
+                 <GoldenButton onClick={handleConnect} disabled={isConnecting}>
+                    {isConnecting ? 'Connecting...' : 'Get Started'}
+                 </GoldenButton>
+                 {error && <p className="text-red-400 mt-6 text-sm text-center">{error}</p>}
+            </div>
+            
+            <footer className="absolute bottom-8 w-full text-center z-10">
                 <p className="text-gray-400 text-sm">Powered By Nano Neptune</p>
             </footer>
         </div>
