@@ -37,35 +37,42 @@ const GetStartedScreen: React.FC = () => {
     const [isConnecting, setIsConnecting] = useState(false);
 
     useEffect(() => {
-        // @ts-ignore
-        if (window.google) {
+        if (gsiClient) return;
+
+        const intervalId = setInterval(() => {
             // @ts-ignore
-            const client = window.google.accounts.oauth2.initTokenClient({
-                client_id: CLIENT_ID,
-                scope: 'https://www.googleapis.com/auth/drive.appdata',
-                callback: (response: any) => {
-                    setIsConnecting(false);
-                    if (response.error) {
-                         console.error('Error from Google:', response);
-                         setError(`Failed to connect: ${response.error_description || response.error}. Please try again.`);
-                         setTokenResponse(null);
-                         return;
-                    }
-                    if (response.access_token) {
-                        console.log('Received Access Token.');
-                        const tokenData = {
-                            ...response,
-                            expires_at: Date.now() + (response.expires_in * 1000)
-                        };
-                        setTokenResponse(tokenData);
-                        setError(null);
-                        window.location.reload();
-                    }
-                },
-            });
-            setGsiClient(client);
-        }
-    }, []);
+            if (window.google) {
+                clearInterval(intervalId);
+                // @ts-ignore
+                const client = window.google.accounts.oauth2.initTokenClient({
+                    client_id: CLIENT_ID,
+                    scope: 'https://www.googleapis.com/auth/drive.appdata',
+                    callback: (response: any) => {
+                        setIsConnecting(false);
+                        if (response.error) {
+                             console.error('Error from Google:', response);
+                             setError(`Failed to connect: ${response.error_description || response.error}. Please try again.`);
+                             setTokenResponse(null);
+                             return;
+                        }
+                        if (response.access_token) {
+                            console.log('Received Access Token.');
+                            const tokenData = {
+                                ...response,
+                                expires_at: Date.now() + (response.expires_in * 1000)
+                            };
+                            setTokenResponse(tokenData);
+                            setError(null);
+                            window.location.reload();
+                        }
+                    },
+                });
+                setGsiClient(client);
+            }
+        }, 200);
+
+        return () => clearInterval(intervalId);
+    }, [gsiClient]);
 
     const handleConnect = () => {
         if (gsiClient) {
