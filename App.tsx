@@ -296,16 +296,23 @@ const AddCustomerForm: React.FC<{onClose: () => void}> = ({ onClose }) => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!name || !phone) {
+            return;
+        }
         setIsSubmitting(true);
-        if (name && phone) {
+        try {
             await addCustomer({
                 name,
                 phone,
                 dob: dob || undefined,
             });
             onClose();
+        } catch (error) {
+            console.error("Failed to add customer:", error);
+            alert("An error occurred while saving the customer. Please check your connection and try again.");
+        } finally {
+            setIsSubmitting(false);
         }
-        setIsSubmitting(false);
     };
 
     return (

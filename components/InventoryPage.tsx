@@ -42,28 +42,32 @@ const AddInventoryItemForm: React.FC<{onClose: ()=>void}> = ({onClose}) => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsSubmitting(true);
-
         const finalCategory = category === JewelryCategory.OTHER ? otherCategory : category;
         if (!finalCategory) {
             alert('Please specify a category for "Other".');
-            setIsSubmitting(false);
             return;
         }
-        
-        const imageUrl = photo ? await fileToBase64(photo) : undefined;
 
-        await addInventoryItem({
-            name,
-            category: finalCategory,
-            weight: parseFloat(weight),
-            purity: parseFloat(purity),
-            price: parseFloat(price),
-            quantity: parseInt(quantity, 10),
-            imageUrl,
-        });
-        onClose();
-        setIsSubmitting(false);
+        setIsSubmitting(true);
+        try {
+            const imageUrl = photo ? await fileToBase64(photo) : undefined;
+
+            await addInventoryItem({
+                name,
+                category: finalCategory,
+                weight: parseFloat(weight),
+                purity: parseFloat(purity),
+                price: parseFloat(price),
+                quantity: parseInt(quantity, 10),
+                imageUrl,
+            });
+            onClose();
+        } catch (error) {
+            console.error("Failed to add inventory item:", error);
+            alert("An error occurred while saving the item. Please check your connection and try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
     
     const FileInput: React.FC<{label: string, file: File | null, onFileChange: (file: File | null) => void, id: string}> = ({label, file, onFileChange, id}) => (

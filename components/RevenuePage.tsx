@@ -30,9 +30,15 @@ const RevenuePage: React.FC<{ setCurrentPage: (page: Page) => void }> = ({ setCu
             return;
         }
         setIsSaving(true);
-        await setRevenue(newTotal);
-        setIsSaving(false);
-        setIsEditing(false);
+        try {
+            await setRevenue(newTotal);
+            setIsEditing(false);
+        } catch (error) {
+            console.error("Failed to set revenue:", error);
+            alert("An error occurred while saving the new revenue amount. Please try again.");
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const formatCurrency = (amount: number) => {

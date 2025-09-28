@@ -36,9 +36,15 @@ const PaymentModal: React.FC<{
             return;
         }
         setIsSubmitting(true);
-        await onRecordPayment(paymentAmount);
-        setIsSubmitting(false);
-        onClose();
+        try {
+            await onRecordPayment(paymentAmount);
+            onClose();
+        } catch (error) {
+            console.error("Failed to record payment:", error);
+            alert("An error occurred while recording the payment. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     if (!isOpen) return null;
