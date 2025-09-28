@@ -442,7 +442,8 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
       }
     }
 
-    const action = (e.nativeEvent.submitter as HTMLButtonElement)?.value || 'download';
+    // FIX: Cast nativeEvent to SubmitEvent to access the 'submitter' property.
+    const action = ((e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement)?.value || 'download';
     
     setSubmissionStatus('processing');
 
