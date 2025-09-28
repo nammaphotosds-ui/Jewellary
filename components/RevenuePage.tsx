@@ -9,13 +9,14 @@ const RevenuePage: React.FC<{ setCurrentPage: (page: Page) => void }> = ({ setCu
 
     const [isEditing, setIsEditing] = useState(false);
     const [newRevenue, setNewRevenue] = useState('');
-    const [isSaving, setIsSaving] = useState(false);
+    const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
     const totalRevenue = bills.reduce((sum, bill) => sum + bill.amountPaid, 0);
 
     const handleEditClick = () => {
         setNewRevenue(totalRevenue.toString());
         setIsEditing(true);
+        setSaveStatus('idle');
     };
 
     const handleCancelClick = () => {
@@ -29,15 +30,18 @@ const RevenuePage: React.FC<{ setCurrentPage: (page: Page) => void }> = ({ setCu
             alert('Please enter a valid, non-negative number.');
             return;
         }
-        setIsSaving(true);
+        setSaveStatus('saving');
         try {
             await setRevenue(newTotal);
-            setIsEditing(false);
+            setSaveStatus('saved');
+            setTimeout(() => {
+                setIsEditing(false);
+                setSaveStatus('idle');
+            }, 1000);
         } catch (error) {
             console.error("Failed to set revenue:", error);
             alert("An error occurred while saving the new revenue amount. Please try again.");
-        } finally {
-            setIsSaving(false);
+            setSaveStatus('idle');
         }
     };
 
@@ -87,20 +91,20 @@ const RevenuePage: React.FC<{ setCurrentPage: (page: Page) => void }> = ({ setCu
                                     value={newRevenue}
                                     onChange={(e) => setNewRevenue(e.target.value)}
                                     className="p-2 border rounded-md w-40 text-right font-semibold"
-                                    disabled={isSaving}
+                                    disabled={saveStatus !== 'idle'}
                                     autoFocus
                                 />
                                 <button
                                     onClick={handleSaveClick}
-                                    disabled={isSaving}
-                                    className="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-semibold hover:bg-green-700 disabled:bg-gray-400"
+                                    disabled={saveStatus !== 'idle'}
+                                    className="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-semibold hover:bg-green-700 disabled:bg-gray-400 disabled:opacity-70"
                                 >
-                                    {isSaving ? 'Saving...' : 'Save'}
+                                    {saveStatus === 'saving' ? 'Saving...' : saveStatus === 'saved' ? 'Saved!' : 'Save'}
                                 </button>
                                 <button
                                     onClick={handleCancelClick}
-                                    disabled={isSaving}
-                                    className="px-4 py-2 bg-gray-200 rounded-md text-sm"
+                                    disabled={saveStatus !== 'idle'}
+                                    className="px-4 py-2 bg-gray-200 rounded-md text-sm disabled:opacity-70"
                                 >
                                     Cancel
                                 </button>

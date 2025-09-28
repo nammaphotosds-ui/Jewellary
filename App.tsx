@@ -292,26 +292,28 @@ const AddCustomerForm: React.FC<{onClose: () => void}> = ({ onClose }) => {
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
     const [dob, setDob] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!name || !phone) {
             return;
         }
-        setIsSubmitting(true);
+        setSubmissionStatus('saving');
         try {
             await addCustomer({
                 name,
                 phone,
                 dob: dob || undefined,
             });
-            onClose();
+            setSubmissionStatus('saved');
+            setTimeout(() => {
+                onClose();
+            }, 1000);
         } catch (error) {
             console.error("Failed to add customer:", error);
             alert("An error occurred while saving the customer. Please check your connection and try again.");
-        } finally {
-            setIsSubmitting(false);
+            setSubmissionStatus('idle');
         }
     };
 
@@ -323,8 +325,8 @@ const AddCustomerForm: React.FC<{onClose: () => void}> = ({ onClose }) => {
                 <label htmlFor="dob" className="block text-sm font-medium text-gray-700">Date of Birth (Optional)</label>
                 <input type="date" id="dob" value={dob} onChange={e => setDob(e.target.value)} className="w-full p-2 border rounded mt-1" />
             </div>
-            <button type="submit" disabled={isSubmitting} className="w-full bg-brand-gold text-brand-charcoal p-3 rounded-lg font-semibold hover:bg-brand-gold-dark transition disabled:bg-gray-400">
-              {isSubmitting ? 'Saving...' : 'Add Customer'}
+            <button type="submit" disabled={submissionStatus !== 'idle'} className="w-full bg-brand-gold text-brand-charcoal p-3 rounded-lg font-semibold hover:bg-brand-gold-dark transition disabled:bg-gray-400 disabled:opacity-70">
+              {submissionStatus === 'saving' ? 'Saving...' : submissionStatus === 'saved' ? 'Saved!' : 'Add Customer'}
             </button>
         </form>
     );

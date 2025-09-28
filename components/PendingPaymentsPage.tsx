@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import type { Customer } from '../types';
@@ -20,11 +19,12 @@ const PaymentModal: React.FC<{
     onRecordPayment: (amount: number) => Promise<void>;
 }> = ({ isOpen, onClose, customerName, pendingBalance, onRecordPayment }) => {
     const [amount, setAmount] = useState(pendingBalance.toString());
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
     useEffect(() => {
         if (isOpen) {
             setAmount(pendingBalance.toString());
+            setSubmissionStatus('idle');
         }
     }, [pendingBalance, isOpen]);
 
@@ -35,15 +35,17 @@ const PaymentModal: React.FC<{
             alert('Please enter a valid amount greater than zero and not exceeding the pending balance.');
             return;
         }
-        setIsSubmitting(true);
+        setSubmissionStatus('saving');
         try {
             await onRecordPayment(paymentAmount);
-            onClose();
+            setSubmissionStatus('saved');
+            setTimeout(() => {
+                onClose();
+            }, 1000);
         } catch (error) {
             console.error("Failed to record payment:", error);
             alert("An error occurred while recording the payment. Please try again.");
-        } finally {
-            setIsSubmitting(false);
+            setSubmissionStatus('idle');
         }
     };
 
@@ -75,8 +77,8 @@ const PaymentModal: React.FC<{
                     </div>
                     <div className="flex justify-end gap-3">
                         <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 rounded-md">Cancel</button>
-                        <button type="submit" disabled={isSubmitting} className="px-6 py-2 bg-green-600 text-white rounded-md font-semibold hover:bg-green-700 disabled:bg-gray-400">
-                            {isSubmitting ? 'Saving...' : 'Submit'}
+                        <button type="submit" disabled={submissionStatus !== 'idle'} className="px-6 py-2 bg-green-600 text-white rounded-md font-semibold hover:bg-green-700 disabled:bg-gray-400 disabled:opacity-70">
+                            {submissionStatus === 'saving' ? 'Saving...' : submissionStatus === 'saved' ? 'Saved!' : 'Submit'}
                         </button>
                     </div>
                 </form>

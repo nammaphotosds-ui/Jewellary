@@ -38,7 +38,7 @@ const AddInventoryItemForm: React.FC<{onClose: ()=>void}> = ({onClose}) => {
     const [price, setPrice] = useState('');
     const [quantity, setQuantity] = useState('1');
     const [photo, setPhoto] = useState<File | null>(null);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -48,7 +48,7 @@ const AddInventoryItemForm: React.FC<{onClose: ()=>void}> = ({onClose}) => {
             return;
         }
 
-        setIsSubmitting(true);
+        setSubmissionStatus('saving');
         try {
             const imageUrl = photo ? await fileToBase64(photo) : undefined;
 
@@ -61,12 +61,14 @@ const AddInventoryItemForm: React.FC<{onClose: ()=>void}> = ({onClose}) => {
                 quantity: parseInt(quantity, 10),
                 imageUrl,
             });
-            onClose();
+            setSubmissionStatus('saved');
+            setTimeout(() => {
+                onClose();
+            }, 1000);
         } catch (error) {
             console.error("Failed to add inventory item:", error);
             alert("An error occurred while saving the item. Please check your connection and try again.");
-        } finally {
-            setIsSubmitting(false);
+            setSubmissionStatus('idle');
         }
     };
     
@@ -102,8 +104,8 @@ const AddInventoryItemForm: React.FC<{onClose: ()=>void}> = ({onClose}) => {
                 <input type="number" placeholder="Quantity" value={quantity} onChange={e => setQuantity(e.target.value)} className="w-full p-2 border rounded" required min="1"/>
             </div>
             <FileInput label="Item Photo (Optional)" file={photo} onFileChange={setPhoto} id="item-photo-upload"/>
-            <button type="submit" disabled={isSubmitting} className="w-full bg-brand-gold text-brand-charcoal p-3 rounded-lg font-semibold hover:bg-brand-gold-dark transition disabled:bg-gray-400">
-              {isSubmitting ? 'Saving...' : 'Add Item'}
+            <button type="submit" disabled={submissionStatus !== 'idle'} className="w-full bg-brand-gold text-brand-charcoal p-3 rounded-lg font-semibold hover:bg-brand-gold-dark transition disabled:bg-gray-400 disabled:opacity-70">
+              {submissionStatus === 'saving' ? 'Saving...' : submissionStatus === 'saved' ? 'Saved!' : 'Add Item'}
             </button>
         </form>
     );

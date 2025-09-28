@@ -255,7 +255,7 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
   const [amountPaid, setAmountPaid] = useState<string>('');
   const [bargainedAmount, setBargainedAmount] = useState<string>('');
   const [billType, setBillType] = useState<BillType>(BillType.ESTIMATE);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'processing' | 'success'>('idle');
   const [lessWeight, setLessWeight] = useState('');
   const [extraChargePercentage, setExtraChargePercentage] = useState('');
   
@@ -421,6 +421,7 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
     setLessWeight('');
     setExtraChargePercentage('');
     setBillType(BillType.ESTIMATE);
+    setSubmissionStatus('idle');
   };
   
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -436,7 +437,6 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
         const inventoryItem = inventory.find(i => i.id === item.itemId);
         if (inventoryItem && item.quantity > inventoryItem.quantity) {
           alert(`Error: Quantity for "${item.name}" (${item.quantity}) exceeds available stock (${inventoryItem.quantity}). Please correct it before submitting.`);
-          setIsSubmitting(false);
           return;
         }
       }
@@ -444,7 +444,7 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
 
     const action = (e.nativeEvent.submitter as HTMLButtonElement)?.value || 'download';
     
-    setIsSubmitting(true);
+    setSubmissionStatus('processing');
 
     try {
         const bill = await createBill({
@@ -474,6 +474,9 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         }
+        
+        setSubmissionStatus('success');
+        alert('Bill created successfully!');
 
         if (action === 'send') {
             // 1. Trigger download
@@ -481,7 +484,6 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
 
             // 2. Open WhatsApp
             const cleanPhone = customer.phone.replace(/\D/g, '');
-            // Assuming 10-digit Indian numbers, prepend country code
             const whatsappPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
             const message = encodeURIComponent(`Hello ${customer.name},\n\nHere is your ${bill.type.toLowerCase()} from DEVAGIRIKAR JEWELLERYS.\n\nThe PDF has been downloaded to your device. Please attach it here.\n\nBill ID: ${bill.id}\nTotal: ${bill.grandTotal.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}`);
             const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${message}`;
@@ -492,16 +494,16 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
             downloadFile(blob, bill);
         }
 
-        alert('Bill created successfully!');
-        resetForm();
+        setTimeout(() => {
+          resetForm();
+        }, 1000);
 
     } catch (error) {
         console.error("Error processing bill:", error);
         if ((error as DOMException).name !== 'AbortError') {
             alert(`An error occurred: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
-    } finally {
-        setIsSubmitting(false);
+        setSubmissionStatus('idle');
     }
   };
 
@@ -603,12 +605,12 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
                     <p className="text-xs text-gray-500 mt-1">An 'Invoice' will deduct items from inventory. An 'Estimate' will not.</p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3">
-                    <button type="submit" value="download" disabled={isSubmitting} className="w-full bg-brand-gold text-brand-charcoal p-3 rounded-lg font-semibold hover:bg-brand-gold-dark transition disabled:bg-gray-400">
-                        {isSubmitting ? 'Processing...' : 'Create & Download PDF'}
+                    <button type="submit" value="download" disabled={submissionStatus !== 'idle'} className="w-full bg-brand-gold text-brand-charcoal p-3 rounded-lg font-semibold hover:bg-brand-gold-dark transition disabled:bg-gray-400 disabled:opacity-70">
+                        {submissionStatus === 'processing' ? 'Processing...' : submissionStatus === 'success' ? 'Success!' : 'Create & Download PDF'}
                     </button>
-                    <button type="submit" value="send" disabled={isSubmitting} className="w-full flex items-center justify-center bg-green-600 text-white p-3 rounded-lg font-semibold hover:bg-green-700 transition disabled:bg-gray-400">
+                    <button type="submit" value="send" disabled={submissionStatus !== 'idle'} className="w-full flex items-center justify-center bg-green-600 text-white p-3 rounded-lg font-semibold hover:bg-green-700 transition disabled:bg-gray-400 disabled:opacity-70">
                         <SendIcon />
-                        {isSubmitting ? 'Processing...' : 'Create & Send'}
+                        {submissionStatus === 'processing' ? 'Processing...' : submissionStatus === 'success' ? 'Success!' : 'Create & Send'}
                     </button>
                 </div>
             </div>
