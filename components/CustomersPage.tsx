@@ -60,111 +60,113 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
 
 
     return (
-        <div className="bg-brand-cream text-brand-charcoal font-sans relative" style={{ width: '842px', height: '595px', boxSizing: 'border-box' }}>
-            {/* Decorative Border */}
-            <div className="absolute inset-0 border-[1px] border-brand-gold-dark/30 z-0"></div>
-            <div className="absolute inset-2 border-[8px] border-brand-pale-gold z-0"></div>
-            <div className="absolute inset-4 border-[1px] border-brand-gold-dark/50 z-0"></div>
+        <div className="bg-brand-cream text-brand-charcoal font-sans flex flex-col" style={{ width: '842px', height: '595px', boxSizing: 'border-box' }}>
+            <div className="flex-grow relative">
+                {/* Decorative Border */}
+                <div className="absolute inset-0 border-[1px] border-brand-gold-dark/30 z-0"></div>
+                <div className="absolute inset-2 border-[8px] border-brand-pale-gold z-0"></div>
+                <div className="absolute inset-4 border-[1px] border-brand-gold-dark/50 z-0"></div>
 
-            {/* Watermark */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-0 opacity-[0.06]">
-                <img src={logoUrl} alt="Watermark" className="w-[350px]"/>
+                {/* Watermark */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-0 opacity-[0.06]">
+                    <img src={logoUrl} alt="Watermark" className="w-[350px]"/>
+                </div>
+                
+                <div className="relative z-10 p-8 flex flex-col h-full">
+                    {/* Header */}
+                    <header className="flex justify-between items-start pb-2 mb-4 border-b border-brand-gold-dark/30">
+                        <div className="flex items-center">
+                            <img src={logoUrl} alt="Logo" className="w-16 h-16" />
+                            <div className="ml-3">
+                                <h2 className="text-3xl font-serif tracking-wider font-bold text-brand-charcoal">DEVAGIRIKAR</h2>
+                                <p className="text-lg text-brand-gold-dark tracking-[0.15em] -mt-1">JEWELLERYS</p>
+                                <p className="text-[10px] tracking-widest text-brand-gray mt-1">EXCLUSIVE JEWELLERY SHOWROOM</p>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <h1 className="text-4xl font-serif font-light text-brand-gold-dark tracking-widest">{bill.type}</h1>
+                            <p className="text-xs mt-1 font-mono"><strong>Bill No:</strong> {bill.id}</p>
+                            <p className="text-xs font-mono"><strong>GSTIN:</strong> 29BSWPD7616JZ0</p>
+                            <p className="text-xs font-mono"><strong>Date:</strong> {new Date(bill.date).toLocaleDateString()}</p>
+                        </div>
+                    </header>
+
+                    {/* Customer Details */}
+                    <section className="text-xs mb-4">
+                        <p className="text-brand-gray text-xs font-bold uppercase tracking-wider">Billed To</p>
+                        <p className="font-bold text-base text-brand-charcoal font-serif">{customer.name} ({customer.id})</p>
+                        <p className="text-brand-gray">{customer.phone}</p>
+                    </section>
+
+                    {/* Items Table */}
+                    <main className="flex-grow overflow-hidden">
+                        <table className={`w-full border-collapse border border-brand-gold-dark/30 ${tableBaseFontSize}`}>
+                            <thead className="border-b-2 border-brand-charcoal bg-brand-pale-gold/30">
+                                <tr>
+                                    <th className={`font-semibold text-left tracking-wider uppercase text-brand-charcoal w-[40%] border border-brand-gold-dark/30 ${tableCellClasses}`}>Item Name</th>
+                                    <th className={`font-semibold text-right tracking-wider uppercase text-brand-charcoal border border-brand-gold-dark/30 ${tableCellClasses}`}>Weight (g)</th>
+                                    <th className={`font-semibold text-right tracking-wider uppercase text-brand-charcoal border border-brand-gold-dark/30 ${tableCellClasses}`}>Qty</th>
+                                    <th className={`font-semibold text-right tracking-wider uppercase text-brand-charcoal border border-brand-gold-dark/30 ${tableCellClasses}`}>Rate (₹)</th>
+                                    <th className={`font-semibold text-right tracking-wider uppercase text-brand-charcoal border border-brand-gold-dark/30 ${tableCellClasses}`}>Amount (₹)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {bill.items.map(item => {
+                                    const quantity = item.quantity || 1;
+                                    const amount = item.price * quantity;
+                                    return (
+                                        <tr key={item.itemId} className="border-b border-brand-gold-dark/20">
+                                            <td className={`font-medium border border-brand-gold-dark/30 ${tableCellClasses}`}>{item.name}</td>
+                                            <td className={`text-right font-mono border border-brand-gold-dark/30 ${tableCellClasses}`}>{item.weight.toFixed(3)}</td>
+                                            <td className={`text-right font-mono border border-brand-gold-dark/30 ${tableCellClasses}`}>{quantity}</td>
+                                            <td className={`text-right font-mono border border-brand-gold-dark/30 ${tableCellClasses}`}>{item.price.toLocaleString('en-IN')}</td>
+                                            <td className={`text-right font-mono border border-brand-gold-dark/30 ${tableCellClasses}`}>{amount.toLocaleString('en-IN')}</td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </main>
+
+                    {/* Summary Section */}
+                    <section className="mt-auto pt-4 border-t border-brand-gold-dark/30">
+                        <div className="grid grid-cols-10 gap-6">
+                            <div className="col-span-5 text-xs space-y-1">
+                                <p className="text-[10px] italic text-gray-600 capitalize">{numberToWords(grandTotal)}</p>
+                                <div className="mt-4 text-[10px] text-brand-gray">
+                                    <p className="font-bold">Terms & Conditions:</p>
+                                    <p>1. Goods once sold will not be taken back.</p>
+                                </div>
+                            </div>
+                            <div className="col-span-5 text-xs">
+                                <div className="space-y-1">
+                                    <div className="flex justify-between"><span>Gross Wt:</span><span>{totalGrossWeight.toFixed(3)} g</span></div>
+                                    {bill.lessWeight > 0 && <div className="flex justify-between"><span>Less Wt:</span><span>- {bill.lessWeight.toFixed(3)} g</span></div>}
+                                    <div className="flex justify-between font-bold border-t border-gray-200 mt-1 pt-1"><span>Net Wt:</span><span>{netWeight.toFixed(3)} g</span></div>
+                                </div>
+                                <div className="space-y-1 mt-3 pt-3 border-t border-gray-200">
+                                    <div className="flex justify-between"><span>Subtotal:</span><span>₹{finalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
+                                    {extraChargeAmount > 0 && <div className="flex justify-between"><span>Charges ({bill.extraChargePercentage}%):</span><span>+ ₹{extraChargeAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
+                                    {bargainedAmount > 0 && <div className="flex justify-between text-green-600"><span>Discount:</span><span>- ₹{bargainedAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
+                                    <div className="flex justify-between font-bold text-base mt-1 pt-1 border-t-2 border-brand-charcoal"><span>Grand Total:</span><span>₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
+                                </div>
+                                <div className="space-y-1 mt-2">
+                                    <div className="flex justify-between font-bold"><span>Paid:</span><span>₹{amountPaid.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
+                                    <div className="flex justify-between font-bold text-red-600"><span>BALANCE DUE:</span><span>₹{bill.balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex justify-between items-end mt-6">
+                            <p className="text-[10px] text-brand-gray">Thank you for your business!</p>
+                            <div className="text-center">
+                                <div className="w-40 border-t border-brand-charcoal pt-1"></div>
+                                <p className="text-[10px]">Authorised Signatory</p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
             </div>
-            
-            <div className="relative z-10 p-8 flex flex-col h-full">
-                {/* Header */}
-                <header className="flex justify-between items-start pb-2 mb-4 border-b border-brand-gold-dark/30">
-                    <div className="flex items-center">
-                        <img src={logoUrl} alt="Logo" className="w-16 h-16" />
-                        <div className="ml-3">
-                            <h2 className="text-3xl font-serif tracking-wider font-bold text-brand-charcoal">DEVAGIRIKAR</h2>
-                            <p className="text-lg text-brand-gold-dark tracking-[0.15em] -mt-1">JEWELLERYS</p>
-                            <p className="text-[10px] tracking-widest text-brand-gray mt-1">EXCLUSIVE JEWELLERY SHOWROOM</p>
-                        </div>
-                    </div>
-                    <div className="text-right">
-                        <h1 className="text-4xl font-serif font-light text-brand-gold-dark tracking-widest">{bill.type}</h1>
-                        <p className="text-xs mt-1 font-mono"><strong>Bill No:</strong> {bill.id}</p>
-                        <p className="text-xs font-mono"><strong>GSTIN:</strong> 29BSWPD7616JZ0</p>
-                        <p className="text-xs font-mono"><strong>Date:</strong> {new Date(bill.date).toLocaleDateString()}</p>
-                    </div>
-                </header>
-
-                {/* Customer Details */}
-                <section className="text-xs mb-4">
-                    <p className="text-brand-gray text-xs font-bold uppercase tracking-wider">Billed To</p>
-                    <p className="font-bold text-base text-brand-charcoal font-serif">{customer.name} ({customer.id})</p>
-                    <p className="text-brand-gray">{customer.phone}</p>
-                </section>
-
-                {/* Items Table */}
-                <main className="flex-grow overflow-hidden">
-                     <table className={`w-full border-collapse border border-brand-gold-dark/30 ${tableBaseFontSize}`}>
-                        <thead className="border-b-2 border-brand-charcoal bg-brand-pale-gold/30">
-                            <tr>
-                                <th className={`font-semibold text-left tracking-wider uppercase text-brand-charcoal w-[40%] border border-brand-gold-dark/30 ${tableCellClasses}`}>Item Name</th>
-                                <th className={`font-semibold text-right tracking-wider uppercase text-brand-charcoal border border-brand-gold-dark/30 ${tableCellClasses}`}>Weight (g)</th>
-                                <th className={`font-semibold text-right tracking-wider uppercase text-brand-charcoal border border-brand-gold-dark/30 ${tableCellClasses}`}>Qty</th>
-                                <th className={`font-semibold text-right tracking-wider uppercase text-brand-charcoal border border-brand-gold-dark/30 ${tableCellClasses}`}>Rate (₹)</th>
-                                <th className={`font-semibold text-right tracking-wider uppercase text-brand-charcoal border border-brand-gold-dark/30 ${tableCellClasses}`}>Amount (₹)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {bill.items.map(item => {
-                                const quantity = item.quantity || 1;
-                                const amount = item.price * quantity;
-                                return (
-                                    <tr key={item.itemId} className="border-b border-brand-gold-dark/20">
-                                        <td className={`font-medium border border-brand-gold-dark/30 ${tableCellClasses}`}>{item.name}</td>
-                                        <td className={`text-right font-mono border border-brand-gold-dark/30 ${tableCellClasses}`}>{item.weight.toFixed(3)}</td>
-                                        <td className={`text-right font-mono border border-brand-gold-dark/30 ${tableCellClasses}`}>{quantity}</td>
-                                        <td className={`text-right font-mono border border-brand-gold-dark/30 ${tableCellClasses}`}>{item.price.toLocaleString('en-IN')}</td>
-                                        <td className={`text-right font-mono border border-brand-gold-dark/30 ${tableCellClasses}`}>{amount.toLocaleString('en-IN')}</td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </main>
-
-                {/* Summary Section */}
-                <section className="mt-auto pt-4 border-t border-brand-gold-dark/30">
-                    <div className="grid grid-cols-10 gap-6">
-                        <div className="col-span-5 text-xs space-y-1">
-                             <p className="text-[10px] italic text-gray-600 capitalize">{numberToWords(grandTotal)}</p>
-                             <div className="mt-4 text-[10px] text-brand-gray">
-                                <p className="font-bold">Terms & Conditions:</p>
-                                <p>1. Goods once sold will not be taken back.</p>
-                             </div>
-                        </div>
-                        <div className="col-span-5 text-xs">
-                            <div className="space-y-1">
-                                <div className="flex justify-between"><span>Gross Wt:</span><span>{totalGrossWeight.toFixed(3)} g</span></div>
-                                {bill.lessWeight > 0 && <div className="flex justify-between"><span>Less Wt:</span><span>- {bill.lessWeight.toFixed(3)} g</span></div>}
-                                <div className="flex justify-between font-bold border-t border-gray-200 mt-1 pt-1"><span>Net Wt:</span><span>{netWeight.toFixed(3)} g</span></div>
-                            </div>
-                            <div className="space-y-1 mt-3 pt-3 border-t border-gray-200">
-                                <div className="flex justify-between"><span>Subtotal:</span><span>₹{finalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
-                                {extraChargeAmount > 0 && <div className="flex justify-between"><span>Charges ({bill.extraChargePercentage}%):</span><span>+ ₹{extraChargeAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
-                                {bargainedAmount > 0 && <div className="flex justify-between text-green-600"><span>Discount:</span><span>- ₹{bargainedAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
-                                <div className="flex justify-between font-bold text-base mt-1 pt-1 border-t-2 border-brand-charcoal"><span>Grand Total:</span><span>₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
-                            </div>
-                            <div className="space-y-1 mt-2">
-                                 <div className="flex justify-between font-bold"><span>Paid:</span><span>₹{amountPaid.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
-                                 <div className="flex justify-between font-bold text-red-600"><span>BALANCE DUE:</span><span>₹{bill.balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="flex justify-between items-end mt-6 mb-6">
-                         <p className="text-[10px] text-brand-gray">Thank you for your business!</p>
-                         <div className="text-center">
-                            <div className="w-40 border-t border-brand-charcoal pt-1"></div>
-                            <p className="text-[10px]">Authorised Signatory</p>
-                         </div>
-                    </div>
-                </section>
-            </div>
-             <footer className="absolute bottom-4 left-8 right-8 text-center text-brand-charcoal">
+            <footer className="text-center text-brand-charcoal pt-1 pb-2 px-8 flex-shrink-0">
                 <div className="border-t-2 border-brand-charcoal mb-1 mx-auto w-full"></div>
                 <p className="font-semibold text-xs">1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot. | Phone: 9008604004 / 8618748300</p>
             </footer>
@@ -174,86 +176,97 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
 
 
 // New Redesigned Customer Profile Template
-const CustomerProfileTemplate: React.FC<{customer: Customer, bills: Bill[]}> = ({customer, bills}) => {
+const CustomerProfileTemplate: React.FC<{
+    customer: Customer, 
+    bills: Bill[],
+    pageInfo?: { currentPage: number, totalPages: number }
+}> = ({customer, bills, pageInfo}) => {
      const logoUrl = "https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163";
     return (
-        <div className="bg-brand-cream text-brand-charcoal font-sans relative" style={{ width: '842px', height: '595px', boxSizing: 'border-box' }}>
-            {/* Decorative Border */}
-            <div className="absolute inset-0 border-[1px] border-brand-gold-dark/30 z-0"></div>
-            <div className="absolute inset-2 border-[8px] border-brand-pale-gold z-0"></div>
-            <div className="absolute inset-4 border-[1px] border-brand-gold-dark/50 z-0"></div>
+        <div className="bg-brand-cream text-brand-charcoal font-sans flex flex-col" style={{ width: '842px', height: '595px', boxSizing: 'border-box' }}>
+            <div className="flex-grow relative">
+                 {/* Decorative Border */}
+                <div className="absolute inset-0 border-[1px] border-brand-gold-dark/30 z-0"></div>
+                <div className="absolute inset-2 border-[8px] border-brand-pale-gold z-0"></div>
+                <div className="absolute inset-4 border-[1px] border-brand-gold-dark/50 z-0"></div>
 
-            {/* Watermark */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-0 opacity-[0.06]">
-                <img src={logoUrl} alt="Watermark" className="w-[350px]"/>
-            </div>
-            <div className="relative z-10 p-8 flex flex-col h-full">
-                <header className="flex justify-between items-start pb-4 mb-6 border-b border-brand-gold-dark/30">
-                    <div className="flex items-center">
-                        <img src={logoUrl} alt="Logo" className="w-20 h-20" />
-                        <div className="ml-4">
-                            <h2 className="text-4xl font-serif tracking-wider font-bold text-brand-charcoal">DEVAGIRIKAR</h2>
-                            <p className="text-xl text-brand-gold-dark tracking-[0.15em] -mt-1">JEWELLERYS</p>
-                            <p className="text-xs tracking-widest text-brand-gray mt-2">EXCLUSIVE JEWELLERY SHOWROOM</p>
+                {/* Watermark */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-0 opacity-[0.06]">
+                    <img src={logoUrl} alt="Watermark" className="w-[350px]"/>
+                </div>
+                <div className="relative z-10 p-8 flex flex-col h-full">
+                    <header className="flex justify-between items-start pb-4 mb-6 border-b border-brand-gold-dark/30">
+                        <div className="flex items-center">
+                            <img src={logoUrl} alt="Logo" className="w-20 h-20" />
+                            <div className="ml-4">
+                                <h2 className="text-4xl font-serif tracking-wider font-bold text-brand-charcoal">DEVAGIRIKAR</h2>
+                                <p className="text-xl text-brand-gold-dark tracking-[0.15em] -mt-1">JEWELLERYS</p>
+                                <p className="text-xs tracking-widest text-brand-gray mt-2">EXCLUSIVE JEWELLERY SHOWROOM</p>
+                            </div>
                         </div>
-                    </div>
-                    <div className="text-right">
-                        <h1 className="text-4xl font-serif font-light text-brand-gold-dark tracking-wider">Customer Statement</h1>
-                        <p className="text-sm mt-2 font-mono">Generated: {new Date().toLocaleDateString()}</p>
-                    </div>
-                </header>
+                        <div className="text-right">
+                            <h1 className="text-4xl font-serif font-light text-brand-gold-dark tracking-wider">Customer Statement</h1>
+                            <p className="text-sm mt-2 font-mono">Generated: {new Date().toLocaleDateString()}</p>
+                            {pageInfo && pageInfo.totalPages > 1 && (
+                                <p className="text-xs font-mono mt-1">Page {pageInfo.currentPage} of {pageInfo.totalPages}</p>
+                            )}
+                        </div>
+                    </header>
 
-                <section className="grid grid-cols-2 gap-8 mb-6">
-                    <div className="text-sm">
-                        <p className="text-brand-gray text-sm font-bold uppercase tracking-wider">Statement For</p>
-                        <p className="font-bold text-2xl text-brand-charcoal font-serif">{customer.name}</p>
-                        <p className="text-brand-gray">{customer.phone}</p>
-                        <p className="font-mono text-xs text-gray-500">ID: {customer.id}</p>
-                        <p className="text-xs mt-2">Member Since: {new Date(customer.joinDate).toLocaleDateString()}</p>
-                        {customer.dob && <p className="text-xs">Birthday: {new Date(customer.dob).toLocaleDateString()}</p>}
-                    </div>
-                    <div className="p-4 rounded-lg bg-brand-pale-gold/40 border border-brand-gold-dark/30 text-center flex flex-col justify-center">
-                        <h3 className="text-sm font-semibold text-brand-charcoal uppercase tracking-wider">Total Pending Balance</h3>
-                        <p className="text-5xl font-bold text-red-600 font-sans">₹{customer.pendingBalance.toLocaleString('en-IN')}</p>
-                    </div>
-                </section>
+                    {(!pageInfo || pageInfo.currentPage === 1) && (
+                        <section className="grid grid-cols-2 gap-8 mb-6">
+                            <div className="text-sm">
+                                <p className="text-brand-gray text-sm font-bold uppercase tracking-wider">Statement For</p>
+                                <p className="font-bold text-2xl text-brand-charcoal font-serif">{customer.name}</p>
+                                <p className="text-brand-gray">{customer.phone}</p>
+                                <p className="font-mono text-xs text-gray-500">ID: {customer.id}</p>
+                                <p className="text-xs mt-2">Member Since: {new Date(customer.joinDate).toLocaleDateString()}</p>
+                                {customer.dob && <p className="text-xs">Birthday: {new Date(customer.dob).toLocaleDateString()}</p>}
+                            </div>
+                            <div className="p-4 rounded-lg bg-brand-pale-gold/40 border border-brand-gold-dark/30 text-center flex flex-col justify-center">
+                                <h3 className="text-sm font-semibold text-brand-charcoal uppercase tracking-wider">Total Pending Balance</h3>
+                                <p className="text-5xl font-bold text-red-600 font-sans">₹{customer.pendingBalance.toLocaleString('en-IN')}</p>
+                            </div>
+                        </section>
+                    )}
 
-                <main className="flex-grow">
-                    <h3 className="text-lg font-semibold mb-2 font-serif text-brand-charcoal">Transaction History</h3>
-                    <div className="border border-brand-gold-dark/20 rounded-lg overflow-hidden">
-                        <table className="w-full text-left text-sm">
-                            <thead className="bg-brand-pale-gold/50">
-                                <tr>
-                                    <th className="px-3 py-2 font-semibold text-brand-charcoal tracking-wider">Date</th>
-                                    <th className="px-3 py-2 font-semibold text-brand-charcoal tracking-wider">Bill No.</th>
-                                    <th className="px-3 py-2 font-semibold text-brand-charcoal tracking-wider">Type</th>
-                                    <th className="px-3 py-2 text-right font-semibold text-brand-charcoal tracking-wider">Total (₹)</th>
-                                    <th className="px-3 py-2 text-right font-semibold text-brand-charcoal tracking-wider">Paid (₹)</th>
-                                    <th className="px-3 py-2 text-right font-semibold text-brand-charcoal tracking-wider">Balance (₹)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {bills.length > 0 ? bills.map((bill) => (
-                                    <tr key={bill.id} className="border-t border-brand-gold-dark/20">
-                                        <td className="px-3 py-2">{new Date(bill.date).toLocaleDateString()}</td>
-                                        <td className="px-3 py-2 font-mono text-xs">{bill.id}</td>
-                                        <td className="px-3 py-2"><span className={`px-2 py-0.5 text-xs rounded-full ${bill.type === 'INVOICE' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>{bill.type}</span></td>
-                                        <td className="px-3 py-2 text-right font-mono">{bill.grandTotal.toLocaleString('en-IN')}</td>
-                                        <td className="px-3 py-2 text-right text-green-700 font-mono">{bill.amountPaid.toLocaleString('en-IN')}</td>
-                                        <td className={`px-3 py-2 text-right font-bold font-mono ${bill.balance > 0 ? 'text-red-600' : 'text-gray-500'}`}>{bill.balance.toLocaleString('en-IN')}</td>
+                    <main className="flex-grow">
+                        <h3 className="text-lg font-semibold mb-2 font-serif text-brand-charcoal">Transaction History</h3>
+                        <div className="border border-brand-gold-dark/20 rounded-lg overflow-hidden">
+                            <table className="w-full text-left text-sm">
+                                <thead className="bg-brand-pale-gold/50">
+                                    <tr>
+                                        <th className="px-3 py-2 font-semibold text-brand-charcoal tracking-wider">Date</th>
+                                        <th className="px-3 py-2 font-semibold text-brand-charcoal tracking-wider">Bill No.</th>
+                                        <th className="px-3 py-2 font-semibold text-brand-charcoal tracking-wider">Type</th>
+                                        <th className="px-3 py-2 text-right font-semibold text-brand-charcoal tracking-wider">Total (₹)</th>
+                                        <th className="px-3 py-2 text-right font-semibold text-brand-charcoal tracking-wider">Paid (₹)</th>
+                                        <th className="px-3 py-2 text-right font-semibold text-brand-charcoal tracking-wider">Balance (₹)</th>
                                     </tr>
-                                )) : (
-                                  <tr><td colSpan={6} className="text-center p-8 text-gray-500">No transactions found for this customer.</td></tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </main>
-                 <footer className="absolute bottom-4 left-8 right-8 text-center text-brand-charcoal">
-                    <div className="border-t-2 border-brand-charcoal mb-2 mx-auto w-full"></div>
-                    <p className="font-semibold text-xs">1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot. | Phone: 9008604004 / 8618748300</p>
-                </footer>
+                                </thead>
+                                <tbody>
+                                    {bills.length > 0 ? bills.map((bill) => (
+                                        <tr key={bill.id} className="border-t border-brand-gold-dark/20">
+                                            <td className="px-3 py-2">{new Date(bill.date).toLocaleDateString()}</td>
+                                            <td className="px-3 py-2 font-mono text-xs">{bill.id}</td>
+                                            <td className="px-3 py-2"><span className={`px-2 py-0.5 text-xs rounded-full ${bill.type === 'INVOICE' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>{bill.type}</span></td>
+                                            <td className="px-3 py-2 text-right font-mono">{bill.grandTotal.toLocaleString('en-IN')}</td>
+                                            <td className="px-3 py-2 text-right text-green-700 font-mono">{bill.amountPaid.toLocaleString('en-IN')}</td>
+                                            <td className={`px-3 py-2 text-right font-bold font-mono ${bill.balance > 0 ? 'text-red-600' : 'text-gray-500'}`}>{bill.balance.toLocaleString('en-IN')}</td>
+                                        </tr>
+                                    )) : (
+                                    <tr><td colSpan={6} className="text-center p-8 text-gray-500">No transactions found for this customer.</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </main>
+                </div>
             </div>
+            <footer className="text-center text-brand-charcoal pt-1 pb-2 px-8 flex-shrink-0">
+                <div className="border-t-2 border-brand-charcoal mb-1 mx-auto w-full"></div>
+                <p className="font-semibold text-xs">1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot. | Phone: 9008604004 / 8618748300</p>
+            </footer>
         </div>
     );
 };
@@ -322,7 +335,7 @@ const OnScreenCustomerProfile: React.FC<{
     );
 };
 
-const generatePdfBlob = (componentToRender: React.ReactElement): Promise<Blob | null> => {
+const generateSinglePagePdfBlob = (componentToRender: React.ReactElement): Promise<Blob | null> => {
     return new Promise(resolve => {
         // @ts-ignore
         const { jsPDF } = window.jspdf;
@@ -388,6 +401,89 @@ const generatePdfBlob = (componentToRender: React.ReactElement): Promise<Blob | 
     });
 };
 
+const generateCustomerProfilePdfWithPagination = async (customer: Customer, bills: Bill[]): Promise<Blob | null> => {
+    // @ts-ignore
+    const { jsPDF } = window.jspdf;
+    // @ts-ignore
+    const html2canvas = window.html2canvas;
+    
+    const BILLS_PER_PAGE = 8;
+    const billChunks = [];
+    if (bills.length > 0) {
+        for (let i = 0; i < bills.length; i += BILLS_PER_PAGE) {
+            billChunks.push(bills.slice(i, i + BILLS_PER_PAGE));
+        }
+    } else {
+        billChunks.push([]);
+    }
+
+    const totalPages = billChunks.length;
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a5' });
+
+    for (let i = 0; i < totalPages; i++) {
+        const pageBills = billChunks[i];
+        const pageNumber = i + 1;
+
+        const componentToRender = (
+            <CustomerProfileTemplate
+                customer={customer}
+                bills={pageBills}
+                pageInfo={{ currentPage: pageNumber, totalPages: totalPages }}
+            />
+        );
+
+        const tempContainer = document.createElement('div');
+        tempContainer.style.position = 'absolute';
+        tempContainer.style.left = '-9999px';
+        tempContainer.style.top = '0';
+        tempContainer.style.zIndex = '-1';
+        document.body.appendChild(tempContainer);
+        const root = ReactDOM.createRoot(tempContainer);
+
+        const canvas = await new Promise<HTMLCanvasElement | null>((resolve) => {
+            root.render(componentToRender);
+            setTimeout(async () => {
+                const elementToCapture = tempContainer.children[0] as HTMLElement;
+                 if (!elementToCapture) {
+                    console.error("PDF generation failed: Component did not render.");
+                    resolve(null);
+                    return;
+                }
+                const images = Array.from(elementToCapture.getElementsByTagName('img'));
+                await Promise.all(images.map(img => new Promise<void>(res => {
+                    if (img.complete) return res();
+                    img.onload = () => res();
+                    img.onerror = () => res();
+                })));
+                await new Promise(r => setTimeout(r, 200));
+                
+                const capturedCanvas = await html2canvas(elementToCapture, { scale: 2, useCORS: true, windowWidth: elementToCapture.scrollWidth, windowHeight: elementToCapture.scrollHeight });
+                resolve(capturedCanvas);
+            }, 300);
+        });
+        
+        root.unmount();
+        if(document.body.contains(tempContainer)){
+            document.body.removeChild(tempContainer);
+        }
+        
+        if (canvas) {
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            if (i > 0) {
+                pdf.addPage('a5', 'landscape');
+            }
+            const margin = 8;
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            const contentWidth = pdfWidth - margin * 2;
+            const contentHeight = pdfHeight - margin * 2;
+            pdf.addImage(imgData, 'JPEG', margin, margin, contentWidth, contentHeight);
+        }
+    }
+
+    return pdf.output('blob');
+};
+
 const CustomerDetailsView: React.FC<{customer: Customer, onBack: () => void}> = ({customer, onBack}) => {
     const { getBillsByCustomerId, deleteCustomer } = useAppContext();
     const bills = getBillsByCustomerId(customer.id);
@@ -396,7 +492,7 @@ const CustomerDetailsView: React.FC<{customer: Customer, onBack: () => void}> = 
 
     const handleDownloadPdf = async () => {
         setIsProcessing(true);
-        const blob = await generatePdfBlob(<CustomerProfileTemplate customer={customer} bills={bills} />);
+        const blob = await generateCustomerProfilePdfWithPagination(customer, bills);
         if (blob) {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -415,7 +511,7 @@ const CustomerDetailsView: React.FC<{customer: Customer, onBack: () => void}> = 
     const handleSharePdf = async () => {
         setIsProcessing(true);
         try {
-            const blob = await generatePdfBlob(<CustomerProfileTemplate customer={customer} bills={bills} />);
+            const blob = await generateCustomerProfilePdfWithPagination(customer, bills);
             if (!blob) throw new Error("Failed to generate PDF blob.");
 
             const file = new File([blob], `profile-${customer.id}.pdf`, { type: 'application/pdf' });
@@ -441,7 +537,7 @@ const CustomerDetailsView: React.FC<{customer: Customer, onBack: () => void}> = 
     const handleBillDownload = async (bill: Bill) => {
         setIsGeneratingBillPdf(bill.id);
         try {
-            const blob = await generatePdfBlob(<InvoiceTemplate bill={bill} customer={customer} />);
+            const blob = await generateSinglePagePdfBlob(<InvoiceTemplate bill={bill} customer={customer} />);
             if (blob) {
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
