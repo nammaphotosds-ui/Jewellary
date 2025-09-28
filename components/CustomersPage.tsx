@@ -51,7 +51,7 @@ const Avatar: React.FC<{ name: string; className?: string }> = ({ name, classNam
 
 // New Redesigned Invoice Template for PDF Generation
 const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, customer}) => {
-    const totalGrossWeight = bill.items.reduce((sum, item) => sum + item.weight, 0);
+    const totalGrossWeight = bill.items.reduce((sum, item) => sum + (item.weight * (item.quantity || 1)), 0);
     const { grandTotal, netWeight, extraChargeAmount, bargainedAmount, finalAmount, amountPaid } = bill;
     const logoUrl = "https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163";
 
@@ -81,6 +81,7 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                     <div className="text-right">
                         <h1 className="text-5xl font-serif font-light text-brand-gold-dark tracking-widest">{bill.type}</h1>
                         <p className="text-sm mt-2 font-mono"><strong>Bill No:</strong> {bill.id}</p>
+                        <p className="text-sm font-mono"><strong>GSTIN:</strong> 29BSWPD7616JZ0</p>
                         <p className="text-sm font-mono"><strong>Date:</strong> {new Date(bill.date).toLocaleDateString()}</p>
                     </div>
                 </header>
@@ -97,20 +98,27 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                      <table className="w-full text-sm">
                         <thead className="border-b-2 border-brand-charcoal">
                             <tr>
-                                <th className="font-semibold p-3 text-left tracking-wider uppercase text-brand-charcoal">Item Name</th>
-                                <th className="font-semibold p-3 text-right tracking-wider uppercase text-brand-charcoal w-32">Weight (g)</th>
-                                <th className="font-semibold p-3 text-right tracking-wider uppercase text-brand-charcoal w-32">Price (₹)</th>
+                                <th className="font-semibold p-2 text-left tracking-wider uppercase text-brand-charcoal w-[40%]">Item Name</th>
+                                <th className="font-semibold p-2 text-right tracking-wider uppercase text-brand-charcoal">Weight (g)</th>
+                                <th className="font-semibold p-2 text-right tracking-wider uppercase text-brand-charcoal">Qty</th>
+                                <th className="font-semibold p-2 text-right tracking-wider uppercase text-brand-charcoal">Rate (₹)</th>
+                                <th className="font-semibold p-2 text-right tracking-wider uppercase text-brand-charcoal">Amount (₹)</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {bill.items.map(item => (
-                                <tr key={item.itemId} className="border-b border-brand-gold-dark/20">
-                                    <td className="p-3 font-medium">{item.name}</td>
-                                    <td className="p-3 text-right font-mono">{item.weight.toFixed(3)}</td>
-                                    <td className="p-3 text-right font-mono">{item.price.toLocaleString('en-IN')}</td>
-                                </tr>
-                            ))}
-                            <tr className="h-4"><td colSpan={3}></td></tr>
+                            {bill.items.map(item => {
+                                const quantity = item.quantity || 1;
+                                const amount = item.price * quantity;
+                                return (
+                                    <tr key={item.itemId} className="border-b border-brand-gold-dark/20">
+                                        <td className="p-2 font-medium">{item.name}</td>
+                                        <td className="p-2 text-right font-mono">{item.weight.toFixed(3)}</td>
+                                        <td className="p-2 text-right font-mono">{quantity}</td>
+                                        <td className="p-2 text-right font-mono">{item.price.toLocaleString('en-IN')}</td>
+                                        <td className="p-2 text-right font-mono">{amount.toLocaleString('en-IN')}</td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </main>
@@ -151,12 +159,12 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                          </div>
                     </div>
                 </section>
-                
-                <footer className="absolute bottom-6 left-8 right-8 text-center text-[10px] text-brand-charcoal font-semibold">
-                    <p className="font-bold font-serif tracking-wide">DEVAGIRIKAR JEWELLERYS</p>
-                    <p>1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot. | Phone: 9008604004 / 8618748300 | GSTIN: 29BSWPD7616JZ0</p>
-                </footer>
             </div>
+             <footer className="absolute bottom-4 left-8 right-8 text-center text-xs text-brand-charcoal font-bold">
+                <div className="border-t-2 border-brand-charcoal mb-2 mx-auto w-full"></div>
+                <p className="font-serif tracking-wide text-sm">DEVAGIRIKAR JEWELLERYS</p>
+                <p className="font-normal text-[10px]">1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot. | Phone: 9008604004 / 8618748300</p>
+            </footer>
         </div>
     );
 };
@@ -238,10 +246,10 @@ const CustomerProfileTemplate: React.FC<{customer: Customer, bills: Bill[]}> = (
                         </table>
                     </div>
                 </main>
-
-                <footer className="absolute bottom-6 left-8 right-8 text-center text-[10px] text-brand-charcoal font-semibold">
-                    <p className="font-bold font-serif tracking-wide">DEVAGIRIKAR JEWELLERYS</p>
-                    <p>1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot. | Phone: 9008604004 / 8618748300 | GSTIN: 29BSWPD7616JZ0</p>
+                 <footer className="absolute bottom-4 left-8 right-8 text-center text-xs text-brand-charcoal font-bold">
+                    <div className="border-t-2 border-brand-charcoal mb-2 mx-auto w-full"></div>
+                    <p className="font-serif tracking-wide text-sm">DEVAGIRIKAR JEWELLERYS</p>
+                    <p className="font-normal text-[10px]">1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot. | Phone: 9008604004 / 8618748300</p>
                 </footer>
             </div>
         </div>

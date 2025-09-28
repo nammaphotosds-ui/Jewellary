@@ -35,6 +35,7 @@ export interface BillItem {
   weight: number;
   price: number;
   imageUrl?: string;
+  quantity: number;
 }
 
 export enum BillType {

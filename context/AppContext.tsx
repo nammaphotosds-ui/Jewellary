@@ -188,7 +188,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const createBill = async (billData: Omit<Bill, 'id' | 'balance' | 'date' | 'customerName' | 'finalAmount' | 'netWeight' | 'extraChargeAmount' | 'grandTotal'>): Promise<Bill> => {
     // Correctly calculate price based on net weight
-    const totalGrossWeight = billData.items.reduce((sum, item) => sum + item.weight, 0);
+    const totalGrossWeight = billData.items.reduce((sum, item) => sum + (item.weight * item.quantity), 0);
     const subtotalBeforeLessWeight = billData.totalAmount; // This is the sum of item prices
 
     const averageRatePerGram = totalGrossWeight > 0 ? subtotalBeforeLessWeight / totalGrossWeight : 0;
@@ -228,7 +228,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       for (const billItem of billData.items) {
           const item = inventoryMap.get(billItem.itemId) as JewelryItem;
           if (item) {
-              const updatedItem = { ...item, quantity: Math.max(0, item.quantity - 1) };
+              const updatedItem = { ...item, quantity: Math.max(0, item.quantity - billItem.quantity) };
               inventoryMap.set(item.id, updatedItem);
           }
       }
@@ -288,7 +288,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           itemId: 'ADJUSTMENT',
           name: adjustmentAmount > 0 ? 'Manual Revenue Increase' : 'Manual Revenue Decrease',
           weight: 0,
-          price: adjustmentAmount
+          price: adjustmentAmount,
+          quantity: 1,
       }],
       totalAmount: adjustmentAmount,
       bargainedAmount: 0,

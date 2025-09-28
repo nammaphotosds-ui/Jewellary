@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Page } from '../types';
@@ -36,6 +37,10 @@ const DashboardPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCur
         maximumFractionDigits: 0,
     }).format(amount);
   };
+  
+  const recentBills = [...bills]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 3);
 
   return (
     <div className="space-y-6">
@@ -50,7 +55,7 @@ const DashboardPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCur
         <div className="bg-white p-4 md:p-6 rounded-lg shadow-md border border-gray-100">
           <h2 className="text-xl font-bold mb-4">Recent Invoices</h2>
           <div className="space-y-3">
-            {bills.slice(0, 5).map(bill => (
+            {recentBills.map(bill => (
               <div key={bill.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-md">
                 <div>
                   <p className="font-semibold">{bill.customerName}</p>
@@ -59,14 +64,14 @@ const DashboardPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCur
                 <p className="font-bold text-brand-charcoal-light">₹{bill.totalAmount.toLocaleString('en-IN')}</p>
               </div>
             ))}
-             {bills.length === 0 && <p className="text-gray-500 text-center py-4">No recent invoices.</p>}
+             {recentBills.length === 0 && <p className="text-gray-500 text-center py-4">No recent invoices.</p>}
           </div>
         </div>
 
         <div className="bg-white p-4 md:p-6 rounded-lg shadow-md border border-gray-100">
           <h2 className="text-xl font-bold mb-4">New Customers</h2>
            <div className="space-y-3">
-              {customers.slice(-5).reverse().map(customer => (
+              {customers.slice(-3).reverse().map(customer => (
                 <div key={customer.id} className="flex items-center p-3 bg-gray-50 rounded-md">
                    <div className="w-10 h-10 rounded-full mr-4 bg-brand-gold-light flex items-center justify-center font-bold text-brand-gold-dark">{customer.name.charAt(0)}</div>
                   <div>
@@ -87,12 +92,8 @@ const UsersIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" heigh
 const InventoryIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>;
 const RevenueIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M7 21a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2Z"/>
-        <path d="M8 7v-2a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-        <path d="M10 13h6"/>
-        <path d="M10 16h6"/>
-        <path d="M12 11v8"/>
-        <path d="M14 11c-1.5 0-3 1-3 3"/>
+        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+        <polyline points="17 6 23 6 23 12"></polyline>
     </svg>
 );
 const PendingIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="6" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>;

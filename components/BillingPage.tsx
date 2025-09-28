@@ -40,7 +40,7 @@ const numberToWords = (num: number): string => {
 
 // This is the template that will be rendered for PDF generation
 const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, customer}) => {
-    const totalGrossWeight = bill.items.reduce((sum, item) => sum + item.weight, 0);
+    const totalGrossWeight = bill.items.reduce((sum, item) => sum + (item.weight * (item.quantity || 1)), 0);
     const { grandTotal, netWeight, extraChargeAmount, bargainedAmount, finalAmount, amountPaid } = bill;
     const logoUrl = "https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163";
 
@@ -70,6 +70,7 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                     <div className="text-right">
                         <h1 className="text-5xl font-serif font-light text-brand-gold-dark tracking-widest">{bill.type}</h1>
                         <p className="text-sm mt-2 font-mono"><strong>Bill No:</strong> {bill.id}</p>
+                        <p className="text-sm font-mono"><strong>GSTIN:</strong> 29BSWPD7616JZ0</p>
                         <p className="text-sm font-mono"><strong>Date:</strong> {new Date(bill.date).toLocaleDateString()}</p>
                     </div>
                 </header>
@@ -86,20 +87,27 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                      <table className="w-full text-sm">
                         <thead className="border-b-2 border-brand-charcoal">
                             <tr>
-                                <th className="font-semibold p-3 text-left tracking-wider uppercase text-brand-charcoal">Item Name</th>
-                                <th className="font-semibold p-3 text-right tracking-wider uppercase text-brand-charcoal w-32">Weight (g)</th>
-                                <th className="font-semibold p-3 text-right tracking-wider uppercase text-brand-charcoal w-32">Price (₹)</th>
+                                <th className="font-semibold p-2 text-left tracking-wider uppercase text-brand-charcoal w-[40%]">Item Name</th>
+                                <th className="font-semibold p-2 text-right tracking-wider uppercase text-brand-charcoal">Weight (g)</th>
+                                <th className="font-semibold p-2 text-right tracking-wider uppercase text-brand-charcoal">Qty</th>
+                                <th className="font-semibold p-2 text-right tracking-wider uppercase text-brand-charcoal">Rate (₹)</th>
+                                <th className="font-semibold p-2 text-right tracking-wider uppercase text-brand-charcoal">Amount (₹)</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {bill.items.map(item => (
-                                <tr key={item.itemId} className="border-b border-brand-gold-dark/20">
-                                    <td className="p-3 font-medium">{item.name}</td>
-                                    <td className="p-3 text-right font-mono">{item.weight.toFixed(3)}</td>
-                                    <td className="p-3 text-right font-mono">{item.price.toLocaleString('en-IN')}</td>
-                                </tr>
-                            ))}
-                            <tr className="h-4"><td colSpan={3}></td></tr>
+                            {bill.items.map(item => {
+                                const quantity = item.quantity || 1;
+                                const amount = item.price * quantity;
+                                return (
+                                    <tr key={item.itemId} className="border-b border-brand-gold-dark/20">
+                                        <td className="p-2 font-medium">{item.name}</td>
+                                        <td className="p-2 text-right font-mono">{item.weight.toFixed(3)}</td>
+                                        <td className="p-2 text-right font-mono">{quantity}</td>
+                                        <td className="p-2 text-right font-mono">{item.price.toLocaleString('en-IN')}</td>
+                                        <td className="p-2 text-right font-mono">{amount.toLocaleString('en-IN')}</td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </main>
@@ -140,12 +148,12 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                          </div>
                     </div>
                 </section>
-                
-                <footer className="absolute bottom-6 left-8 right-8 text-center text-[10px] text-brand-charcoal font-semibold">
-                    <p className="font-bold font-serif tracking-wide">DEVAGIRIKAR JEWELLERYS</p>
-                    <p>1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot. | Phone: 9008604004 / 8618748300 | GSTIN: 29BSWPD7616JZ0</p>
-                </footer>
             </div>
+             <footer className="absolute bottom-4 left-8 right-8 text-center text-xs text-brand-charcoal font-bold">
+                <div className="border-t-2 border-brand-charcoal mb-2 mx-auto w-full"></div>
+                <p className="font-serif tracking-wide text-sm">DEVAGIRIKAR JEWELLERYS</p>
+                <p className="font-normal text-[10px]">1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot. | Phone: 9008604004 / 8618748300</p>
+            </footer>
         </div>
     );
 };
@@ -225,7 +233,7 @@ const SearchableSelect = <T extends { id: string; name: string; }>({
 };
 
 
-const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = () => {
+const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurrentPage}) => {
   const { inventory, customers, createBill, getCustomerById } = useAppContext();
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<BillItem[]>([]);
@@ -245,8 +253,8 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = () => {
   }, [inventory, selectedItems]);
 
   const calculations = useMemo(() => {
-    const totalWeight = selectedItems.reduce((sum, item) => sum + item.weight, 0);
-    const subtotalBeforeLessWeight = selectedItems.reduce((sum, item) => sum + item.price, 0);
+    const totalWeight = selectedItems.reduce((sum, item) => sum + (item.weight * item.quantity), 0);
+    const subtotalBeforeLessWeight = selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
     const lw = parseFloat(lessWeight) || 0;
     const averageRate = totalWeight > 0 ? subtotalBeforeLessWeight / totalWeight : 0;
@@ -274,11 +282,31 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = () => {
   }, [selectedItems, bargainedAmount, extraChargePercentage, lessWeight]);
 
   const handleAddItem = (item: JewelryItem) => {
-      setSelectedItems(prev => [...prev, { itemId: item.id, name: item.name, weight: item.weight, price: item.price, imageUrl: item.imageUrl }]);
+      setSelectedItems(prev => [...prev, { itemId: item.id, name: item.name, weight: item.weight, price: item.price, imageUrl: item.imageUrl, quantity: 1 }]);
   };
 
   const handleRemoveItem = (itemId: string) => {
     setSelectedItems(prev => prev.filter(item => item.itemId !== itemId));
+  };
+  
+  const handleQuantityChange = (itemId: string, newQuantityStr: string) => {
+    const newQuantity = parseInt(newQuantityStr, 10);
+    const inventoryItem = inventory.find(i => i.id === itemId);
+
+    if (!inventoryItem) return;
+
+    if (isNaN(newQuantity) || newQuantity < 1) {
+        // Allow clearing the input, but don't update state to an invalid number
+        setSelectedItems(prev => prev.map(item => item.itemId === itemId ? { ...item, quantity: 1 } : item)); // or keep it as is
+        return;
+    }
+    
+    if (billType === BillType.INVOICE && newQuantity > inventoryItem.quantity) {
+        alert(`Cannot add more than available stock (${inventoryItem.quantity}).`);
+        return;
+    }
+
+    setSelectedItems(prev => prev.map(item => item.itemId === itemId ? { ...item, quantity: newQuantity } : item));
   };
   
     const generatePdfBlob = (componentToRender: React.ReactElement): Promise<Blob | null> => {
@@ -386,19 +414,8 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = () => {
         const blob = await generatePdfBlob(<InvoiceTemplate bill={bill} customer={customer} />);
         if (!blob) throw new Error("Failed to generate PDF.");
 
-        if (action === 'send') {
-            const file = new File([blob], `invoice-${bill.id}.pdf`, { type: 'application/pdf' });
-            if (navigator.share && navigator.canShare({ files: [file] })) {
-                await navigator.share({
-                    files: [file],
-                    title: `${bill.type} - ${bill.id}`,
-                    text: `Here is the ${bill.type.toLowerCase()} for ${customer.name} from DEVAGIRIKAR JEWELLERYS.`
-                });
-            } else {
-                alert('Sharing not supported on this device/browser. Please download and send manually.');
-            }
-        } else { // Default to download
-            const url = URL.createObjectURL(blob);
+        const downloadFile = (blob: Blob, bill: Bill) => {
+             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
             a.download = `${bill.type.toLowerCase()}-${bill.id}.pdf`;
@@ -406,6 +423,23 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = () => {
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
+        }
+
+        if (action === 'send') {
+            // 1. Trigger download
+            downloadFile(blob, bill);
+
+            // 2. Open WhatsApp
+            const cleanPhone = customer.phone.replace(/\D/g, '');
+            // Assuming 10-digit Indian numbers, prepend country code
+            const whatsappPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+            const message = encodeURIComponent(`Hello ${customer.name},\n\nHere is your ${bill.type.toLowerCase()} from DEVAGIRIKAR JEWELLERYS.\n\nThe PDF has been downloaded to your device. Please attach it here.\n\nBill ID: ${bill.id}\nTotal: ${bill.grandTotal.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}`);
+            const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${message}`;
+            
+            window.open(whatsappUrl, '_blank');
+
+        } else { // Default to download
+            downloadFile(blob, bill);
         }
 
         alert('Bill created successfully!');
@@ -461,10 +495,22 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = () => {
             <div className="mt-4 max-h-64 overflow-y-auto">
                  {selectedItems.map(item => (
                     <div key={item.itemId} className="flex justify-between items-center bg-gray-50 p-2 rounded mb-2">
-                        <div>{item.name} <span className="text-xs text-gray-500">({item.weight.toFixed(3)}g)</span></div>
-                        <div className="flex items-center gap-4">
-                            <span>₹{item.price.toLocaleString('en-IN')}</span>
-                            <button type="button" onClick={() => handleRemoveItem(item.itemId)} className="text-red-500 hover:text-red-700">&times;</button>
+                        <div>
+                            <p>{item.name} <span className="text-xs text-gray-500">({item.weight.toFixed(3)}g)</span></p>
+                            <p className="text-xs text-gray-600">Price: ₹{item.price.toLocaleString('en-IN')}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <label htmlFor={`qty-${item.itemId}`} className="text-sm">Qty:</label>
+                            <input
+                                id={`qty-${item.itemId}`}
+                                type="number"
+                                value={item.quantity}
+                                onChange={e => handleQuantityChange(item.itemId, e.target.value)}
+                                className="w-16 p-1 border rounded text-center"
+                                min="1"
+                                step="1"
+                            />
+                            <button type="button" onClick={() => handleRemoveItem(item.itemId)} className="text-red-500 hover:text-red-700 font-bold text-lg">&times;</button>
                         </div>
                     </div>
                  ))}
