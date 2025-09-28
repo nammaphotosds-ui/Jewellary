@@ -74,7 +74,7 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                 
                 <div className="relative z-10 p-8 flex flex-col h-full">
                     {/* Header */}
-                    <header className="flex justify-between items-start pb-2 mb-4 border-b border-brand-gold-dark/30">
+                    <header className="flex justify-between items-start pb-2 mb-2 border-b border-brand-gold-dark/30">
                         <div className="flex items-center">
                             <img src={logoUrl} alt="Logo" className="w-16 h-16" />
                             <div className="ml-3">
@@ -92,7 +92,7 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                     </header>
 
                     {/* Customer Details */}
-                    <section className="text-xs mb-4">
+                    <section className="text-xs mb-2">
                         <p className="text-brand-gray text-xs font-bold uppercase tracking-wider">Billed To</p>
                         <p className="font-bold text-base text-brand-charcoal font-serif">{customer.name} ({customer.id})</p>
                         <p className="text-brand-gray">{customer.phone}</p>
@@ -103,11 +103,12 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                         <table className={`w-full border-collapse border border-brand-gold-dark/30 ${tableBaseFontSize}`}>
                             <thead className="border-b-2 border-brand-charcoal bg-brand-pale-gold/30">
                                 <tr>
-                                    <th className={`font-semibold text-left tracking-wider uppercase text-brand-charcoal w-[40%] border border-brand-gold-dark/30 ${tableCellClasses}`}>Item Name</th>
-                                    <th className={`font-semibold text-right tracking-wider uppercase text-brand-charcoal border border-brand-gold-dark/30 ${tableCellClasses}`}>Weight (g)</th>
-                                    <th className={`font-semibold text-right tracking-wider uppercase text-brand-charcoal border border-brand-gold-dark/30 ${tableCellClasses}`}>Qty</th>
-                                    <th className={`font-semibold text-right tracking-wider uppercase text-brand-charcoal border border-brand-gold-dark/30 ${tableCellClasses}`}>Rate (₹)</th>
-                                    <th className={`font-semibold text-right tracking-wider uppercase text-brand-charcoal border border-brand-gold-dark/30 ${tableCellClasses}`}>Amount (₹)</th>
+                                    <th className={`font-semibold text-left tracking-wider uppercase text-brand-charcoal w-[35%] border border-brand-gold-dark/30 ${tableCellClasses}`}>Item Name</th>
+                                    <th className={`font-semibold text-left tracking-wider uppercase text-brand-charcoal w-[15%] border border-brand-gold-dark/30 ${tableCellClasses}`}>Item ID</th>
+                                    <th className={`font-semibold text-right tracking-wider uppercase text-brand-charcoal w-[10%] border border-brand-gold-dark/30 ${tableCellClasses}`}>Weight (g)</th>
+                                    <th className={`font-semibold text-right tracking-wider uppercase text-brand-charcoal w-[10%] border border-brand-gold-dark/30 ${tableCellClasses}`}>Qty</th>
+                                    <th className={`font-semibold text-right tracking-wider uppercase text-brand-charcoal w-[15%] border border-brand-gold-dark/30 ${tableCellClasses}`}>Rate (₹)</th>
+                                    <th className={`font-semibold text-right tracking-wider uppercase text-brand-charcoal w-[15%] border border-brand-gold-dark/30 ${tableCellClasses}`}>Amount (₹)</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -117,6 +118,7 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                                     return (
                                         <tr key={item.itemId} className="border-b border-brand-gold-dark/20">
                                             <td className={`font-medium border border-brand-gold-dark/30 ${tableCellClasses}`}>{item.name}</td>
+                                            <td className={`font-mono text-xs border border-brand-gold-dark/30 ${tableCellClasses}`}>{item.itemId}</td>
                                             <td className={`text-right font-mono border border-brand-gold-dark/30 ${tableCellClasses}`}>{item.weight.toFixed(3)}</td>
                                             <td className={`text-right font-mono border border-brand-gold-dark/30 ${tableCellClasses}`}>{quantity}</td>
                                             <td className={`text-right font-mono border border-brand-gold-dark/30 ${tableCellClasses}`}>{item.price.toLocaleString('en-IN')}</td>
@@ -129,34 +131,43 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                     </main>
 
                     {/* Summary Section */}
-                    <section className="mt-auto pt-4 border-t border-brand-gold-dark/30">
-                        <div className="grid grid-cols-10 gap-6">
-                            <div className="col-span-5 text-xs space-y-1">
-                                <p className="text-[10px] italic text-gray-600 capitalize">{numberToWords(grandTotal)}</p>
+                    <section className="mt-auto pt-2 border-t border-brand-gold-dark/30">
+                        <div className="flex justify-between items-start">
+                             <div className="w-1/2 pr-4 text-xs">
+                                <p className="font-bold text-gray-700 capitalize">{numberToWords(grandTotal)}</p>
                                 <div className="mt-4 text-[10px] text-brand-gray">
                                     <p className="font-bold">Terms & Conditions:</p>
                                     <p>1. Goods once sold will not be taken back.</p>
                                 </div>
                             </div>
-                            <div className="col-span-5 text-xs">
+                            <div className="w-1/2 text-xs">
                                 <div className="space-y-1">
                                     <div className="flex justify-between"><span>Gross Wt:</span><span>{totalGrossWeight.toFixed(3)} g</span></div>
                                     {bill.lessWeight > 0 && <div className="flex justify-between"><span>Less Wt:</span><span>- {bill.lessWeight.toFixed(3)} g</span></div>}
                                     <div className="flex justify-between font-bold border-t border-gray-200 mt-1 pt-1"><span>Net Wt:</span><span>{netWeight.toFixed(3)} g</span></div>
                                 </div>
-                                <div className="space-y-1 mt-3 pt-3 border-t border-gray-200">
+                                <div className="space-y-1 mt-2 pt-2 border-t border-gray-200">
                                     <div className="flex justify-between"><span>Subtotal:</span><span>₹{finalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
                                     {extraChargeAmount > 0 && <div className="flex justify-between"><span>Charges ({bill.extraChargePercentage}%):</span><span>+ ₹{extraChargeAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
                                     {bargainedAmount > 0 && <div className="flex justify-between text-green-600"><span>Discount:</span><span>- ₹{bargainedAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
-                                    <div className="flex justify-between font-bold text-base mt-1 pt-1 border-t-2 border-brand-charcoal"><span>Grand Total:</span><span>₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
+                                    <div className="flex justify-between text-base mt-1 pt-1 border-t-2 border-brand-charcoal">
+                                        <span className="font-bold">Grand Total:</span>
+                                        <span className="font-bold">₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                                    </div>
                                 </div>
                                 <div className="space-y-1 mt-2">
-                                    <div className="flex justify-between font-bold"><span>Paid:</span><span>₹{amountPaid.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
-                                    <div className="flex justify-between font-bold text-red-600"><span>BALANCE DUE:</span><span>₹{bill.balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
+                                    <div className="flex justify-between">
+                                        <span className="font-bold">Paid:</span>
+                                        <span>₹{amountPaid.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                                    </div>
+                                    <div className="flex justify-between text-red-600">
+                                        <span className="font-bold">BALANCE DUE:</span>
+                                        <span className="font-bold">₹{bill.balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="flex justify-between items-end mt-6">
+                        <div className="flex justify-between items-end mt-4">
                             <p className="text-[10px] text-brand-gray">Thank you for your business!</p>
                             <div className="text-center">
                                 <div className="w-40 border-t border-brand-charcoal pt-1"></div>
@@ -183,7 +194,7 @@ const CustomerProfileTemplate: React.FC<{
 }> = ({customer, bills, pageInfo}) => {
      const logoUrl = "https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163";
     return (
-        <div className="bg-brand-cream text-brand-charcoal font-sans flex flex-col" style={{ width: '842px', height: '595px', boxSizing: 'border-box' }}>
+        <div className="bg-brand-cream text-brand-charcoal font-sans flex flex-col" style={{ width: '1123px', height: '797px', boxSizing: 'border-box' }}>
             <div className="flex-grow relative">
                  {/* Decorative Border */}
                 <div className="absolute inset-0 border-[1px] border-brand-gold-dark/30 z-0"></div>
@@ -407,7 +418,7 @@ const generateCustomerProfilePdfWithPagination = async (customer: Customer, bill
     // @ts-ignore
     const html2canvas = window.html2canvas;
     
-    const BILLS_PER_PAGE = 8;
+    const BILLS_PER_PAGE = 12;
     const billChunks = [];
     if (bills.length > 0) {
         for (let i = 0; i < bills.length; i += BILLS_PER_PAGE) {
@@ -418,7 +429,7 @@ const generateCustomerProfilePdfWithPagination = async (customer: Customer, bill
     }
 
     const totalPages = billChunks.length;
-    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a5' });
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
     for (let i = 0; i < totalPages; i++) {
         const pageBills = billChunks[i];
@@ -470,7 +481,7 @@ const generateCustomerProfilePdfWithPagination = async (customer: Customer, bill
         if (canvas) {
             const imgData = canvas.toDataURL('image/jpeg', 0.95);
             if (i > 0) {
-                pdf.addPage('a5', 'landscape');
+                pdf.addPage('a4', 'landscape');
             }
             const margin = 8;
             const pdfWidth = pdf.internal.pageSize.getWidth();
