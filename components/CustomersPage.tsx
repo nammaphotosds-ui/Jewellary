@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { useAppContext } from '../context/AppContext';
@@ -54,6 +53,11 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
     const totalGrossWeight = bill.items.reduce((sum, item) => sum + (item.weight * (item.quantity || 1)), 0);
     const { grandTotal, netWeight, extraChargeAmount, bargainedAmount, finalAmount, amountPaid } = bill;
     const logoUrl = "https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163";
+    
+    const isCompact = bill.items.length > 8;
+    const tableCellClasses = isCompact ? 'py-0.5 px-2' : 'py-1 px-2';
+    const tableBaseFontSize = isCompact ? 'text-[11px]' : 'text-xs';
+
 
     return (
         <div className="bg-brand-cream text-brand-charcoal font-sans relative" style={{ width: '842px', height: '595px', boxSizing: 'border-box' }}>
@@ -69,40 +73,40 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
             
             <div className="relative z-10 p-8 flex flex-col h-full">
                 {/* Header */}
-                <header className="flex justify-between items-start pb-4 mb-6 border-b border-brand-gold-dark/30">
+                <header className="flex justify-between items-start pb-2 mb-4 border-b border-brand-gold-dark/30">
                     <div className="flex items-center">
-                        <img src={logoUrl} alt="Logo" className="w-20 h-20" />
-                        <div className="ml-4">
-                            <h2 className="text-4xl font-serif tracking-wider font-bold text-brand-charcoal">DEVAGIRIKAR</h2>
-                            <p className="text-xl text-brand-gold-dark tracking-[0.15em] -mt-1">JEWELLERYS</p>
-                            <p className="text-xs tracking-widest text-brand-gray mt-2">EXCLUSIVE JEWELLERY SHOWROOM</p>
+                        <img src={logoUrl} alt="Logo" className="w-16 h-16" />
+                        <div className="ml-3">
+                            <h2 className="text-3xl font-serif tracking-wider font-bold text-brand-charcoal">DEVAGIRIKAR</h2>
+                            <p className="text-lg text-brand-gold-dark tracking-[0.15em] -mt-1">JEWELLERYS</p>
+                            <p className="text-[10px] tracking-widest text-brand-gray mt-1">EXCLUSIVE JEWELLERY SHOWROOM</p>
                         </div>
                     </div>
                     <div className="text-right">
-                        <h1 className="text-5xl font-serif font-light text-brand-gold-dark tracking-widest">{bill.type}</h1>
-                        <p className="text-sm mt-2 font-mono"><strong>Bill No:</strong> {bill.id}</p>
-                        <p className="text-sm font-mono"><strong>GSTIN:</strong> 29BSWPD7616JZ0</p>
-                        <p className="text-sm font-mono"><strong>Date:</strong> {new Date(bill.date).toLocaleDateString()}</p>
+                        <h1 className="text-4xl font-serif font-light text-brand-gold-dark tracking-widest">{bill.type}</h1>
+                        <p className="text-xs mt-1 font-mono"><strong>Bill No:</strong> {bill.id}</p>
+                        <p className="text-xs font-mono"><strong>GSTIN:</strong> 29BSWPD7616JZ0</p>
+                        <p className="text-xs font-mono"><strong>Date:</strong> {new Date(bill.date).toLocaleDateString()}</p>
                     </div>
                 </header>
 
                 {/* Customer Details */}
-                <section className="text-sm mb-6">
-                    <p className="text-brand-gray text-sm font-bold uppercase tracking-wider">Billed To</p>
-                    <p className="font-bold text-lg text-brand-charcoal font-serif">{customer.name} ({customer.id})</p>
+                <section className="text-xs mb-4">
+                    <p className="text-brand-gray text-xs font-bold uppercase tracking-wider">Billed To</p>
+                    <p className="font-bold text-base text-brand-charcoal font-serif">{customer.name} ({customer.id})</p>
                     <p className="text-brand-gray">{customer.phone}</p>
                 </section>
 
                 {/* Items Table */}
-                <main className="flex-grow">
-                     <table className="w-full text-sm">
-                        <thead className="border-b-2 border-brand-charcoal">
+                <main className="flex-grow overflow-hidden">
+                     <table className={`w-full border-collapse border border-brand-gold-dark/30 ${tableBaseFontSize}`}>
+                        <thead className="border-b-2 border-brand-charcoal bg-brand-pale-gold/30">
                             <tr>
-                                <th className="font-semibold p-2 text-left tracking-wider uppercase text-brand-charcoal w-[40%]">Item Name</th>
-                                <th className="font-semibold p-2 text-right tracking-wider uppercase text-brand-charcoal">Weight (g)</th>
-                                <th className="font-semibold p-2 text-right tracking-wider uppercase text-brand-charcoal">Qty</th>
-                                <th className="font-semibold p-2 text-right tracking-wider uppercase text-brand-charcoal">Rate (₹)</th>
-                                <th className="font-semibold p-2 text-right tracking-wider uppercase text-brand-charcoal">Amount (₹)</th>
+                                <th className={`font-semibold text-left tracking-wider uppercase text-brand-charcoal w-[40%] border border-brand-gold-dark/30 ${tableCellClasses}`}>Item Name</th>
+                                <th className={`font-semibold text-right tracking-wider uppercase text-brand-charcoal border border-brand-gold-dark/30 ${tableCellClasses}`}>Weight (g)</th>
+                                <th className={`font-semibold text-right tracking-wider uppercase text-brand-charcoal border border-brand-gold-dark/30 ${tableCellClasses}`}>Qty</th>
+                                <th className={`font-semibold text-right tracking-wider uppercase text-brand-charcoal border border-brand-gold-dark/30 ${tableCellClasses}`}>Rate (₹)</th>
+                                <th className={`font-semibold text-right tracking-wider uppercase text-brand-charcoal border border-brand-gold-dark/30 ${tableCellClasses}`}>Amount (₹)</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -111,11 +115,11 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                                 const amount = item.price * quantity;
                                 return (
                                     <tr key={item.itemId} className="border-b border-brand-gold-dark/20">
-                                        <td className="p-2 font-medium">{item.name}</td>
-                                        <td className="p-2 text-right font-mono">{item.weight.toFixed(3)}</td>
-                                        <td className="p-2 text-right font-mono">{quantity}</td>
-                                        <td className="p-2 text-right font-mono">{item.price.toLocaleString('en-IN')}</td>
-                                        <td className="p-2 text-right font-mono">{amount.toLocaleString('en-IN')}</td>
+                                        <td className={`font-medium border border-brand-gold-dark/30 ${tableCellClasses}`}>{item.name}</td>
+                                        <td className={`text-right font-mono border border-brand-gold-dark/30 ${tableCellClasses}`}>{item.weight.toFixed(3)}</td>
+                                        <td className={`text-right font-mono border border-brand-gold-dark/30 ${tableCellClasses}`}>{quantity}</td>
+                                        <td className={`text-right font-mono border border-brand-gold-dark/30 ${tableCellClasses}`}>{item.price.toLocaleString('en-IN')}</td>
+                                        <td className={`text-right font-mono border border-brand-gold-dark/30 ${tableCellClasses}`}>{amount.toLocaleString('en-IN')}</td>
                                     </tr>
                                 );
                             })}
@@ -126,14 +130,14 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                 {/* Summary Section */}
                 <section className="mt-auto pt-4 border-t border-brand-gold-dark/30">
                     <div className="grid grid-cols-10 gap-6">
-                        <div className="col-span-5 text-sm space-y-2">
-                             <p className="text-xs italic text-gray-600 capitalize">{numberToWords(grandTotal)}</p>
-                             <div className="mt-6 text-xs text-brand-gray">
+                        <div className="col-span-5 text-xs space-y-1">
+                             <p className="text-[10px] italic text-gray-600 capitalize">{numberToWords(grandTotal)}</p>
+                             <div className="mt-4 text-[10px] text-brand-gray">
                                 <p className="font-bold">Terms & Conditions:</p>
                                 <p>1. Goods once sold will not be taken back.</p>
                              </div>
                         </div>
-                        <div className="col-span-5 text-sm">
+                        <div className="col-span-5 text-xs">
                             <div className="space-y-1">
                                 <div className="flex justify-between"><span>Gross Wt:</span><span>{totalGrossWeight.toFixed(3)} g</span></div>
                                 {bill.lessWeight > 0 && <div className="flex justify-between"><span>Less Wt:</span><span>- {bill.lessWeight.toFixed(3)} g</span></div>}
@@ -143,7 +147,7 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                                 <div className="flex justify-between"><span>Subtotal:</span><span>₹{finalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
                                 {extraChargeAmount > 0 && <div className="flex justify-between"><span>Charges ({bill.extraChargePercentage}%):</span><span>+ ₹{extraChargeAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
                                 {bargainedAmount > 0 && <div className="flex justify-between text-green-600"><span>Discount:</span><span>- ₹{bargainedAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
-                                <div className="flex justify-between font-bold text-lg mt-1 pt-1 border-t-2 border-brand-charcoal"><span>Grand Total:</span><span>₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
+                                <div className="flex justify-between font-bold text-base mt-1 pt-1 border-t-2 border-brand-charcoal"><span>Grand Total:</span><span>₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
                             </div>
                             <div className="space-y-1 mt-2">
                                  <div className="flex justify-between font-bold"><span>Paid:</span><span>₹{amountPaid.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
@@ -151,19 +155,18 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                             </div>
                         </div>
                     </div>
-                    <div className="flex justify-between items-end mt-8">
-                         <p className="text-xs text-brand-gray">Thank you for your business!</p>
+                    <div className="flex justify-between items-end mt-6 mb-6">
+                         <p className="text-[10px] text-brand-gray">Thank you for your business!</p>
                          <div className="text-center">
-                            <div className="w-48 border-t border-brand-charcoal pt-1"></div>
-                            <p className="text-xs">Authorised Signatory</p>
+                            <div className="w-40 border-t border-brand-charcoal pt-1"></div>
+                            <p className="text-[10px]">Authorised Signatory</p>
                          </div>
                     </div>
                 </section>
             </div>
-             <footer className="absolute bottom-4 left-8 right-8 text-center text-xs text-brand-charcoal font-bold">
-                <div className="border-t-2 border-brand-charcoal mb-2 mx-auto w-full"></div>
-                <p className="font-serif tracking-wide text-sm">DEVAGIRIKAR JEWELLERYS</p>
-                <p className="font-normal text-[10px]">1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot. | Phone: 9008604004 / 8618748300</p>
+             <footer className="absolute bottom-4 left-8 right-8 text-center text-brand-charcoal">
+                <div className="border-t-2 border-brand-charcoal mb-1 mx-auto w-full"></div>
+                <p className="font-semibold text-xs">1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot. | Phone: 9008604004 / 8618748300</p>
             </footer>
         </div>
     );
@@ -246,10 +249,9 @@ const CustomerProfileTemplate: React.FC<{customer: Customer, bills: Bill[]}> = (
                         </table>
                     </div>
                 </main>
-                 <footer className="absolute bottom-4 left-8 right-8 text-center text-xs text-brand-charcoal font-bold">
+                 <footer className="absolute bottom-4 left-8 right-8 text-center text-brand-charcoal">
                     <div className="border-t-2 border-brand-charcoal mb-2 mx-auto w-full"></div>
-                    <p className="font-serif tracking-wide text-sm">DEVAGIRIKAR JEWELLERYS</p>
-                    <p className="font-normal text-[10px]">1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot. | Phone: 9008604004 / 8618748300</p>
+                    <p className="font-semibold text-xs">1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot. | Phone: 9008604004 / 8618748300</p>
                 </footer>
             </div>
         </div>
