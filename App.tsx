@@ -1,8 +1,10 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import Sidebar from './components/Sidebar';
 import DashboardPage from './components/DashboardPage';
 import InventoryPage from './components/InventoryPage';
-import CustomersPage from './components/CustomersPage';
+// FIX: Changed to a named import to match the export in CustomersPage.tsx.
+import { CustomersPage } from './components/CustomersPage';
 import BillingPage from './components/BillingPage';
 import PendingPaymentsPage from './components/PendingPaymentsPage';
 import SettingsPage from './components/SettingsPage';

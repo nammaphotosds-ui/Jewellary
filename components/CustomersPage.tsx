@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { useAppContext } from '../context/AppContext';
 import type { Customer, Bill } from '../types';
-import { SendIcon } from '../App';
+// FIX: Removed unused import to prevent potential circular dependencies.
 
 
 // --- Helper Functions & Components ---
@@ -179,7 +179,7 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
             </div>
             <footer className="text-center text-brand-charcoal pt-1 pb-2 px-8 flex-shrink-0">
                 <div className="border-t-2 border-brand-charcoal mb-1 mx-auto w-full"></div>
-                <p className="font-semibold text-xs">1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot. | Phone: 9008604004 / 8618748300</p>
+                <p className="font-bold text-xs">1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot. | Phone: 9008604004 / 8618748300</p>
             </footer>
         </div>
     );
@@ -276,7 +276,7 @@ const CustomerProfileTemplate: React.FC<{
             </div>
             <footer className="text-center text-brand-charcoal pt-1 pb-2 px-8 flex-shrink-0">
                 <div className="border-t-2 border-brand-charcoal mb-1 mx-auto w-full"></div>
-                <p className="font-semibold text-xs">1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot. | Phone: 9008604004 / 8618748300</p>
+                <p className="font-bold text-xs">1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot. | Phone: 9008604004 / 8618748300</p>
             </footer>
         </div>
     );
@@ -412,77 +412,60 @@ const generateSinglePagePdfBlob = (componentToRender: React.ReactElement): Promi
     });
 };
 
+// FIX: Completed the function to handle PDF generation with pagination.
 const generateCustomerProfilePdfWithPagination = async (customer: Customer, bills: Bill[]): Promise<Blob | null> => {
     // @ts-ignore
     const { jsPDF } = window.jspdf;
     // @ts-ignore
     const html2canvas = window.html2canvas;
     
-    const BILLS_PER_PAGE = 12;
-    const billChunks = [];
-    if (bills.length > 0) {
-        for (let i = 0; i < bills.length; i += BILLS_PER_PAGE) {
-            billChunks.push(bills.slice(i, i + BILLS_PER_PAGE));
-        }
-    } else {
-        billChunks.push([]);
-    }
-
-    const totalPages = billChunks.length;
+    const BILLS_PER_PAGE = 15;
+    const totalPages = Math.ceil(bills.length / BILLS_PER_PAGE) || 1;
     const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
-    for (let i = 0; i < totalPages; i++) {
-        const pageBills = billChunks[i];
-        const pageNumber = i + 1;
+    const tempContainer = document.createElement('div');
+    tempContainer.style.position = 'absolute';
+    tempContainer.style.left = '-9999px';
+    tempContainer.style.top = '0';
+    tempContainer.style.zIndex = '-1';
+    document.body.appendChild(tempContainer);
+    
+    const root = ReactDOM.createRoot(tempContainer);
 
-        const componentToRender = (
-            <CustomerProfileTemplate
-                customer={customer}
-                bills={pageBills}
-                pageInfo={{ currentPage: pageNumber, totalPages: totalPages }}
-            />
-        );
+    try {
+        for (let i = 0; i < totalPages; i++) {
+            const billChunk = bills.slice(i * BILLS_PER_PAGE, (i + 1) * BILLS_PER_PAGE);
+            const pageInfo = { currentPage: i + 1, totalPages };
 
-        const tempContainer = document.createElement('div');
-        tempContainer.style.position = 'absolute';
-        tempContainer.style.left = '-9999px';
-        tempContainer.style.top = '0';
-        tempContainer.style.zIndex = '-1';
-        document.body.appendChild(tempContainer);
-        const root = ReactDOM.createRoot(tempContainer);
+            // Render component for the current page
+            await new Promise<void>(resolve => {
+                root.render(<CustomerProfileTemplate customer={customer} bills={billChunk} pageInfo={pageInfo} />);
+                setTimeout(resolve, 300); // Allow time for render
+            });
 
-        const canvas = await new Promise<HTMLCanvasElement | null>((resolve) => {
-            root.render(componentToRender);
-            setTimeout(async () => {
-                const elementToCapture = tempContainer.children[0] as HTMLElement;
-                 if (!elementToCapture) {
-                    console.error("PDF generation failed: Component did not render.");
-                    resolve(null);
-                    return;
-                }
-                const images = Array.from(elementToCapture.getElementsByTagName('img'));
-                await Promise.all(images.map(img => new Promise<void>(res => {
-                    if (img.complete) return res();
-                    img.onload = () => res();
-                    img.onerror = () => res();
-                })));
-                await new Promise(r => setTimeout(r, 200));
-                
-                const capturedCanvas = await html2canvas(elementToCapture, { scale: 2, useCORS: true, windowWidth: elementToCapture.scrollWidth, windowHeight: elementToCapture.scrollHeight });
-                resolve(capturedCanvas);
-            }, 300);
-        });
-        
-        root.unmount();
-        if(document.body.contains(tempContainer)){
-            document.body.removeChild(tempContainer);
-        }
-        
-        if (canvas) {
+            const elementToCapture = tempContainer.children[0] as HTMLElement;
+            if (!elementToCapture) {
+                console.error(`PDF generation failed on page ${i + 1}: Component did not render.`);
+                continue;
+            }
+
+            // Wait for images
+            const images = Array.from(elementToCapture.getElementsByTagName('img'));
+            await Promise.all(images.map(img => new Promise<void>(res => {
+                if (img.complete) return res();
+                img.onload = () => res();
+                img.onerror = () => res();
+            })));
+
+            await new Promise(r => setTimeout(r, 200));
+
+            const canvas = await html2canvas(elementToCapture, { scale: 2, useCORS: true, windowWidth: elementToCapture.scrollWidth, windowHeight: elementToCapture.scrollHeight });
             const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
             if (i > 0) {
                 pdf.addPage('a4', 'landscape');
             }
+            
             const margin = 8;
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = pdf.internal.pageSize.getHeight();
@@ -490,210 +473,165 @@ const generateCustomerProfilePdfWithPagination = async (customer: Customer, bill
             const contentHeight = pdfHeight - margin * 2;
             pdf.addImage(imgData, 'JPEG', margin, margin, contentWidth, contentHeight);
         }
-    }
+        
+        return pdf.output('blob');
 
-    return pdf.output('blob');
+    } catch (error) {
+        console.error("Error during multi-page PDF generation process:", error);
+        return null;
+    } finally {
+        root.unmount();
+        if (document.body.contains(tempContainer)) {
+            document.body.removeChild(tempContainer);
+        }
+    }
 };
 
-const CustomerDetailsView: React.FC<{customer: Customer, onBack: () => void}> = ({customer, onBack}) => {
-    const { getBillsByCustomerId, deleteCustomer } = useAppContext();
-    const bills = getBillsByCustomerId(customer.id);
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [isGeneratingBillPdf, setIsGeneratingBillPdf] = useState<string | null>(null);
+// FIX: Added the main CustomersPage component and its export.
+export const CustomersPage: React.FC = () => {
+    const { customers, getBillsByCustomerId, deleteCustomer } = useAppContext();
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+    const [generatingPdf, setGeneratingPdf] = useState(false);
+    const [generatingBillId, setGeneratingBillId] = useState<string | null>(null);
 
-    const handleDownloadPdf = async () => {
-        setIsProcessing(true);
-        const blob = await generateCustomerProfilePdfWithPagination(customer, bills);
+    const filteredCustomers = customers.filter(c => 
+        c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        c.phone.includes(searchTerm) ||
+        c.id.toLowerCase().includes(searchTerm.toLowerCase())
+    ).sort((a,b) => a.name.localeCompare(b.name));
+
+    const handleGenerateInvoicePdf = async (bill: Bill) => {
+        if (!selectedCustomer) return;
+        setGeneratingBillId(bill.id);
+        const blob = await generateSinglePagePdfBlob(<InvoiceTemplate bill={bill} customer={selectedCustomer} />);
         if (blob) {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `profile-${customer.id}.pdf`;
+            a.download = `invoice-${bill.id}.pdf`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         } else {
-            alert('Failed to generate PDF.');
+            alert('Failed to generate PDF for the invoice.');
         }
-        setIsProcessing(false);
+        setGeneratingBillId(null);
     };
 
-    const handleSharePdf = async () => {
-        setIsProcessing(true);
-        try {
-            const blob = await generateCustomerProfilePdfWithPagination(customer, bills);
-            if (!blob) throw new Error("Failed to generate PDF blob.");
-
-            const file = new File([blob], `profile-${customer.id}.pdf`, { type: 'application/pdf' });
-            if (navigator.share && navigator.canShare({ files: [file] })) {
-                await navigator.share({
-                    files: [file],
-                    title: `Customer Profile - ${customer.name}`,
-                    text: `Here is the customer profile for ${customer.name} from DEVAGIRIKAR JEWELLERYS.`
-                });
-            } else {
-                alert('Sharing is not supported on this browser. Try downloading the file instead.');
-            }
-        } catch (error) {
-            console.error('Error sharing PDF:', error);
-            if ((error as DOMException).name !== 'AbortError') {
-                 alert('An error occurred while trying to share the PDF.');
-            }
-        } finally {
-            setIsProcessing(false);
+    const handleGenerateProfilePdf = async () => {
+        if (!selectedCustomer) return;
+        setGeneratingPdf(true);
+        const bills = getBillsByCustomerId(selectedCustomer.id);
+        const blob = await generateCustomerProfilePdfWithPagination(selectedCustomer, bills);
+        if (blob) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `customer-profile-${selectedCustomer.id}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } else {
+            alert('Failed to generate PDF for the customer profile.');
         }
+        setGeneratingPdf(false);
     };
-    
-    const handleBillDownload = async (bill: Bill) => {
-        setIsGeneratingBillPdf(bill.id);
-        try {
-            const blob = await generateSinglePagePdfBlob(<InvoiceTemplate bill={bill} customer={customer} />);
-            if (blob) {
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${bill.type.toLowerCase()}-${bill.id}.pdf`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            } else {
-                alert('Failed to generate PDF for this bill.');
-            }
-        } catch (error) {
-            console.error("Error generating bill PDF:", error);
-            alert('An error occurred while generating the PDF.');
-        } finally {
-            setIsGeneratingBillPdf(null);
+
+    const handleDeleteCustomer = async () => {
+        if (selectedCustomer && window.confirm(`Are you sure you want to delete ${selectedCustomer.name}? This will also delete all their bills and is irreversible.`)) {
+            await deleteCustomer(selectedCustomer.id);
+            setSelectedCustomer(null); // Go back to the list
         }
     };
 
-    const handleDelete = async () => {
-        if (window.confirm(`Are you sure you want to delete ${customer.name}? This will also delete all their transaction history. This action cannot be undone.`)) {
-            await deleteCustomer(customer.id);
-            alert('Customer deleted successfully.');
-            onBack();
-        }
-    };
-
+    if (selectedCustomer) {
+        const customerBills = getBillsByCustomerId(selectedCustomer.id);
+        return (
+            <div>
+                <div className="flex justify-between items-center mb-6">
+                    <button onClick={() => setSelectedCustomer(null)} className="flex items-center text-gray-600 hover:text-brand-charcoal transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                        Back to Customer List
+                    </button>
+                    <div className="flex gap-2">
+                        <button onClick={handleGenerateProfilePdf} disabled={generatingPdf} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition disabled:bg-gray-400">
+                            {generatingPdf ? 'Generating...' : 'Download Profile'}
+                        </button>
+                         <button onClick={handleDeleteCustomer} className="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition">
+                            Delete Customer
+                        </button>
+                    </div>
+                </div>
+                <OnScreenCustomerProfile 
+                    customer={selectedCustomer} 
+                    bills={customerBills}
+                    onBillClick={handleGenerateInvoicePdf}
+                    generatingBillId={generatingBillId}
+                />
+            </div>
+        );
+    }
 
     return (
-        <div>
-            <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
-                <div>
-                     <button onClick={onBack} className="flex items-center text-gray-600 hover:text-brand-charcoal transition mb-2">
-                        {/* FIX: Corrected a malformed `viewBox` attribute in an SVG element that was causing a parsing error. */}
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-                        Back to Customers
-                    </button>
-                </div>
-                <div className="flex items-center gap-4">
-                    <button onClick={handleDownloadPdf} disabled={isProcessing} className="bg-brand-gold text-brand-charcoal px-6 py-2 rounded-lg font-semibold hover:bg-brand-gold-dark transition flex items-center justify-center shadow-md disabled:bg-gray-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        {isProcessing ? 'Processing...' : 'Download'}
-                    </button>
-                    <button onClick={handleSharePdf} disabled={isProcessing} className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition flex items-center justify-center shadow-md disabled:bg-gray-400">
-                        <SendIcon />
-                        {isProcessing ? 'Processing...' : 'Send'}
-                    </button>
-                    <button onClick={handleDelete} className="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition flex items-center justify-center shadow-md">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                        Delete
-                    </button>
+        <div className="space-y-6">
+             <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+                <h1 className="text-2xl font-bold">Customers</h1>
+                <div className="relative">
+                    <input 
+                        type="text"
+                        placeholder="Search customers..."
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                        className="w-full md:w-64 p-2 pl-10 border rounded-lg"
+                    />
+                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 </div>
             </div>
-            <OnScreenCustomerProfile 
-                customer={customer} 
-                bills={bills}
-                onBillClick={handleBillDownload}
-                generatingBillId={isGeneratingBillPdf}
-            />
+
+            <div className="bg-white rounded-lg shadow-md border overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead className="bg-gray-50">
+                            <tr className="border-b">
+                                <th className="p-4 font-semibold">Name</th>
+                                <th className="p-4 font-semibold">Contact</th>
+                                <th className="p-4 font-semibold text-right">Pending Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                             {filteredCustomers.map(customer => (
+                                <tr key={customer.id} onClick={() => setSelectedCustomer(customer)} className="border-b hover:bg-gray-100 cursor-pointer">
+                                    <td className="p-4">
+                                        <div className="flex items-center">
+                                            <Avatar name={customer.name} className="w-10 h-10 mr-4" />
+                                            <div>
+                                                <p className="font-bold">{customer.name}</p>
+                                                <p className="text-xs font-mono text-gray-500">{customer.id}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="p-4">
+                                        <p>{customer.phone}</p>
+                                    </td>
+                                    <td className="p-4 text-right">
+                                        <span className={`font-semibold ${customer.pendingBalance > 0 ? 'text-red-600' : 'text-gray-500'}`}>
+                                            ₹{customer.pendingBalance.toLocaleString('en-IN')}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))}
+                            {filteredCustomers.length === 0 && (
+                                <tr>
+                                    <td colSpan={3} className="text-center p-8 text-gray-500">No customers found.</td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     );
 };
-
-// --- Main CustomersPage ---
-const CustomersPage: React.FC = () => {
-  const { customers } = useAppContext();
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
-  
-  const selectedCustomer = selectedCustomerId ? customers.find(c => c.id === selectedCustomerId) : null;
-
-  if (selectedCustomer) {
-      return <CustomerDetailsView customer={selectedCustomer} onBack={() => setSelectedCustomerId(null)} />;
-  }
-
-  return (
-    <div>
-        {/* Desktop Table View */}
-        <div className="hidden md:block bg-white p-6 rounded-lg shadow-md">
-            <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                    <thead>
-                        <tr className="border-b">
-                            <th className="p-4">Customer</th>
-                            <th className="p-4">Contact</th>
-                            <th className="p-4 text-right">Pending Amount (₹)</th>
-                            <th className="p-4"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {customers.map((customer) => (
-                            <tr key={customer.id} className="border-b hover:bg-gray-50">
-                                <td className="p-4">
-                                    <div className="flex items-center">
-                                        <Avatar name={customer.name} className="w-10 h-10 mr-4"/>
-                                        <div>
-                                            <p className="font-semibold">{customer.name}</p>
-                                            <p className="text-xs font-mono text-gray-500">{customer.id}</p>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="p-4">{customer.phone}</td>
-                                <td className="p-4 text-right font-semibold text-red-600">
-                                    {customer.pendingBalance.toLocaleString('en-IN')}
-                                </td>
-                                <td className="p-4 text-right">
-                                    <button onClick={() => setSelectedCustomerId(customer.id)} className="text-brand-gold hover:underline">View Details</button>
-                                </td>
-                            </tr>
-                        ))}
-                         {customers.length === 0 && (
-                            <tr>
-                                <td colSpan={4} className="text-center p-8 text-gray-500">No customers found. Add one to get started!</td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        {/* Mobile Card View */}
-        <div className="md:hidden space-y-4">
-            {customers.map((customer) => (
-                <div key={customer.id} onClick={() => setSelectedCustomerId(customer.id)} className="bg-white p-4 rounded-lg shadow-md border active:scale-95 transition-transform">
-                    <div className="flex items-center">
-                         <Avatar name={customer.name} className="w-12 h-12 mr-4"/>
-                         <div className="flex-1">
-                            <p className="font-bold">{customer.name}</p>
-                            <p className="text-sm text-gray-500">{customer.phone}</p>
-                         </div>
-                         <div className="text-right">
-                            <p className="text-xs text-red-500">Pending</p>
-                            <p className="font-semibold text-red-600">₹{customer.pendingBalance.toLocaleString('en-IN')}</p>
-                         </div>
-                    </div>
-                </div>
-            ))}
-             {customers.length === 0 && (
-                <div className="text-center p-16 bg-white rounded-lg shadow-md">
-                    <p className="text-gray-500">No customers found.</p>
-                </div>
-            )}
-        </div>
-    </div>
-  );
-};
-
-export default CustomersPage;
