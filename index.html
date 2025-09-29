@@ -55,15 +55,21 @@
 </script>
 <style>
   /* Ensure the app takes the full screen and apply background */
+  html {
+    /* This matches the tailwind 'bg-gradient-to-br from-brand-champagne to-brand-pale-gold' */
+    background-image: linear-gradient(to bottom right, #F7E7CE, #E8D5B1);
+    background-attachment: fixed; /* Keeps the gradient stable during scroll */
+  }
   html, body, #root {
-    height: 100%;
+    min-height: 100vh; /* Ensures the container is at least as tall as the screen */
+    height: 100%; /* Allows child elements to use height: 100% */
     width: 100%;
     margin: 0;
     padding: 0;
+    overscroll-behavior: contain; /* Prevents pull-to-refresh & overscroll bounce */
   }
   body {
-    /* This matches the tailwind 'bg-gradient-to-br from-brand-champagne to-brand-pale-gold' */
-    background-image: linear-gradient(to bottom right, #F7E7CE, #E8D5B1);
+    background-color: transparent; /* The background is now on the html element */
   }
 </style>
 </head>
