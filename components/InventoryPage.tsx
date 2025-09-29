@@ -104,7 +104,17 @@ const AddInventoryItemForm: React.FC<{onClose: ()=>void}> = ({onClose}) => {
                 <input type="number" placeholder="Quantity" value={quantity} onChange={e => setQuantity(e.target.value)} className="w-full p-2 border rounded" required min="1"/>
             </div>
             <FileInput label="Item Photo (Optional)" file={photo} onFileChange={setPhoto} id="item-photo-upload"/>
-            <button type="submit" disabled={submissionStatus !== 'idle'} className="w-full bg-brand-gold text-brand-charcoal p-3 rounded-lg font-semibold hover:bg-brand-gold-dark transition disabled:bg-gray-400 disabled:opacity-70">
+            <button
+                type="submit"
+                disabled={submissionStatus !== 'idle'}
+                className={`w-full p-3 rounded-lg font-semibold transition ${
+                    submissionStatus === 'saved'
+                        ? 'bg-green-600 text-white'
+                        : submissionStatus === 'saving'
+                        ? 'bg-gray-400 text-white opacity-70'
+                        : 'bg-brand-gold text-brand-charcoal hover:bg-brand-gold-dark'
+                }`}
+            >
               {submissionStatus === 'saving' ? 'Saving...' : submissionStatus === 'saved' ? 'Saved!' : 'Add Item'}
             </button>
         </form>

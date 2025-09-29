@@ -42,8 +42,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // Centralized data saving effect
   useEffect(() => {
-    // Do not save on the initial data load from Drive to prevent an unnecessary write operation.
+    // We don't save during the initial data load.
+    // isInitialized is false during the async load, and isInitialLoad is true.
+    // After the load, isInitialized becomes true. The effect runs again.
+    // We then set isInitialLoad to false, and from now on, we can save.
     if (isInitialLoad.current) {
+        if (isInitialized) {
+            isInitialLoad.current = false;
+        }
         return;
     }
 
@@ -61,7 +67,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     };
     
     saveDataToDrive();
-  }, [inventory, customers, bills, isAuthenticated, driveFileId, tokenResponse]);
+  }, [inventory, customers, bills, isAuthenticated, driveFileId, tokenResponse, isInitialized]);
 
   useEffect(() => {
     const init = async () => {
@@ -72,7 +78,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         if (!tokenResponse || !tokenResponse.expires_at || tokenResponse.expires_at < Date.now()) {
             setIsAuthenticated(false);
             setIsInitialized(true);
-            isInitialLoad.current = false; // End of load sequence
+            isInitialLoad.current = false; // Allow saving if there's no user (e.g., on Get Started screen)
             return;
         }
 
@@ -100,8 +106,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             setIsAuthenticated(false);
         } finally {
             setIsInitialized(true);
-            // Once initialization is complete and data is loaded, allow subsequent changes to be saved.
-            setTimeout(() => { isInitialLoad.current = false; }, 500);
         }
     };
     init();
@@ -255,16 +259,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     };
 
     if (billData.type === 'INVOICE') {
-        // FIX: Explicitly set the types for the Map to prevent TypeScript from inferring `item` as `unknown`.
-        const inventoryMap = new Map<string, JewelryItem>(inventory.map(i => [i.id, i]));
-        for (const billItem of billData.items) {
-            const item = inventoryMap.get(billItem.itemId);
-            if (item) {
-                const updatedItem = { ...item, quantity: Math.max(0, item.quantity - billItem.quantity) };
-                inventoryMap.set(item.id, updatedItem);
+        setInventory(prevInventory => {
+            const inventoryMap = new Map<string, JewelryItem>(prevInventory.map(i => [i.id, i]));
+            for (const billItem of billData.items) {
+                const item = inventoryMap.get(billItem.itemId);
+                if (item) {
+                    const updatedItem = { ...item, quantity: Math.max(0, item.quantity - billItem.quantity) };
+                    inventoryMap.set(item.id, updatedItem);
+                }
             }
-        }
-        setInventory(Array.from(inventoryMap.values()));
+            return Array.from(inventoryMap.values());
+        });
     }
     
     setBills(prev => [...prev, newBill]);
