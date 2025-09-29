@@ -129,7 +129,8 @@ const GetStartedScreen: React.FC = () => {
 
     return (
         <div 
-            className="flex h-screen w-screen flex-col items-center justify-center bg-gradient-to-br from-brand-champagne to-brand-pale-gold p-8 text-brand-charcoal relative"
+            className="flex h-screen w-screen flex-col items-center justify-center bg-gradient-to-br from-brand-champagne to-brand-pale-gold px-8 pb-8 text-brand-charcoal relative"
+            style={{ paddingTop: `calc(2rem + env(safe-area-inset-top, 0rem))` }}
         >
             {/* Main Content */}
             <div className="flex flex-col items-center text-center z-10 absolute top-1/4">
@@ -191,10 +192,13 @@ const PinScreen: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
         setPin(prev => prev.slice(0, -1));
     };
 
-    const keypad = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '⌫'];
+    const keypad = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0', ''];
 
     return (
-        <div className="flex h-screen w-screen flex-col items-center justify-center bg-gradient-to-br from-brand-champagne to-brand-pale-gold p-8 text-brand-charcoal">
+        <div 
+            className="flex h-screen w-screen flex-col items-center justify-center bg-gradient-to-br from-brand-champagne to-brand-pale-gold px-8 pb-8 text-brand-charcoal"
+            style={{ paddingTop: `calc(2rem + env(safe-area-inset-top, 0rem))` }}
+        >
             <div className="flex flex-col items-center text-center">
                  <img 
                   src="https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163" 
@@ -212,27 +216,37 @@ const PinScreen: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
                     ))}
                 </div>
 
-                <div className="grid grid-cols-3 gap-4 w-64">
-                    {keypad.map((key, index) => (
-                         <button
-                            key={index}
-                            onClick={() => {
-                                if (key === '⌫') handleBackspaceClick();
-                                else if (key) handleNumberClick(key);
-                            }}
-                            disabled={!key}
-                            className="
-                                text-2xl font-semibold h-16 rounded-full 
-                                bg-white/50 backdrop-blur-sm shadow-sm 
-                                text-brand-charcoal
-                                transition-all duration-150 ease-in-out
-                                transform active:scale-90
-                                disabled:opacity-0
-                            "
-                        >
-                            {key}
-                        </button>
-                    ))}
+                <div className="grid grid-cols-3 gap-6 w-72">
+                    {keypad.map((key, index) => {
+                        if(index === 9){ // Backspace
+                             return (
+                                 <button
+                                    key={index}
+                                    onClick={handleBackspaceClick}
+                                    className="text-2xl font-semibold h-16 w-16 mx-auto rounded-full bg-white/30 backdrop-blur-sm shadow-sm text-brand-charcoal transition-all duration-150 ease-in-out transform active:scale-90"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 002.828 0L21 9.657" /></svg>
+                                </button>
+                            )
+                        }
+                        return (
+                            <button
+                                key={index}
+                                onClick={() => key && handleNumberClick(key)}
+                                disabled={!key}
+                                className="
+                                    text-3xl font-light h-16 w-16 mx-auto rounded-full 
+                                    bg-white/50 backdrop-blur-sm shadow-sm 
+                                    text-brand-charcoal
+                                    transition-all duration-150 ease-in-out
+                                    transform active:scale-90
+                                    disabled:opacity-0
+                                "
+                            >
+                                {key}
+                            </button>
+                        )
+                    })}
                 </div>
             </div>
              <style>{`
