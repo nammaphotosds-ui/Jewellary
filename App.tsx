@@ -269,12 +269,16 @@ export const AddUserIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="
 const ExitIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>;
 const PencilIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>;
 export const SendIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>;
+const ExpandIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>;
+const CompressIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg>;
 
 // New Global App Header
 const AppHeader: React.FC<{
     currentPage: Page;
     setCurrentPage: (page: Page) => void;
-}> = ({ currentPage, setCurrentPage }) => (
+    isFullscreen: boolean;
+    toggleFullscreen: () => void;
+}> = ({ currentPage, setCurrentPage, isFullscreen, toggleFullscreen }) => (
     <div className="flex justify-between items-start mb-6">
         <div className="flex items-center">
             <img src="https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163" alt="Logo" className="w-12 h-12 object-contain" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }} />
@@ -286,6 +290,13 @@ const AppHeader: React.FC<{
             </div>
         </div>
         <div className="flex items-center gap-2">
+            <button
+                onClick={toggleFullscreen}
+                className="p-3 bg-white/40 backdrop-blur-md rounded-full shadow-md text-brand-charcoal opacity-50 hover:opacity-100 transition"
+                aria-label={isFullscreen ? 'Exit full-screen' : 'Enter full-screen'}
+            >
+                {isFullscreen ? <CompressIcon /> : <ExpandIcon />}
+            </button>
             {currentPage !== 'DASHBOARD' && (
                 <button
                     onClick={() => setCurrentPage('DASHBOARD')}
@@ -409,6 +420,15 @@ const AppContent: React.FC = () => {
   const { isInitialized, isAuthenticated, error } = useAppContext();
   const [isAddCustomerModalOpen, setIsAddCustomerModalOpen] = useState(false);
   const [isPinAuthenticated, setIsPinAuthenticated] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
+
+  useEffect(() => {
+    const onFullscreenChange = () => {
+        setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
+  }, []);
 
   useEffect(() => {
       // Check session storage to see if pin was already entered
@@ -427,6 +447,16 @@ const AppContent: React.FC = () => {
     }
     sessionStorage.setItem('isPinAuthenticated', 'true');
     setIsPinAuthenticated(true);
+  };
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+            console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+        });
+    } else if (document.exitFullscreen) {
+        document.exitFullscreen();
+    }
   };
 
   if (!isInitialized) {
@@ -490,6 +520,8 @@ const AppContent: React.FC = () => {
               <AppHeader
                 currentPage={currentPage}
                 setCurrentPage={setCurrentPage}
+                isFullscreen={isFullscreen}
+                toggleFullscreen={toggleFullscreen}
               />
               {renderPage()}
           </div>
