@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React from 'react';
 import useLocalStorage from '../hooks/useLocalStorage';
 import type { GoogleTokenResponse } from '../types';
 import { useAppContext } from '../context/AppContext';
@@ -6,27 +7,6 @@ import { useAppContext } from '../context/AppContext';
 const SettingsPage: React.FC = () => {
     const [tokenResponse, setTokenResponse] = useLocalStorage<GoogleTokenResponse | null>('googleTokenResponse', null);
     const { resetTransactions } = useAppContext();
-    const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
-
-    useEffect(() => {
-        const onFullscreenChange = () => {
-            setIsFullscreen(!!document.fullscreenElement);
-        };
-        document.addEventListener('fullscreenchange', onFullscreenChange);
-        return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
-    }, []);
-
-    const handleToggleFullscreen = () => {
-        if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch(err => {
-                alert(`Could not enter full-screen mode: ${err.message}`);
-            });
-        } else {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            }
-        }
-    };
 
     const handleDisconnect = () => {
         if (tokenResponse) {
@@ -71,17 +51,6 @@ const SettingsPage: React.FC = () => {
                 </div>
             </div>
             
-            <div className="bg-white p-6 rounded-lg shadow-md border">
-                <h2 className="text-xl font-bold mb-2">Display Settings</h2>
-                <p className="text-gray-600 mb-4">For a more immersive experience, you can enter full-screen mode. This will hide the system status bar.</p>
-                <button
-                    onClick={handleToggleFullscreen}
-                    className="bg-brand-gold text-brand-charcoal px-6 py-2 rounded-lg font-semibold hover:bg-brand-gold-dark transition"
-                >
-                    {isFullscreen ? 'Exit Full-Screen' : 'Enter Full-Screen'}
-                </button>
-            </div>
-
             <div className="bg-red-50 p-6 rounded-lg shadow-inner border border-red-200">
                 <h2 className="text-xl font-bold text-red-800 mb-2">Danger Zone</h2>
                 <p className="text-red-700 mb-4">Permanently delete all transaction data. This will reset revenue and pending balances to zero. This action cannot be undone.</p>

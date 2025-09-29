@@ -270,10 +270,17 @@ export const AddUserIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="
 const ExitIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>;
 const PencilIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>;
 export const SendIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>;
+const FullscreenEnterIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>;
+const FullscreenExitIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>;
 
 
 // New Global App Header
-const AppHeader: React.FC<{ currentPage: Page; setCurrentPage: (page: Page) => void }> = ({ currentPage, setCurrentPage }) => (
+const AppHeader: React.FC<{
+    currentPage: Page;
+    setCurrentPage: (page: Page) => void;
+    isFullscreen: boolean;
+    onToggleFullscreen: () => void;
+}> = ({ currentPage, setCurrentPage, isFullscreen, onToggleFullscreen }) => (
     <div className="flex justify-between items-start mb-6">
         <div className="flex items-center">
             <img src="https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163" alt="Logo" className="w-12 h-12 object-contain" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }} />
@@ -284,15 +291,24 @@ const AppHeader: React.FC<{ currentPage: Page; setCurrentPage: (page: Page) => v
                 <p className="text-sm text-brand-gold-dark tracking-[0.1em] -mt-1">JEWELLERYS</p>
             </div>
         </div>
-        {currentPage !== 'DASHBOARD' && (
+        <div className="flex items-center gap-2">
             <button
-                onClick={() => setCurrentPage('DASHBOARD')}
+                onClick={onToggleFullscreen}
                 className="p-3 bg-white/60 backdrop-blur-md rounded-full shadow-md text-brand-charcoal hover:bg-white transition"
-                aria-label="Go to Dashboard"
+                aria-label={isFullscreen ? "Exit Full-Screen" : "Enter Full-Screen"}
             >
-                <ExitIcon />
+                {isFullscreen ? <FullscreenExitIcon /> : <FullscreenEnterIcon />}
             </button>
-        )}
+            {currentPage !== 'DASHBOARD' && (
+                <button
+                    onClick={() => setCurrentPage('DASHBOARD')}
+                    className="p-3 bg-white/60 backdrop-blur-md rounded-full shadow-md text-brand-charcoal hover:bg-white transition"
+                    aria-label="Go to Dashboard"
+                >
+                    <ExitIcon />
+                </button>
+            )}
+        </div>
     </div>
 );
 
@@ -406,13 +422,32 @@ const AppContent: React.FC = () => {
   const { isInitialized, isAuthenticated, error } = useAppContext();
   const [isAddCustomerModalOpen, setIsAddCustomerModalOpen] = useState(false);
   const [isPinAuthenticated, setIsPinAuthenticated] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
 
   useEffect(() => {
       // Check session storage to see if pin was already entered
       if (sessionStorage.getItem('isPinAuthenticated') === 'true') {
           setIsPinAuthenticated(true);
       }
+      
+      const onFullscreenChange = () => {
+          setIsFullscreen(!!document.fullscreenElement);
+      };
+      document.addEventListener('fullscreenchange', onFullscreenChange);
+      return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
   }, []);
+
+  const handleToggleFullscreen = () => {
+      if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(err => {
+              console.error(`Could not enter full-screen mode: ${err.message}`);
+          });
+      } else {
+          if (document.exitFullscreen) {
+              document.exitFullscreen();
+          }
+      }
+  };
 
   if (!isInitialized) {
       return <WelcomeScreen />;
@@ -475,7 +510,12 @@ const AppContent: React.FC = () => {
                 paddingBottom: `calc(2rem + env(safe-area-inset-bottom, 0px))` 
             }}
            >
-              <AppHeader currentPage={currentPage} setCurrentPage={setCurrentPage} />
+              <AppHeader
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                isFullscreen={isFullscreen}
+                onToggleFullscreen={handleToggleFullscreen}
+              />
               {renderPage()}
           </div>
         </main>
