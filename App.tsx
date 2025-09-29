@@ -17,7 +17,7 @@ import useLocalStorage from './hooks/useLocalStorage';
 const CLIENT_ID = "439419338091-qfb0i2fdjhkbgovuo7q28m6eqa5mr8ko.apps.googleusercontent.com";
 
 const WelcomeScreen: React.FC = () => (
-    <div className="flex h-screen w-screen items-center justify-center bg-gradient-to-br from-brand-champagne to-brand-pale-gold">
+    <div className="flex h-full w-full items-center justify-center">
       <div className="text-center">
         <div className="relative w-40 h-40 mx-auto mb-8">
           <div className="absolute inset-0 border-2 border-brand-gold/30 rounded-full animate-ping"></div>
@@ -129,7 +129,7 @@ const GetStartedScreen: React.FC = () => {
 
     return (
         <div 
-            className="flex h-screen w-screen flex-col items-center justify-center bg-gradient-to-br from-brand-champagne to-brand-pale-gold px-8 pb-8 text-brand-charcoal relative"
+            className="flex h-full w-full flex-col items-center justify-center px-8 pb-8 text-brand-charcoal relative"
             style={{ paddingTop: `calc(2rem + env(safe-area-inset-top, 0rem))` }}
         >
             {/* Main Content */}
@@ -196,7 +196,7 @@ const PinScreen: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
 
     return (
         <div 
-            className="flex h-screen w-screen flex-col items-center justify-center bg-gradient-to-br from-brand-champagne to-brand-pale-gold px-8 pb-8 text-brand-charcoal"
+            className="flex h-full w-full flex-col items-center justify-center px-8 pb-8 text-brand-charcoal"
             style={{ paddingTop: `calc(2rem + env(safe-area-inset-top, 0rem))` }}
         >
             <div className="flex flex-col items-center text-center">
@@ -420,7 +420,7 @@ const AppContent: React.FC = () => {
 
   if (error) {
       return (
-           <div className="flex h-screen w-screen items-center justify-center bg-red-50 p-4">
+           <div className="flex h-full w-full items-center justify-center p-4">
               <div className="text-center bg-white p-8 rounded-lg shadow-lg max-w-md">
                 <h1 className="text-2xl font-bold text-red-700 mb-4">An Error Occurred</h1>
                 <p className="text-red-600 mb-6">{error}</p>
