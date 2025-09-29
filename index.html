@@ -54,16 +54,20 @@
 }
 </script>
 <style>
-  /* Ensure the app takes the full screen */
+  /* Ensure the app takes the full screen and apply background */
   html, body, #root {
     height: 100%;
     width: 100%;
     margin: 0;
     padding: 0;
   }
+  body {
+    /* This matches the tailwind 'bg-gradient-to-br from-brand-champagne to-brand-pale-gold' */
+    background-image: linear-gradient(to bottom right, #F7E7CE, #E8D5B1);
+  }
 </style>
 </head>
-  <body class="bg-gradient-to-br from-brand-champagne to-brand-pale-gold">
+  <body>
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
     <script>
