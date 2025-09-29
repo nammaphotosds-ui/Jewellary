@@ -160,9 +160,14 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                                         <span className="font-bold">Paid:</span>
                                         <span>₹{amountPaid.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                                     </div>
-                                    <div className="flex justify-between text-red-600">
-                                        <span className="font-bold">BALANCE DUE:</span>
-                                        <span className="font-bold">₹{bill.balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                                    <div className={`flex justify-between ${bill.balance > 0 ? 'text-red-600' : 'text-green-700'}`}>
+                                        <span className="font-bold">{bill.balance > 0 ? 'BALANCE DUE:' : 'Status:'}</span>
+                                        <span className="font-bold">
+                                            {bill.balance > 0 
+                                                ? `₹${bill.balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
+                                                : 'Fully Paid'
+                                            }
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -308,21 +313,23 @@ const OnScreenCustomerProfile: React.FC<{
 
             <div className="bg-white p-6 rounded-lg shadow-md border">
                 <h3 className="text-xl font-bold mb-4 text-brand-charcoal">Transaction History</h3>
-                <div className="max-h-[400px] overflow-y-auto">
-                     <table className="w-full text-left">
+                <div className="max-h-[400px] overflow-auto">
+                     <table className="min-w-full w-full text-left">
                         <thead className="sticky top-0 bg-gray-100 z-10">
                             <tr>
-                                <th className="p-2 text-sm font-semibold text-gray-600">Bill ID</th>
-                                <th className="p-2 text-sm font-semibold text-gray-600">Date</th>
-                                <th className="p-2 text-sm font-semibold text-gray-600">Type</th>
-                                <th className="p-2 text-sm font-semibold text-gray-600 text-right">Total (₹)</th>
-                                <th className="p-2 text-sm font-semibold text-gray-600 text-right">Balance (₹)</th>
+                                <th className="p-2 text-sm font-semibold text-gray-600 whitespace-nowrap">Date</th>
+                                <th className="p-2 text-sm font-semibold text-gray-600 whitespace-nowrap">Bill ID</th>
+                                <th className="p-2 text-sm font-semibold text-gray-600 whitespace-nowrap">Type</th>
+                                <th className="p-2 text-sm font-semibold text-gray-600 text-right whitespace-nowrap">Total (₹)</th>
+                                <th className="p-2 text-sm font-semibold text-gray-600 text-right whitespace-nowrap">Paid (₹)</th>
+                                <th className="p-2 text-sm font-semibold text-gray-600 text-right whitespace-nowrap">Balance (₹)</th>
                             </tr>
                         </thead>
                         <tbody>
                             {bills.map(bill => (
                                 <tr key={bill.id} className="border-b">
-                                    <td className="p-2 text-xs font-mono">
+                                    <td className="p-2 text-sm whitespace-nowrap">{new Date(bill.date).toLocaleDateString()}</td>
+                                    <td className="p-2 text-xs font-mono whitespace-nowrap">
                                          <button
                                             onClick={() => onBillClick(bill)}
                                             disabled={!!generatingBillId}
@@ -331,13 +338,13 @@ const OnScreenCustomerProfile: React.FC<{
                                             {generatingBillId === bill.id ? 'Generating...' : bill.id}
                                         </button>
                                     </td>
-                                    <td className="p-2 text-sm">{new Date(bill.date).toLocaleDateString()}</td>
-                                    <td className="p-2 text-sm">{bill.type}</td>
-                                    <td className="p-2 text-sm text-right">{bill.grandTotal.toLocaleString('en-IN')}</td>
-                                    <td className="p-2 text-sm text-right font-semibold">{bill.balance > 0 ? <span className="text-red-600">{bill.balance.toLocaleString('en-IN')}</span> : 'Paid'}</td>
+                                    <td className="p-2 text-sm whitespace-nowrap">{bill.type}</td>
+                                    <td className="p-2 text-sm text-right whitespace-nowrap">{bill.grandTotal.toLocaleString('en-IN')}</td>
+                                    <td className="p-2 text-sm text-right text-green-700 whitespace-nowrap">{bill.amountPaid.toLocaleString('en-IN')}</td>
+                                    <td className="p-2 text-sm text-right font-semibold whitespace-nowrap">{bill.balance > 0 ? <span className="text-red-600">{bill.balance.toLocaleString('en-IN')}</span> : 'Paid'}</td>
                                 </tr>
                             ))}
-                            {bills.length === 0 && (<tr><td colSpan={5} className="text-center p-8 text-gray-500">No transactions found.</td></tr>)}
+                            {bills.length === 0 && (<tr><td colSpan={6} className="text-center p-8 text-gray-500">No transactions found.</td></tr>)}
                         </tbody>
                      </table>
                 </div>

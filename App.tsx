@@ -259,8 +259,8 @@ export const SendIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20"
 
 
 // New Global App Header
-const AppHeader: React.FC<{setCurrentPage: (page: Page) => void}> = ({ setCurrentPage }) => (
-    <div className="absolute top-0 left-0 right-0 px-4 pt-4 md:px-8 z-20 flex justify-between items-start" style={{ paddingTop: `calc(1rem + env(safe-area-inset-top, 0px))` }}>
+const AppHeader: React.FC<{ currentPage: Page; setCurrentPage: (page: Page) => void }> = ({ currentPage, setCurrentPage }) => (
+    <div className="flex justify-between items-start mb-6">
         <div className="flex items-center">
             <img src="https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163" alt="Logo" className="w-12 h-12 object-contain" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }} />
             <div className="ml-2">
@@ -270,13 +270,15 @@ const AppHeader: React.FC<{setCurrentPage: (page: Page) => void}> = ({ setCurren
                 <p className="text-sm text-brand-gold-dark tracking-[0.1em] -mt-1">JEWELLERYS</p>
             </div>
         </div>
-        <button
-            onClick={() => setCurrentPage('DASHBOARD')}
-            className="p-3 bg-white/60 backdrop-blur-md rounded-full shadow-md text-brand-charcoal hover:bg-white transition"
-            aria-label="Go to Dashboard"
-        >
-            <ExitIcon />
-        </button>
+        {currentPage !== 'DASHBOARD' && (
+            <button
+                onClick={() => setCurrentPage('DASHBOARD')}
+                className="p-3 bg-white/60 backdrop-blur-md rounded-full shadow-md text-brand-charcoal hover:bg-white transition"
+                aria-label="Go to Dashboard"
+            >
+                <ExitIcon />
+            </button>
+        )}
     </div>
 );
 
@@ -451,15 +453,15 @@ const AppContent: React.FC = () => {
     <div className="flex h-screen font-sans text-brand-charcoal">
       <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />
       <div className="flex flex-col flex-1 relative">
-        <AppHeader setCurrentPage={setCurrentPage} />
         <main className="flex-1 overflow-y-auto">
           <div 
-            className="px-4 md:p-8 h-full"
+            className="px-4 md:p-8"
              style={{ 
-                paddingTop: `calc(6rem + env(safe-area-inset-top, 0px))`, 
+                paddingTop: `calc(1rem + env(safe-area-inset-top, 0px))`, 
                 paddingBottom: `calc(2rem + env(safe-area-inset-bottom, 0px))` 
             }}
            >
+              <AppHeader currentPage={currentPage} setCurrentPage={setCurrentPage} />
               {renderPage()}
           </div>
         </main>

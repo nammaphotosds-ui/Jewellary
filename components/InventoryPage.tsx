@@ -168,7 +168,7 @@ const InventoryPage: React.FC = () => {
         const totalStock = inventory.reduce((sum, item) => sum + item.quantity, 0);
         const totalValue = inventory.reduce((sum, item) => sum + item.price * item.quantity, 0);
         return {
-            uniqueItemCount: inventory.length,
+            uniqueItemCount: inventory.filter(item => item.quantity > 0).length,
             totalStock,
             totalValue
         };

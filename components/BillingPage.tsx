@@ -148,9 +148,14 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                                         <span className="font-bold">Paid:</span>
                                         <span>₹{amountPaid.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                                     </div>
-                                    <div className="flex justify-between text-red-600">
-                                        <span className="font-bold">BALANCE DUE:</span>
-                                        <span className="font-bold">₹{bill.balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                                    <div className={`flex justify-between ${bill.balance > 0 ? 'text-red-600' : 'text-green-700'}`}>
+                                        <span className="font-bold">{bill.balance > 0 ? 'BALANCE DUE:' : 'Status:'}</span>
+                                        <span className="font-bold">
+                                            {bill.balance > 0 
+                                                ? `₹${bill.balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
+                                                : 'Fully Paid'
+                                            }
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -424,6 +429,21 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
     setSubmissionStatus('idle');
   };
   
+  const handleAmountPaidChange = (value: string) => {
+    if (value === '') {
+        setAmountPaid('');
+        return;
+    }
+    const numericValue = parseFloat(value);
+    const grandTotal = calculations.grandTotal;
+
+    if (!isNaN(numericValue) && numericValue > grandTotal) {
+        setAmountPaid(grandTotal.toFixed(2));
+    } else {
+        setAmountPaid(value);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!selectedCustomerId || selectedItems.length === 0) {
@@ -442,7 +462,6 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
       }
     }
 
-    // FIX: Cast nativeEvent to SubmitEvent to access the 'submitter' property.
     const action = ((e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement)?.value || 'download';
     
     setSubmissionStatus('processing');
@@ -465,11 +484,11 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
         const blob = await generatePdfBlob(<InvoiceTemplate bill={bill} customer={customer} />);
         if (!blob) throw new Error("Failed to generate PDF.");
 
-        const downloadFile = (blob: Blob, bill: Bill) => {
-             const url = URL.createObjectURL(blob);
+        const downloadFile = (blobToDownload: Blob, billToDownload: Bill) => {
+             const url = URL.createObjectURL(blobToDownload);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${bill.type.toLowerCase()}-${bill.id}.pdf`;
+            a.download = `${billToDownload.type.toLowerCase()}-${billToDownload.id}.pdf`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -480,17 +499,33 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
         alert('Bill created successfully!');
 
         if (action === 'send') {
-            // 1. Trigger download
-            downloadFile(blob, bill);
-
-            // 2. Open WhatsApp
-            const cleanPhone = customer.phone.replace(/\D/g, '');
-            const whatsappPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
-            const message = encodeURIComponent(`Hello ${customer.name},\n\nHere is your ${bill.type.toLowerCase()} from DEVAGIRIKAR JEWELLERYS.\n\nThe PDF has been downloaded to your device. Please attach it here.\n\nBill ID: ${bill.id}\nTotal: ${bill.grandTotal.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}`);
-            const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${message}`;
+            const fileName = `${bill.type.toLowerCase()}-${bill.id}.pdf`;
+            const file = new File([blob], fileName, { type: 'application/pdf' });
+            const message = `Hello ${customer.name},\n\nHere is your ${bill.type.toLowerCase()} from DEVAGIRIKAR JEWELLERYS.\n\nBill ID: ${bill.id}\nTotal: ${bill.grandTotal.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}`;
+            const shareData = {
+                files: [file],
+                title: `Devagirikar Jewellers - ${bill.type}`,
+                text: message,
+            };
             
-            window.open(whatsappUrl, '_blank');
-
+            // @ts-ignore
+            if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+                try {
+                    await navigator.share(shareData);
+                } catch (error) {
+                    console.error('Could not share bill:', error);
+                    alert("Sharing was cancelled or failed. Downloading the PDF instead.");
+                    downloadFile(blob, bill);
+                }
+            } else {
+                // Fallback for browsers that don't support file sharing
+                downloadFile(blob, bill);
+                const cleanPhone = customer.phone.replace(/\D/g, '');
+                const whatsappPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+                const encodedMessage = encodeURIComponent(message);
+                const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${encodedMessage}`;
+                window.open(whatsappUrl, '_blank');
+            }
         } else { // Default to download
             downloadFile(blob, bill);
         }
@@ -595,7 +630,27 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
                 </div>
                  <div className="grid grid-cols-2 gap-4">
                     <div><label className="block text-sm font-medium">Extra Charge (%)</label><input type="number" value={extraChargePercentage} onChange={e => setExtraChargePercentage(e.target.value)} className="w-full p-2 border rounded" placeholder="0"/></div>
-                    <div><label className="block text-sm font-medium">Amount Paid (₹)</label><input type="number" value={amountPaid} onChange={e => setAmountPaid(e.target.value)} className="w-full p-2 border rounded" placeholder="0.00"/></div>
+                    <div>
+                        <div className="flex justify-between items-center">
+                            <label className="block text-sm font-medium">Amount Paid (₹)</label>
+                            <button
+                                type="button"
+                                onClick={() => setAmountPaid(calculations.grandTotal.toFixed(2))}
+                                disabled={calculations.grandTotal <= 0}
+                                className="text-xs text-blue-600 font-semibold hover:underline disabled:text-gray-400 disabled:no-underline"
+                            >
+                                Pay Full Amount
+                            </button>
+                        </div>
+                        <input
+                            type="number"
+                            value={amountPaid}
+                            onChange={e => handleAmountPaidChange(e.target.value)}
+                            className="w-full p-2 border rounded"
+                            placeholder="0.00"
+                            max={calculations.grandTotal}
+                        />
+                    </div>
                 </div>
                 <div>
                     <label className="block text-sm font-medium mb-1">Bill Type</label>
