@@ -99,7 +99,7 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                     </section>
 
                     {/* Items Table */}
-                    <main className="flex-grow overflow-hidden">
+                    <main>
                         <table className={`w-full border-collapse border border-brand-gold-dark/30 ${tableBaseFontSize}`} style={{ tableLayout: 'fixed' }}>
                             <thead className="border-b-2 border-brand-charcoal bg-brand-pale-gold/30">
                                 <tr>
@@ -239,10 +239,12 @@ const CustomerProfileTemplate: React.FC<{
                                 <p className="text-xs mt-2">Member Since: {new Date(customer.joinDate).toLocaleDateString()}</p>
                                 {customer.dob && <p className="text-xs">Birthday: {new Date(customer.dob).toLocaleDateString()}</p>}
                             </div>
-                            <div className="p-4 rounded-lg bg-brand-pale-gold/40 border border-brand-gold-dark/30 text-center flex flex-col justify-center">
-                                <h3 className="text-sm font-semibold text-brand-charcoal uppercase tracking-wider">Total Pending Balance</h3>
-                                <p className="text-5xl font-bold text-red-600 font-sans">₹{customer.pendingBalance.toLocaleString('en-IN')}</p>
-                            </div>
+                             {customer.pendingBalance > 0 && (
+                                <div className="p-4 rounded-lg bg-brand-pale-gold/40 border border-brand-gold-dark/30 text-center flex flex-col justify-center">
+                                    <h3 className="text-sm font-semibold text-brand-charcoal uppercase tracking-wider">Total Pending Balance</h3>
+                                    <p className="text-5xl font-bold text-red-600 font-sans">₹{customer.pendingBalance.toLocaleString('en-IN')}</p>
+                                </div>
+                            )}
                         </section>
                     )}
 
@@ -287,6 +289,9 @@ const CustomerProfileTemplate: React.FC<{
     );
 };
 
+const WhatsAppIcon: React.FC<{ className?: string }> = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.001 2.269.655 4.398 1.898 6.166l-1.29 4.721 4.783-1.251z"/></svg>;
+
+
 // --- Responsive On-Screen View ---
 const OnScreenCustomerProfile: React.FC<{
     customer: Customer, 
@@ -294,6 +299,23 @@ const OnScreenCustomerProfile: React.FC<{
     onBillClick: (bill: Bill) => void,
     generatingBillId: string | null
 }> = ({customer, bills, onBillClick, generatingBillId}) => {
+    const [expandedBillId, setExpandedBillId] = useState<string | null>(null);
+
+    const handleShareBill = (bill: Bill) => {
+        const itemsSummary = bill.items.map(item => `- ${item.name} (Qty: ${item.quantity})`).join('\n');
+        const textMessage = `*DEVAGIRIKAR JEWELLERYS*\n\nHello ${customer.name},\nHere is your bill summary:\n\n*Bill ID:* ${bill.id}\n*Type:* ${bill.type}\n*Date:* ${new Date(bill.date).toLocaleDateString()}\n\n*Items:*\n${itemsSummary}\n\n*Grand Total:* ${bill.grandTotal.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}\n*Amount Paid:* ${bill.amountPaid.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}\n*Balance Due:* ${bill.balance.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}\n\nThank you!`;
+        
+        const cleanPhone = customer.phone.replace(/\D/g, '');
+        const whatsappPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+        const encodedMessage = encodeURIComponent(textMessage);
+        const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${encodedMessage}`;
+        window.open(whatsappUrl, '_blank');
+    };
+
+    const toggleExpand = (billId: string) => {
+        setExpandedBillId(prevId => (prevId === billId ? null : billId));
+    };
+
     return (
         <div className="space-y-6">
             <div className="bg-white p-6 rounded-lg shadow-md border">
@@ -306,10 +328,12 @@ const OnScreenCustomerProfile: React.FC<{
                         {customer.dob && <p className="text-sm text-gray-500">Birthday: {new Date(customer.dob).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>}
                         <p className="text-sm text-gray-500">Member since {new Date(customer.joinDate).toLocaleDateString()}</p>
                     </div>
-                    <div className="w-full md:w-auto mt-4 md:mt-0 text-center md:text-right bg-red-50 md:bg-transparent p-4 md:p-0 rounded-lg">
-                        <p className="text-sm font-semibold text-red-700">Pending Balance</p>
-                        <p className="text-3xl font-bold text-red-600">₹{customer.pendingBalance.toLocaleString('en-IN')}</p>
-                    </div>
+                    {customer.pendingBalance > 0 && (
+                        <div className="w-full md:w-auto mt-4 md:mt-0 text-center md:text-right bg-red-50 md:bg-transparent p-4 md:p-0 rounded-lg">
+                            <p className="text-sm font-semibold text-red-700">Pending Balance</p>
+                            <p className="text-3xl font-bold text-red-600">₹{customer.pendingBalance.toLocaleString('en-IN')}</p>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -318,16 +342,18 @@ const OnScreenCustomerProfile: React.FC<{
 
                 {/* Mobile Card View */}
                 <div className="md:hidden space-y-4">
-                    {bills.length > 0 ? bills.map(bill => (
+                    {bills.length > 0 ? bills.map(bill => {
+                        const isExpanded = expandedBillId === bill.id;
+                        return (
                         <div key={bill.id} className="bg-gray-50 p-4 rounded-lg border">
-                            <div className="flex justify-between items-start">
+                            <div className="flex justify-between items-start" onClick={() => toggleExpand(bill.id)}>
                                 <div>
                                     <p className="font-mono text-sm font-semibold text-brand-charcoal">{bill.id}</p>
                                     <p className="text-xs text-gray-500">{new Date(bill.date).toLocaleDateString()}</p>
                                 </div>
                                 <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${bill.type === 'INVOICE' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>{bill.type}</span>
                             </div>
-                            <div className="mt-3 grid grid-cols-3 text-center border-t pt-3">
+                            <div className="mt-3 grid grid-cols-3 text-center border-t pt-3" onClick={() => toggleExpand(bill.id)}>
                                 <div>
                                     <p className="text-xs text-gray-500">Total</p>
                                     <p className="font-semibold">₹{bill.grandTotal.toLocaleString('en-IN')}</p>
@@ -341,18 +367,36 @@ const OnScreenCustomerProfile: React.FC<{
                                     <p className="font-bold text-red-600">{bill.balance > 0 ? `₹${bill.balance.toLocaleString('en-IN')}` : 'Paid'}</p>
                                 </div>
                             </div>
-                            <div className="mt-4">
+                             {isExpanded && (
+                                <div className="mt-3 pt-3 border-t">
+                                    <h4 className="font-semibold text-sm mb-2">Items in this Bill:</h4>
+                                    <ul className="list-disc pl-5 text-sm space-y-1 text-gray-700">
+                                        {bill.items.map(item => (
+                                            <li key={item.itemId}>{item.name} <span className="font-mono text-xs text-gray-500">({item.itemId})</span></li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                            <div className="mt-4 flex gap-2">
                                 <button
                                     onClick={() => onBillClick(bill)}
                                     disabled={!!generatingBillId}
-                                    className="w-full text-sm text-blue-600 font-semibold py-2 px-4 rounded-lg bg-blue-50 hover:bg-blue-100 transition disabled:text-gray-500 disabled:bg-gray-100 flex items-center justify-center"
+                                    className="w-1/2 text-sm text-blue-600 font-semibold py-2 px-4 rounded-lg bg-blue-50 hover:bg-blue-100 transition disabled:text-gray-500 disabled:bg-gray-100 flex items-center justify-center"
                                 >
                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                                    {generatingBillId === bill.id ? 'Generating...' : 'Download PDF'}
+                                    {generatingBillId === bill.id ? 'Generating...' : 'Download'}
+                                </button>
+                                 <button
+                                    onClick={() => handleShareBill(bill)}
+                                    disabled={!!generatingBillId}
+                                    className="w-1/2 text-sm text-green-600 font-semibold py-2 px-4 rounded-lg bg-green-50 hover:bg-green-100 transition disabled:text-gray-500 disabled:bg-gray-100 flex items-center justify-center"
+                                >
+                                     <WhatsAppIcon className="mr-2"/>
+                                     Share
                                 </button>
                             </div>
                         </div>
-                    )) : (<div className="text-center p-8 text-gray-500">No transactions found.</div>)}
+                    )}) : (<div className="text-center p-8 text-gray-500">No transactions found.</div>)}
                 </div>
 
 
@@ -367,15 +411,17 @@ const OnScreenCustomerProfile: React.FC<{
                                 <th className="p-2 text-sm font-semibold text-gray-600 text-right whitespace-nowrap">Total (₹)</th>
                                 <th className="p-2 text-sm font-semibold text-gray-600 text-right whitespace-nowrap">Paid (₹)</th>
                                 <th className="p-2 text-sm font-semibold text-gray-600 text-right whitespace-nowrap">Balance (₹)</th>
+                                <th className="p-2 text-sm font-semibold text-gray-600 text-center whitespace-nowrap">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {bills.map(bill => (
-                                <tr key={bill.id} className="border-b">
+                                <React.Fragment key={bill.id}>
+                                <tr className="border-b hover:bg-gray-50 cursor-pointer" onClick={() => toggleExpand(bill.id)}>
                                     <td className="p-2 text-sm whitespace-nowrap">{new Date(bill.date).toLocaleDateString()}</td>
                                     <td className="p-2 text-xs font-mono whitespace-nowrap">
                                          <button
-                                            onClick={() => onBillClick(bill)}
+                                            onClick={(e) => { e.stopPropagation(); onBillClick(bill); }}
                                             disabled={!!generatingBillId}
                                             className="text-blue-600 hover:underline disabled:text-gray-500 disabled:no-underline"
                                         >
@@ -386,9 +432,27 @@ const OnScreenCustomerProfile: React.FC<{
                                     <td className="p-2 text-sm text-right whitespace-nowrap">{bill.grandTotal.toLocaleString('en-IN')}</td>
                                     <td className="p-2 text-sm text-right text-green-700 whitespace-nowrap">{bill.amountPaid.toLocaleString('en-IN')}</td>
                                     <td className="p-2 text-sm text-right font-semibold whitespace-nowrap">{bill.balance > 0 ? <span className="text-red-600">{bill.balance.toLocaleString('en-IN')}</span> : 'Paid'}</td>
+                                    <td className="p-2 text-sm text-center">
+                                        <button onClick={(e) => { e.stopPropagation(); handleShareBill(bill); }} className="p-2 text-green-600 hover:bg-green-100 rounded-full transition" aria-label="Share on WhatsApp">
+                                            <WhatsAppIcon />
+                                        </button>
+                                    </td>
                                 </tr>
+                                 {expandedBillId === bill.id && (
+                                    <tr className="bg-gray-50 border-b">
+                                        <td colSpan={7} className="p-4">
+                                            <h4 className="font-semibold text-sm mb-2">Items in this Bill:</h4>
+                                            <ul className="list-disc pl-5 text-sm space-y-1 text-gray-700">
+                                                {bill.items.map(item => (
+                                                    <li key={item.itemId}>{item.name} <span className="font-mono text-xs text-gray-500">({item.itemId})</span></li>
+                                                ))}
+                                            </ul>
+                                        </td>
+                                    </tr>
+                                )}
+                                </React.Fragment>
                             ))}
-                            {bills.length === 0 && (<tr><td colSpan={6} className="text-center p-8 text-gray-500">No transactions found.</td></tr>)}
+                            {bills.length === 0 && (<tr><td colSpan={7} className="text-center p-8 text-gray-500">No transactions found.</td></tr>)}
                         </tbody>
                      </table>
                 </div>
@@ -459,7 +523,7 @@ const generateSinglePagePdfBlob = (componentToRender: React.ReactElement): Promi
 
         root.render(componentToRender);
         // Use setTimeout to ensure React has flushed the render to the DOM
-        setTimeout(captureAndCleanup, 300);
+        setTimeout(captureAndCleanup, 500);
     });
 };
 

@@ -87,7 +87,7 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                     </section>
 
                     {/* Items Table */}
-                    <main className="flex-grow overflow-hidden">
+                    <main>
                         <table className={`w-full border-collapse border border-brand-gold-dark/30 ${tableBaseFontSize}`} style={{ tableLayout: 'fixed' }}>
                             <thead className="border-b-2 border-brand-charcoal bg-brand-pale-gold/30">
                                 <tr>
@@ -414,7 +414,7 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
 
             root.render(componentToRender);
             // Use setTimeout to ensure React has flushed the render to the DOM
-            setTimeout(captureAndCleanup, 300);
+            setTimeout(captureAndCleanup, 500);
         });
     };
   
