@@ -49,7 +49,7 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
 
     return (
         <div className="bg-brand-cream text-brand-charcoal font-sans flex flex-col" style={{ width: '842px', height: '595px', boxSizing: 'border-box' }}>
-            <div className="flex-grow relative">
+            <div className="flex-grow relative overflow-hidden">
                 {/* Decorative Border */}
                 <div className="absolute inset-0 border-[1px] border-brand-gold-dark/30 z-0"></div>
                 <div className="absolute inset-2 border-[8px] border-brand-pale-gold z-0"></div>
