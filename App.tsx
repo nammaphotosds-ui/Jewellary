@@ -450,7 +450,7 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen font-sans text-brand-charcoal">
+    <div className="flex h-full font-sans text-brand-charcoal">
       <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />
       <div className="flex flex-col flex-1 relative">
         <main className="flex-1 overflow-y-auto">

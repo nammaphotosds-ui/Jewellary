@@ -182,8 +182,8 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                     </section>
                 </div>
             </div>
-            <footer className="text-center text-brand-charcoal pt-1 pb-2 px-8 flex-shrink-0">
-                <div className="border-t-2 border-brand-charcoal mb-1 mx-auto w-full"></div>
+            <footer className="text-center text-brand-charcoal px-8 py-2 flex-shrink-0">
+                <div className="border-t-2 border-brand-charcoal mb-2 mx-auto w-full"></div>
                 <p className="font-bold text-xs">1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot. | Phone: 9008604004 / 8618748300</p>
             </footer>
         </div>
@@ -279,8 +279,8 @@ const CustomerProfileTemplate: React.FC<{
                     </main>
                 </div>
             </div>
-            <footer className="text-center text-brand-charcoal pt-1 pb-2 px-8 flex-shrink-0">
-                <div className="border-t-2 border-brand-charcoal mb-1 mx-auto w-full"></div>
+            <footer className="text-center text-brand-charcoal px-8 py-2 flex-shrink-0">
+                <div className="border-t-2 border-brand-charcoal mb-2 mx-auto w-full"></div>
                 <p className="font-bold text-xs">1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot. | Phone: 9008604004 / 8618748300</p>
             </footer>
         </div>

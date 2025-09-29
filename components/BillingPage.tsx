@@ -170,8 +170,8 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                     </section>
                 </div>
             </div>
-            <footer className="text-center text-brand-charcoal pt-1 pb-2 px-8 flex-shrink-0">
-                <div className="border-t-2 border-brand-charcoal mb-1 mx-auto w-full"></div>
+            <footer className="text-center text-brand-charcoal px-8 py-2 flex-shrink-0">
+                <div className="border-t-2 border-brand-charcoal mb-2 mx-auto w-full"></div>
                 <p className="font-bold text-xs">1st Floor, Stall No.1&2, A.C.O. Complex, Bus-Stand Road, ILKAL-587125. Dist : Bagalkot. | Phone: 9008604004 / 8618748300</p>
             </footer>
         </div>
@@ -501,11 +501,20 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
         if (action === 'send') {
             const fileName = `${bill.type.toLowerCase()}-${bill.id}.pdf`;
             const file = new File([blob], fileName, { type: 'application/pdf' });
-            const message = `Hello ${customer.name},\n\nHere is your ${bill.type.toLowerCase()} from DEVAGIRIKAR JEWELLERYS.\n\nBill ID: ${bill.id}\nTotal: ${bill.grandTotal.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}`;
             const shareData = {
                 files: [file],
                 title: `Devagirikar Jewellers - ${bill.type}`,
-                text: message,
+            };
+
+            const shareAsTextFallback = () => {
+                const itemsSummary = bill.items.map(item => `- ${item.name} (Qty: ${item.quantity})`).join('\n');
+                const textMessage = `*DEVAGIRIKAR JEWELLERYS*\n\nHello ${customer.name},\nHere is your bill summary:\n\n*Bill ID:* ${bill.id}\n*Type:* ${bill.type}\n*Date:* ${new Date(bill.date).toLocaleDateString()}\n\n*Items:*\n${itemsSummary}\n\n*Grand Total:* ${bill.grandTotal.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}\n*Amount Paid:* ${bill.amountPaid.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}\n*Balance Due:* ${bill.balance.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}\n\nThank you!`;
+                
+                const cleanPhone = customer.phone.replace(/\D/g, '');
+                const whatsappPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+                const encodedMessage = encodeURIComponent(textMessage);
+                const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${encodedMessage}`;
+                window.open(whatsappUrl, '_blank');
             };
             
             // @ts-ignore
@@ -513,21 +522,15 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
                 try {
                     await navigator.share(shareData);
                 } catch (error) {
-                    // Don't show an error if the user simply closed the share sheet.
                     if ((error as DOMException).name !== 'AbortError') {
-                        console.error('Could not share bill:', error);
-                        alert("Sharing failed. This may be a browser limitation. Downloading the PDF instead.");
-                        downloadFile(blob, bill);
+                        console.error('Could not share PDF:', error);
+                        alert("Sharing PDF failed. Sharing bill details as text instead.");
+                        shareAsTextFallback();
                     }
                 }
             } else {
-                // Fallback for browsers that don't support file sharing
-                downloadFile(blob, bill);
-                const cleanPhone = customer.phone.replace(/\D/g, '');
-                const whatsappPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
-                const encodedMessage = encodeURIComponent(message);
-                const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${encodedMessage}`;
-                window.open(whatsappUrl, '_blank');
+                alert("Sharing PDF is not supported on this browser. Sharing bill details as text instead.");
+                shareAsTextFallback();
             }
         } else { // Default to download
             downloadFile(blob, bill);
