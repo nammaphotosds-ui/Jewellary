@@ -4,13 +4,13 @@
   "description": "A comprehensive inventory, customer, and billing management application for a jewelry shop. Features include inventory tracking, customer relationship management with transaction history, and generation of estimates and invoices in PDF format.",
   "icons": [
     {
-      "src": "https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163",
+      "src": "https://ik.imagekit.io/9y4qtxuo0/devagirikar-logo-transparent-bg.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any maskable"
     },
     {
-      "src": "https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163",
+      "src": "https://ik.imagekit.io/9y4qtxuo0/devagirikar-logo-transparent-bg.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any maskable"
