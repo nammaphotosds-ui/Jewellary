@@ -296,24 +296,68 @@ const OnScreenCustomerProfile: React.FC<{
 }> = ({customer, bills, onBillClick, generatingBillId}) => {
     return (
         <div className="space-y-6">
-            <div className="bg-white p-6 rounded-lg shadow-md flex flex-col md:flex-row items-center gap-6 border">
-                <Avatar name={customer.name} className="w-24 h-24 md:w-32 md-h-32 !text-5xl border-4 border-brand-gold-light shadow-lg"/>
-                <div className="text-center md:text-left">
-                    <h2 className="text-3xl font-bold font-serif text-brand-charcoal">{customer.name}</h2>
-                    <p className="font-mono text-gray-500">{customer.id}</p>
-                    <p className="text-gray-600 mt-2">{customer.phone}</p>
-                    {customer.dob && <p className="text-sm text-gray-500">Birthday: {new Date(customer.dob).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>}
-                    <p className="text-sm text-gray-500">Member since {new Date(customer.joinDate).toLocaleDateString()}</p>
-                </div>
-                <div className="mt-4 md:mt-0 md:ml-auto text-center md:text-right bg-red-50 p-4 rounded-lg">
-                    <p className="text-sm font-semibold text-red-700">Pending Balance</p>
-                    <p className="text-3xl font-bold text-red-600">₹{customer.pendingBalance.toLocaleString('en-IN')}</p>
+            <div className="bg-white p-6 rounded-lg shadow-md border">
+                <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+                    <Avatar name={customer.name} className="w-24 h-24 flex-shrink-0 !text-5xl border-4 border-brand-gold-light shadow-lg"/>
+                    <div className="text-center md:text-left flex-grow">
+                        <h2 className="text-3xl font-bold font-serif text-brand-charcoal">{customer.name}</h2>
+                        <p className="font-mono text-gray-500">{customer.id}</p>
+                        <p className="text-gray-600 mt-2">{customer.phone}</p>
+                        {customer.dob && <p className="text-sm text-gray-500">Birthday: {new Date(customer.dob).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>}
+                        <p className="text-sm text-gray-500">Member since {new Date(customer.joinDate).toLocaleDateString()}</p>
+                    </div>
+                    <div className="w-full md:w-auto mt-4 md:mt-0 text-center md:text-right bg-red-50 md:bg-transparent p-4 md:p-0 rounded-lg">
+                        <p className="text-sm font-semibold text-red-700">Pending Balance</p>
+                        <p className="text-3xl font-bold text-red-600">₹{customer.pendingBalance.toLocaleString('en-IN')}</p>
+                    </div>
                 </div>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md border">
+            <div className="bg-white p-4 md:p-6 rounded-lg shadow-md border">
                 <h3 className="text-xl font-bold mb-4 text-brand-charcoal">Transaction History</h3>
-                <div className="max-h-[400px] overflow-auto">
+
+                {/* Mobile Card View */}
+                <div className="md:hidden space-y-4">
+                    {bills.length > 0 ? bills.map(bill => (
+                        <div key={bill.id} className="bg-gray-50 p-4 rounded-lg border">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <p className="font-mono text-sm font-semibold text-brand-charcoal">{bill.id}</p>
+                                    <p className="text-xs text-gray-500">{new Date(bill.date).toLocaleDateString()}</p>
+                                </div>
+                                <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${bill.type === 'INVOICE' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>{bill.type}</span>
+                            </div>
+                            <div className="mt-3 grid grid-cols-3 text-center border-t pt-3">
+                                <div>
+                                    <p className="text-xs text-gray-500">Total</p>
+                                    <p className="font-semibold">₹{bill.grandTotal.toLocaleString('en-IN')}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-gray-500">Paid</p>
+                                    <p className="font-semibold text-green-700">₹{bill.amountPaid.toLocaleString('en-IN')}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-gray-500">Balance</p>
+                                    <p className="font-bold text-red-600">{bill.balance > 0 ? `₹${bill.balance.toLocaleString('en-IN')}` : 'Paid'}</p>
+                                </div>
+                            </div>
+                            <div className="mt-4">
+                                <button
+                                    onClick={() => onBillClick(bill)}
+                                    disabled={!!generatingBillId}
+                                    className="w-full text-sm text-blue-600 font-semibold py-2 px-4 rounded-lg bg-blue-50 hover:bg-blue-100 transition disabled:text-gray-500 disabled:bg-gray-100 flex items-center justify-center"
+                                >
+                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    {generatingBillId === bill.id ? 'Generating...' : 'Download PDF'}
+                                </button>
+                            </div>
+                        </div>
+                    )) : (<div className="text-center p-8 text-gray-500">No transactions found.</div>)}
+                </div>
+
+
+                {/* Desktop Table View */}
+                <div className="hidden md:block max-h-[400px] overflow-auto">
                      <table className="min-w-full w-full text-left">
                         <thead className="sticky top-0 bg-gray-100 z-10">
                             <tr>
