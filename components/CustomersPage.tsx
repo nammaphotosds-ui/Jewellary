@@ -100,7 +100,7 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
 
                     {/* Items Table */}
                     <main className="flex-grow overflow-hidden">
-                        <table className={`w-full border-collapse border border-brand-gold-dark/30 ${tableBaseFontSize}`}>
+                        <table className={`w-full border-collapse border border-brand-gold-dark/30 ${tableBaseFontSize}`} style={{ tableLayout: 'fixed' }}>
                             <thead className="border-b-2 border-brand-charcoal bg-brand-pale-gold/30">
                                 <tr>
                                     <th className={`font-semibold text-left tracking-wider uppercase text-brand-charcoal w-[35%] border border-brand-gold-dark/30 ${tableCellClasses}`}>Item Name</th>
@@ -117,7 +117,7 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                                     const amount = item.price * quantity;
                                     return (
                                         <tr key={item.itemId} className="border-b border-brand-gold-dark/20">
-                                            <td className={`font-medium border border-brand-gold-dark/30 ${tableCellClasses}`}>{item.name}</td>
+                                            <td className={`font-medium border border-brand-gold-dark/30 ${tableCellClasses}`} style={{ wordBreak: 'break-word' }}>{item.name}</td>
                                             <td className={`font-mono text-xs border border-brand-gold-dark/30 ${tableCellClasses}`}>{item.itemId}</td>
                                             <td className={`text-right font-mono border border-brand-gold-dark/30 ${tableCellClasses}`}>{item.weight.toFixed(3)}</td>
                                             <td className={`text-right font-mono border border-brand-gold-dark/30 ${tableCellClasses}`}>{quantity}</td>

@@ -88,7 +88,7 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
 
                     {/* Items Table */}
                     <main className="flex-grow overflow-hidden">
-                        <table className={`w-full border-collapse border border-brand-gold-dark/30 ${tableBaseFontSize}`}>
+                        <table className={`w-full border-collapse border border-brand-gold-dark/30 ${tableBaseFontSize}`} style={{ tableLayout: 'fixed' }}>
                             <thead className="border-b-2 border-brand-charcoal bg-brand-pale-gold/30">
                                 <tr>
                                     <th className={`font-semibold text-left tracking-wider uppercase text-brand-charcoal w-[35%] border border-brand-gold-dark/30 ${tableCellClasses}`}>Item Name</th>
@@ -105,7 +105,7 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                                     const amount = item.price * quantity;
                                     return (
                                         <tr key={item.itemId} className="border-b border-brand-gold-dark/20">
-                                            <td className={`font-medium border border-brand-gold-dark/30 ${tableCellClasses}`}>{item.name}</td>
+                                            <td className={`font-medium border border-brand-gold-dark/30 ${tableCellClasses}`} style={{ wordBreak: 'break-word' }}>{item.name}</td>
                                             <td className={`font-mono text-xs border border-brand-gold-dark/30 ${tableCellClasses}`}>{item.itemId}</td>
                                             <td className={`text-right font-mono border border-brand-gold-dark/30 ${tableCellClasses}`}>{item.weight.toFixed(3)}</td>
                                             <td className={`text-right font-mono border border-brand-gold-dark/30 ${tableCellClasses}`}>{quantity}</td>
@@ -484,56 +484,27 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
         const blob = await generatePdfBlob(<InvoiceTemplate bill={bill} customer={customer} />);
         if (!blob) throw new Error("Failed to generate PDF.");
 
-        const downloadFile = (blobToDownload: Blob, billToDownload: Bill) => {
-             const url = URL.createObjectURL(blobToDownload);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${billToDownload.type.toLowerCase()}-${billToDownload.id}.pdf`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-        
         setSubmissionStatus('success');
         alert('Bill created successfully!');
 
         if (action === 'send') {
-            const fileName = `${bill.type.toLowerCase()}-${bill.id}.pdf`;
-            const file = new File([blob], fileName, { type: 'application/pdf' });
-            const shareData = {
-                files: [file],
-                title: `Devagirikar Jewellers - ${bill.type}`,
-            };
-
-            const shareAsTextFallback = () => {
-                const itemsSummary = bill.items.map(item => `- ${item.name} (Qty: ${item.quantity})`).join('\n');
-                const textMessage = `*DEVAGIRIKAR JEWELLERYS*\n\nHello ${customer.name},\nHere is your bill summary:\n\n*Bill ID:* ${bill.id}\n*Type:* ${bill.type}\n*Date:* ${new Date(bill.date).toLocaleDateString()}\n\n*Items:*\n${itemsSummary}\n\n*Grand Total:* ${bill.grandTotal.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}\n*Amount Paid:* ${bill.amountPaid.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}\n*Balance Due:* ${bill.balance.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}\n\nThank you!`;
-                
-                const cleanPhone = customer.phone.replace(/\D/g, '');
-                const whatsappPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
-                const encodedMessage = encodeURIComponent(textMessage);
-                const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${encodedMessage}`;
-                window.open(whatsappUrl, '_blank');
-            };
+            const itemsSummary = bill.items.map(item => `- ${item.name} (Qty: ${item.quantity})`).join('\n');
+            const textMessage = `*DEVAGIRIKAR JEWELLERYS*\n\nHello ${customer.name},\nHere is your bill summary:\n\n*Bill ID:* ${bill.id}\n*Type:* ${bill.type}\n*Date:* ${new Date(bill.date).toLocaleDateString()}\n\n*Items:*\n${itemsSummary}\n\n*Grand Total:* ${bill.grandTotal.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}\n*Amount Paid:* ${bill.amountPaid.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}\n*Balance Due:* ${bill.balance.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}\n\nThank you!`;
             
-            // @ts-ignore
-            if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
-                try {
-                    await navigator.share(shareData);
-                } catch (error) {
-                    if ((error as DOMException).name !== 'AbortError') {
-                        console.error('Could not share PDF:', error);
-                        alert("Sharing PDF failed. Sharing bill details as text instead.");
-                        shareAsTextFallback();
-                    }
-                }
-            } else {
-                alert("Sharing PDF is not supported on this browser. Sharing bill details as text instead.");
-                shareAsTextFallback();
-            }
+            const cleanPhone = customer.phone.replace(/\D/g, '');
+            const whatsappPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+            const encodedMessage = encodeURIComponent(textMessage);
+            const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${encodedMessage}`;
+            window.open(whatsappUrl, '_blank');
         } else { // Default to download
-            downloadFile(blob, bill);
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${bill.type.toLowerCase()}-${bill.id}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
 
         setTimeout(() => {
@@ -542,9 +513,7 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
 
     } catch (error) {
         console.error("Error processing bill:", error);
-        if ((error as DOMException).name !== 'AbortError') {
-            alert(`An error occurred: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
+        alert(`An error occurred: ${error instanceof Error ? error.message : 'Unknown error'}`);
         setSubmissionStatus('idle');
     }
   };
