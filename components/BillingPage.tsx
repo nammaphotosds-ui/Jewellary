@@ -513,9 +513,12 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
                 try {
                     await navigator.share(shareData);
                 } catch (error) {
-                    console.error('Could not share bill:', error);
-                    alert("Sharing was cancelled or failed. Downloading the PDF instead.");
-                    downloadFile(blob, bill);
+                    // Don't show an error if the user simply closed the share sheet.
+                    if ((error as DOMException).name !== 'AbortError') {
+                        console.error('Could not share bill:', error);
+                        alert("Sharing failed. This may be a browser limitation. Downloading the PDF instead.");
+                        downloadFile(blob, bill);
+                    }
                 }
             } else {
                 // Fallback for browsers that don't support file sharing

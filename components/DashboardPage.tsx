@@ -29,6 +29,8 @@ const DashboardPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCur
     
   const totalPending = customers.reduce((sum, cust) => sum + cust.pendingBalance, 0);
 
+  const totalStock = inventory.reduce((sum, item) => sum + item.quantity, 0);
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
         style: 'currency',
@@ -46,7 +48,7 @@ const DashboardPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCur
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <StatCard title="Customers" value={customers.length} icon={<UsersIcon />} onClick={() => setCurrentPage('CUSTOMERS')} />
-        <StatCard title="In Stock" value={inventory.filter(i => i.quantity > 0).length} icon={<InventoryIcon />} onClick={() => setCurrentPage('INVENTORY')} />
+        <StatCard title="In Stock" value={totalStock} icon={<InventoryIcon />} onClick={() => setCurrentPage('INVENTORY')} />
         <StatCard title="Revenue" value={formatCurrency(totalRevenue)} icon={<RevenueIcon />} onClick={() => setCurrentPage('REVENUE')} />
         <StatCard title="Pending" value={formatCurrency(totalPending)} icon={<PendingIcon />} onClick={() => setCurrentPage('PENDING_PAYMENTS')} />
       </div>
