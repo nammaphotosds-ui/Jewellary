@@ -239,7 +239,7 @@ const CustomerProfileTemplate: React.FC<{
                                 <p className="text-xs mt-2">Member Since: {new Date(customer.joinDate).toLocaleDateString()}</p>
                                 {customer.dob && <p className="text-xs">Birthday: {new Date(customer.dob).toLocaleDateString()}</p>}
                             </div>
-                             {customer.pendingBalance > 0 && (
+                             {customer.pendingBalance >= 1 && (
                                 <div className="p-4 rounded-lg bg-brand-pale-gold/40 border border-brand-gold-dark/30 text-center flex flex-col justify-center">
                                     <h3 className="text-sm font-semibold text-brand-charcoal uppercase tracking-wider">Total Pending Balance</h3>
                                     <p className="text-5xl font-bold text-red-600 font-sans">₹{customer.pendingBalance.toLocaleString('en-IN')}</p>
@@ -328,7 +328,7 @@ const OnScreenCustomerProfile: React.FC<{
                         {customer.dob && <p className="text-sm text-gray-500">Birthday: {new Date(customer.dob).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>}
                         <p className="text-sm text-gray-500">Member since {new Date(customer.joinDate).toLocaleDateString()}</p>
                     </div>
-                    {customer.pendingBalance > 0 && (
+                    {customer.pendingBalance >= 1 && (
                         <div className="w-full md:w-auto mt-4 md:mt-0 text-center md:text-right bg-red-50 md:bg-transparent p-4 md:p-0 rounded-lg">
                             <p className="text-sm font-semibold text-red-700">Pending Balance</p>
                             <p className="text-3xl font-bold text-red-600">₹{customer.pendingBalance.toLocaleString('en-IN')}</p>

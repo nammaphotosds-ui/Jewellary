@@ -157,7 +157,7 @@ const PendingPaymentsPage: React.FC = () => {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
   const customersWithPendingBalance = customers
-    .filter(customer => customer.pendingBalance > 0)
+    .filter(customer => customer.pendingBalance >= 1)
     .sort((a, b) => b.pendingBalance - a.pendingBalance);
     
   if (selectedCustomer) {

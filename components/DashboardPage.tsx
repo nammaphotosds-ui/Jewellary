@@ -27,7 +27,12 @@ const DashboardPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCur
 
   const totalRevenue = bills.reduce((sum, bill) => sum + bill.amountPaid, 0);
     
-  const totalPending = customers.reduce((sum, cust) => sum + cust.pendingBalance, 0);
+  const totalPending = customers.reduce((sum, cust) => {
+    if (cust.pendingBalance >= 1) {
+      return sum + cust.pendingBalance;
+    }
+    return sum;
+  }, 0);
 
   const totalStock = inventory.reduce((sum, item) => sum + item.quantity, 0);
 

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
 // FIX: Imported `BillType` as a value to allow its use at runtime, as it's an enum.
 import { BillType } from '../types';
 import type { JewelryItem, Customer, Bill, GoogleTokenResponse } from '../types';
@@ -38,15 +38,41 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [driveFileId, setDriveFileId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const isInitialLoad = useRef(true);
+
+  // Centralized data saving effect
+  useEffect(() => {
+    // Do not save on the initial data load from Drive to prevent an unnecessary write operation.
+    if (isInitialLoad.current) {
+        return;
+    }
+
+    const saveDataToDrive = async () => {
+        if (!isAuthenticated || !driveFileId || !tokenResponse) {
+            console.log("Save skipped: Not authenticated or file ID not available.");
+            return;
+        }
+        try {
+            await drive.updateFile(tokenResponse.access_token, driveFileId, { inventory, customers, bills });
+        } catch(e) {
+            console.error("Failed to save data to drive", e);
+            setError("Failed to save data. Please check your connection and try again.");
+        }
+    };
+    
+    saveDataToDrive();
+  }, [inventory, customers, bills, isAuthenticated, driveFileId, tokenResponse]);
 
   useEffect(() => {
     const init = async () => {
+        isInitialLoad.current = true; // Mark the beginning of a load sequence
         setIsInitialized(false);
         setError(null);
 
         if (!tokenResponse || !tokenResponse.expires_at || tokenResponse.expires_at < Date.now()) {
             setIsAuthenticated(false);
             setIsInitialized(true);
+            isInitialLoad.current = false; // End of load sequence
             return;
         }
 
@@ -74,23 +100,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             setIsAuthenticated(false);
         } finally {
             setIsInitialized(true);
+            // Once initialization is complete and data is loaded, allow subsequent changes to be saved.
+            setTimeout(() => { isInitialLoad.current = false; }, 500);
         }
     };
     init();
   }, [tokenResponse]);
-  
-  const saveDataToDrive = async (data: { inventory: JewelryItem[], customers: Customer[], bills: Bill[] }) => {
-    if (!isAuthenticated || !driveFileId || !tokenResponse) {
-        setError("Not connected to Google Drive. Please reconnect in Settings.");
-        return;
-    }
-    try {
-        await drive.updateFile(tokenResponse.access_token, driveFileId, data);
-    } catch(e) {
-        console.error("Failed to save data to drive", e);
-        setError("Failed to save data. Please check your connection and try again.");
-    }
-  };
 
   const getNextCustomerId = () => {
     const totalCustomers = customers.length;
@@ -113,15 +128,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       dateAdded: new Date().toISOString(),
     };
 
-    const newInventory = [...inventory, newItem];
-    setInventory(newInventory);
-    await saveDataToDrive({ inventory: newInventory, customers, bills });
+    setInventory(prev => [...prev, newItem]);
   };
   
   const deleteInventoryItem = async (itemId: string) => {
-    const newInventory = inventory.filter(item => item.id !== itemId);
-    setInventory(newInventory);
-    await saveDataToDrive({ inventory: newInventory, customers, bills });
+    setInventory(prev => prev.filter(item => item.id !== itemId));
   };
 
   const addCustomer = async (customer: Omit<Customer, 'id' | 'joinDate' | 'pendingBalance'>) => {
@@ -131,18 +142,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       joinDate: new Date().toISOString(),
       pendingBalance: 0,
     };
-    const newCustomers = [...customers, newCustomer];
-    setCustomers(newCustomers);
-    await saveDataToDrive({ inventory, customers: newCustomers, bills });
+    setCustomers(prev => [...prev, newCustomer]);
   };
   
   const deleteCustomer = async (customerId: string) => {
-    const newCustomers = customers.filter(c => c.id !== customerId);
-    const newBills = bills.filter(b => b.customerId !== customerId);
-
-    setCustomers(newCustomers);
-    setBills(newBills);
-    await saveDataToDrive({ inventory, customers: newCustomers, bills: newBills });
+    setCustomers(prev => prev.filter(c => c.id !== customerId));
+    setBills(prev => prev.filter(b => b.customerId !== customerId));
   };
 
   const recordPayment = async (customerId: string, paymentAmount: number) => {
@@ -174,22 +179,39 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         remainingPayment -= paymentForThisBill;
     }
 
-    const newPendingBalance = updatedBills
+    let newPendingBalance = updatedBills
         .filter(b => b.customerId === customerId)
         .reduce((sum, b) => sum + b.balance, 0);
+        
+    newPendingBalance = parseFloat(newPendingBalance.toFixed(2));
+
+    // If the remaining total balance is negligible, clear it out.
+    if (newPendingBalance > 0 && newPendingBalance < 1) {
+        let amountToClear = newPendingBalance;
+        // Find bills with balance and clear them, starting from the most recent.
+        for (let i = updatedBills.length - 1; i >= 0; i--) {
+            if (updatedBills[i].customerId === customerId && updatedBills[i].balance > 0) {
+                if (amountToClear <= 0) break;
+
+                const adjustment = Math.min(amountToClear, updatedBills[i].balance);
+                updatedBills[i].amountPaid += adjustment;
+                updatedBills[i].balance -= adjustment;
+                amountToClear -= adjustment;
+            }
+        }
+        newPendingBalance = 0; // After clearing, the balance is zero
+    }
+
 
     const updatedCustomer = { ...customer, pendingBalance: newPendingBalance };
-    const newCustomers = customers.map(c => c.id === customerId ? updatedCustomer : c);
-
-    setCustomers(newCustomers);
+    
+    setCustomers(prev => prev.map(c => c.id === customerId ? updatedCustomer : c));
     setBills(updatedBills);
-    await saveDataToDrive({ inventory, customers: newCustomers, bills: updatedBills });
   };
 
   const createBill = async (billData: Omit<Bill, 'id' | 'balance' | 'date' | 'customerName' | 'finalAmount' | 'netWeight' | 'extraChargeAmount' | 'grandTotal'>): Promise<Bill> => {
-    // Correctly calculate price based on net weight
     const totalGrossWeight = billData.items.reduce((sum, item) => sum + (item.weight * item.quantity), 0);
-    const subtotalBeforeLessWeight = billData.totalAmount; // This is the sum of item prices
+    const subtotalBeforeLessWeight = billData.totalAmount; 
 
     const averageRatePerGram = totalGrossWeight > 0 ? subtotalBeforeLessWeight / totalGrossWeight : 0;
     const lessWeightValue = billData.lessWeight * averageRatePerGram;
@@ -198,7 +220,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     const extraChargeAmount = actualSubtotal * (billData.extraChargePercentage / 100);
     const grandTotal = actualSubtotal + extraChargeAmount - billData.bargainedAmount;
-    const balance = grandTotal - billData.amountPaid;
+    
+    let finalAmountPaid = billData.amountPaid;
+    let balance = grandTotal - finalAmountPaid;
+
+    // If the remaining balance is negligible, treat it as fully paid.
+    if (balance > 0 && balance < 1) {
+        finalAmountPaid += balance; // Consider the tiny balance as paid
+        balance = 0; // The bill is now fully paid
+    }
+    balance = parseFloat(balance.toFixed(2));
     
     const netWeight = totalGrossWeight - billData.lessWeight;
 
@@ -209,51 +240,42 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       ...billData,
       id: `BILL-${Date.now()}`,
       customerName: customer.name,
-      finalAmount: actualSubtotal, // Repurposing finalAmount to be the net subtotal
+      finalAmount: actualSubtotal,
       netWeight,
       extraChargeAmount,
       grandTotal,
+      amountPaid: finalAmountPaid,
       balance,
       date: new Date().toISOString(),
     };
     
     const updatedCustomer = {
         ...customer,
-        pendingBalance: customer.pendingBalance + balance
+        pendingBalance: parseFloat((customer.pendingBalance + balance).toFixed(2))
     };
 
-    let updatedInventoryState = [...inventory];
     if (billData.type === 'INVOICE') {
-      const inventoryMap = new Map(inventory.map(i => [i.id, i]));
-      for (const billItem of billData.items) {
-          const item = inventoryMap.get(billItem.itemId) as JewelryItem;
-          if (item) {
-              const updatedItem = { ...item, quantity: Math.max(0, item.quantity - billItem.quantity) };
-              inventoryMap.set(item.id, updatedItem);
-          }
-      }
-      updatedInventoryState = Array.from(inventoryMap.values());
+        // FIX: Explicitly set the types for the Map to prevent TypeScript from inferring `item` as `unknown`.
+        const inventoryMap = new Map<string, JewelryItem>(inventory.map(i => [i.id, i]));
+        for (const billItem of billData.items) {
+            const item = inventoryMap.get(billItem.itemId);
+            if (item) {
+                const updatedItem = { ...item, quantity: Math.max(0, item.quantity - billItem.quantity) };
+                inventoryMap.set(item.id, updatedItem);
+            }
+        }
+        setInventory(Array.from(inventoryMap.values()));
     }
     
-    const newBills = [...bills, newBill];
-    const newCustomers = customers.map(c => c.id === updatedCustomer.id ? updatedCustomer : c);
-    
-    setBills(newBills);
-    setCustomers(newCustomers);
-    setInventory(updatedInventoryState);
-
-    await saveDataToDrive({ inventory: updatedInventoryState, customers: newCustomers, bills: newBills });
+    setBills(prev => [...prev, newBill]);
+    setCustomers(prev => prev.map(c => c.id === updatedCustomer.id ? updatedCustomer : c));
     
     return newBill;
   };
   
   const resetTransactions = async () => {
-    const updatedCustomers = customers.map(c => ({ ...c, pendingBalance: 0 }));
-    
+    setCustomers(prev => prev.map(c => ({ ...c, pendingBalance: 0 })));
     setBills([]);
-    setCustomers(updatedCustomers);
-
-    await saveDataToDrive({ inventory, customers: updatedCustomers, bills: [] });
   };
 
   const setRevenue = async (newTotal: number) => {
@@ -261,12 +283,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const adjustmentAmount = newTotal - currentTotalRevenue;
 
     if (adjustmentAmount === 0) {
-      return; // No change needed
+      return;
     }
 
     let adminCustomer = customers.find(c => c.id === 'ADMIN_ADJUSTMENT');
-    let updatedCustomers = [...customers];
-
     if (!adminCustomer) {
       adminCustomer = {
         id: 'ADMIN_ADJUSTMENT',
@@ -275,8 +295,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         joinDate: new Date().toISOString(),
         pendingBalance: 0,
       };
-      updatedCustomers.push(adminCustomer);
-      setCustomers(updatedCustomers);
+      setCustomers(prev => [...prev, adminCustomer!]);
     }
     
     const adjustmentBill: Bill = {
@@ -304,10 +323,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       date: new Date().toISOString(),
     };
     
-    const newBills = [...bills, adjustmentBill];
-    setBills(newBills);
-
-    await saveDataToDrive({ inventory, customers: updatedCustomers, bills: newBills });
+    setBills(prev => [...prev, adjustmentBill]);
   };
 
   const getCustomerById = (id: string) => customers.find(c => c.id === id);
