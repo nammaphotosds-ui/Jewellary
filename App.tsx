@@ -76,6 +76,13 @@ const GetStartedScreen: React.FC = () => {
     }, [gsiClient]);
 
     const handleConnect = () => {
+        const isMobile = window.innerWidth < 768;
+        if (isMobile && document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().catch(err => {
+                console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+            });
+        }
+        
         if (gsiClient) {
             setIsConnecting(true);
             gsiClient.requestAccessToken();
@@ -451,10 +458,11 @@ const AppContent: React.FC = () => {
   }, []);
 
   const handlePinSuccess = () => {
-    // This is a user-initiated action (entering PIN), so we can request fullscreen.
-    if (document.documentElement.requestFullscreen) {
+    // This is a user-initiated action (entering PIN), so we can request fullscreen on mobile.
+    const isMobile = window.innerWidth < 768;
+    if (isMobile && document.documentElement.requestFullscreen) {
         document.documentElement.requestFullscreen().catch(err => {
-            // It's okay if this fails (e.g., on desktop browsers), the app will still work.
+            // It's okay if this fails, the app will still work.
             console.error(`Could not enter full-screen mode: ${err.message}`);
         });
     }
