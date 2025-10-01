@@ -73,16 +73,10 @@ const GetStartedScreen: React.FC = () => {
         }, 200);
 
         return () => clearInterval(intervalId);
-    }, [gsiClient]);
+    }, [gsiClient, setTokenResponse]);
 
     const handleConnect = () => {
-        const isMobile = window.innerWidth < 768;
-        if (isMobile && document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen().catch(err => {
-                console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
-            });
-        }
-        
+        // Full-screen request is now handled globally on first interaction.
         if (gsiClient) {
             setIsConnecting(true);
             gsiClient.requestAccessToken();
@@ -189,7 +183,7 @@ const PinScreen: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
                 }, 800);
             }
         }
-    }, [pin]);
+    }, [pin, onSuccess]);
 
     const handleNumberClick = (num: string) => {
         if (pin.length < 4) {
@@ -441,6 +435,7 @@ const AppContent: React.FC = () => {
   const [isAddCustomerModalOpen, setIsAddCustomerModalOpen] = useState(false);
   const [isPinAuthenticated, setIsPinAuthenticated] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
+  const isFullscreenRequestedOnStartup = useRef(false);
 
   useEffect(() => {
     const onFullscreenChange = () => {
@@ -457,15 +452,37 @@ const AppContent: React.FC = () => {
       }
   }, []);
 
+  // Auto-trigger fullscreen on first interaction on welcome/get-started screens
+  const appState = !isInitialized ? 'welcome' : !isAuthenticated ? 'get-started' : 'authenticated';
+  useEffect(() => {
+      const shouldAttemptFullscreen = (appState === 'welcome' || appState === 'get-started') && !isFullscreenRequestedOnStartup.current;
+
+      if (!shouldAttemptFullscreen) {
+          return;
+      }
+
+      const handleFirstInteraction = () => {
+          const isMobile = window.innerWidth < 768;
+          if (isMobile && document.documentElement.requestFullscreen && !document.fullscreenElement) {
+              document.documentElement.requestFullscreen().catch(err => {
+                  console.error(`Error attempting to enable full-screen mode on first interaction: ${err.message} (${err.name})`);
+              });
+          }
+          isFullscreenRequestedOnStartup.current = true;
+      };
+
+      document.body.addEventListener('click', handleFirstInteraction, { once: true });
+      document.body.addEventListener('touchstart', handleFirstInteraction, { once: true });
+
+      return () => {
+          document.body.removeEventListener('click', handleFirstInteraction);
+          document.body.removeEventListener('touchstart', handleFirstInteraction);
+      };
+
+  }, [appState]);
+
+
   const handlePinSuccess = () => {
-    // This is a user-initiated action (entering PIN), so we can request fullscreen on mobile.
-    const isMobile = window.innerWidth < 768;
-    if (isMobile && document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen().catch(err => {
-            // It's okay if this fails, the app will still work.
-            console.error(`Could not enter full-screen mode: ${err.message}`);
-        });
-    }
     sessionStorage.setItem('isPinAuthenticated', 'true');
     setIsPinAuthenticated(true);
   };
