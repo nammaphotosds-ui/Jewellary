@@ -128,35 +128,38 @@ const GetStartedScreen: React.FC = () => {
 
     return (
         <div 
-            className="flex h-full w-full flex-col items-center justify-center px-8 pb-8 text-brand-charcoal relative"
-            style={{ paddingTop: `calc(2rem + env(safe-area-inset-top, 0rem))` }}
+            className="flex h-full w-full flex-col items-center p-8 text-brand-charcoal"
+            style={{ 
+                paddingTop: `calc(2rem + env(safe-area-inset-top, 0rem))`,
+                paddingBottom: `calc(2rem + env(safe-area-inset-bottom, 0rem))`
+            }}
         >
-            {/* Main Content */}
-            <div className="flex flex-col items-center text-center z-10 absolute top-1/4">
-                <img 
-                  src="https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163" 
-                  alt="Logo" 
-                  className="w-40 h-40 object-contain mb-6"
-                  style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))' }}
-                />
-
-                <h1 className="text-5xl font-serif tracking-wider text-brand-charcoal" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.1)' }}>
-                  DEVAGIRIKAR
-                </h1>
-                <p className="text-2xl text-brand-gold-dark tracking-[0.2em]">JEWELLERYS</p>
+            <div className="flex-1 flex items-center justify-center">
+                {/* Main Content */}
+                <div className="flex flex-col items-center text-center">
+                    <img 
+                      src="https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163" 
+                      alt="Logo" 
+                      className="w-40 h-40 object-contain mb-6 md:w-48 md:h-48"
+                      style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))' }}
+                    />
+                    <h1 className="text-5xl md:text-6xl font-serif tracking-wider text-brand-charcoal" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.1)' }}>
+                      DEVAGIRIKAR
+                    </h1>
+                    <p className="text-2xl md:text-3xl text-brand-gold-dark tracking-[0.2em]">JEWELLERYS</p>
+                </div>
             </div>
             
-            {/* Action Area */}
-            <div className="absolute left-0 right-0 px-8 flex flex-col items-center z-10" style={{ bottom: 'calc(6rem + env(safe-area-inset-bottom, 0rem))' }}>
+            {/* Action Area & Footer */}
+            <div className="flex flex-col items-center w-full max-w-md">
                  <DiamondPatternButton onClick={handleConnect} disabled={isConnecting}>
                     {isConnecting ? 'Connecting...' : 'Get Started'}
                  </DiamondPatternButton>
                  {error && <p className="text-red-600 mt-6 text-sm text-center">{error}</p>}
+                 <footer className="mt-8">
+                    <p className="text-brand-gray/80 text-sm">Powered By Nano Neptune</p>
+                </footer>
             </div>
-            
-            <footer className="absolute w-full text-center z-10" style={{ bottom: 'calc(2rem + env(safe-area-inset-bottom, 0rem))' }}>
-                <p className="text-brand-gray/80 text-sm">Powered By Nano Neptune</p>
-            </footer>
         </div>
     );
 };
@@ -224,7 +227,7 @@ const PinScreen: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
                                     onClick={handleBackspaceClick}
                                     className="text-2xl font-semibold h-16 w-16 mx-auto rounded-full bg-white/30 backdrop-blur-sm shadow-sm text-brand-charcoal transition-all duration-150 ease-in-out transform active:scale-90"
                                 >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 002.828 0L21 9.657" /></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9.75L14.25 12m0 0l2.25 2.25M14.25 12L12 14.25m-2.58 4.92l-6.375-6.375a1.125 1.125 0 010-1.59L9.42 4.83c.211-.211.498-.33.796-.33H19.5a2.25 2.25 0 012.25 2.25v10.5a2.25 2.25 0 01-2.25 2.25h-9.284c-.298 0-.585-.119-.796-.33z" /></svg>
                                 </button>
                             )
                         }
