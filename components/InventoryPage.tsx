@@ -1,125 +1,12 @@
-import React, { useState, useMemo } from 'react';
-import { useAppContext } from '../context/AppContext';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useDataContext } from '../context/DataContext';
+import { useUIContext } from '../context/UIContext';
 import { JewelryCategory } from '../types';
 import type { JewelryItem } from '../types';
+import Modal from './common/Modal';
+import AddInventoryItemForm from './forms/AddInventoryItemForm';
+import { WeightIcon } from './common/Icons';
 
-
-const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = error => reject(error);
-    });
-};
-
-const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: string; children: React.ReactNode }> = ({ isOpen, onClose, title, children }) => {
-    if (!isOpen) return null;
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
-            <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md relative max-h-[90vh] overflow-y-auto">
-                <h2 className="text-2xl font-bold mb-4">{title}</h2>
-                <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-                </button>
-                {children}
-            </div>
-        </div>
-    );
-};
-
-const AddInventoryItemForm: React.FC<{onClose: ()=>void}> = ({onClose}) => {
-    const { addInventoryItem } = useAppContext();
-    const [name, setName] = useState('');
-    const [category, setCategory] = useState<string>(JewelryCategory.RING);
-    const [otherCategory, setOtherCategory] = useState('');
-    const [weight, setWeight] = useState('');
-    const [purity, setPurity] = useState('');
-    const [price, setPrice] = useState('');
-    const [quantity, setQuantity] = useState('1');
-    const [photo, setPhoto] = useState<File | null>(null);
-    const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        const finalCategory = category === JewelryCategory.OTHER ? otherCategory : category;
-        if (!finalCategory) {
-            alert('Please specify a category for "Other".');
-            return;
-        }
-
-        setSubmissionStatus('saving');
-        try {
-            const imageUrl = photo ? await fileToBase64(photo) : undefined;
-
-            await addInventoryItem({
-                name,
-                category: finalCategory,
-                weight: parseFloat(weight),
-                purity: parseFloat(purity),
-                price: parseFloat(price),
-                quantity: parseInt(quantity, 10),
-                imageUrl,
-            });
-            setSubmissionStatus('saved');
-            setTimeout(() => {
-                onClose();
-            }, 1000);
-        } catch (error) {
-            console.error("Failed to add inventory item:", error);
-            alert("An error occurred while saving the item. Please check your connection and try again.");
-            setSubmissionStatus('idle');
-        }
-    };
-    
-    const FileInput: React.FC<{label: string, file: File | null, onFileChange: (file: File | null) => void, id: string}> = ({label, file, onFileChange, id}) => (
-         <div>
-            <label htmlFor={id} className="block text-sm font-medium text-gray-700">{label}</label>
-            <div className="mt-1 flex items-center space-x-4">
-                {file ? <img src={URL.createObjectURL(file)} alt="preview" className="w-12 h-12 rounded-lg object-cover"/> : <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>}
-                <label htmlFor={id} className="cursor-pointer bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50">
-                    <span>{file ? 'Change' : 'Upload'}</span>
-                    <input id={id} name={id} type="file" accept="image/*" className="sr-only" onChange={e => onFileChange(e.target.files ? e.target.files[0] : null)}/>
-                </label>
-                 {file && <button type="button" onClick={() => onFileChange(null)} className="text-sm text-red-600">Remove</button>}
-            </div>
-        </div>
-    );
-
-    return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <input type="text" placeholder="Item Name" value={name} onChange={e => setName(e.target.value)} className="w-full p-2 border rounded" required/>
-            <select value={category} onChange={e => setCategory(e.target.value)} className="w-full p-2 border rounded">
-                {Object.values(JewelryCategory).map(cat => <option key={cat} value={cat}>{cat}</option>)}
-            </select>
-            {category === JewelryCategory.OTHER && (
-                <input type="text" placeholder="Specify Category" value={otherCategory} onChange={e => setOtherCategory(e.target.value)} className="w-full p-2 border rounded" required/>
-            )}
-            <div className="grid grid-cols-2 gap-4">
-                <input type="number" step="0.01" placeholder="Weight (grams)" value={weight} onChange={e => setWeight(e.target.value)} className="w-full p-2 border rounded" required/>
-                <input type="number" step="0.1" placeholder="Purity (carat)" value={purity} onChange={e => setPurity(e.target.value)} className="w-full p-2 border rounded" required/>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-                <input type="number" placeholder="Price (₹)" value={price} onChange={e => setPrice(e.target.value)} className="w-full p-2 border rounded" required/>
-                <input type="number" placeholder="Quantity" value={quantity} onChange={e => setQuantity(e.target.value)} className="w-full p-2 border rounded" required min="1"/>
-            </div>
-            <FileInput label="Item Photo (Optional)" file={photo} onFileChange={setPhoto} id="item-photo-upload"/>
-            <button
-                type="submit"
-                disabled={submissionStatus !== 'idle'}
-                className={`w-full p-3 rounded-lg font-semibold transition ${
-                    submissionStatus === 'saved'
-                        ? 'bg-green-600 text-white'
-                        : submissionStatus === 'saving'
-                        ? 'bg-gray-400 text-white opacity-70'
-                        : 'bg-brand-gold text-brand-charcoal hover:bg-brand-gold-dark'
-                }`}
-            >
-              {submissionStatus === 'saving' ? 'Saving...' : submissionStatus === 'saved' ? 'Saved!' : 'Add Item'}
-            </button>
-        </form>
-    );
-};
 
 const InventoryStatCard: React.FC<{ title: string; value: string | number; icon: React.ReactNode }> = ({ title, value, icon }) => (
     <div className="bg-white p-4 rounded-lg shadow-md flex items-center border border-gray-100">
@@ -132,15 +19,18 @@ const InventoryStatCard: React.FC<{ title: string; value: string | number; icon:
 );
 
 const ProductCard: React.FC<{ item: JewelryItem; onDelete: (itemId: string, itemName: string) => void; }> = ({ item, onDelete }) => {
+    const { distributors } = useDataContext();
+    const distributorName = distributors.find(d => d.id === item.distributorId)?.name || 'Unknown';
     return (
         <div className="bg-white rounded-lg shadow-md border overflow-hidden group relative transition-shadow hover:shadow-xl">
-            <div className="aspect-square w-full overflow-hidden">
-                 <img src={item.imageUrl || `https://via.placeholder.com/300/D4AF37/FFFFFF?text=${item.name.charAt(0)}`} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"/>
+            <div className="aspect-square w-full overflow-hidden bg-gray-100 flex items-center justify-center">
+                 <img src={`https://via.placeholder.com/300/D4AF37/FFFFFF?text=${item.name.charAt(0)}`} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"/>
             </div>
             <div className="p-3 text-sm">
                 <h3 className="font-bold text-brand-charcoal truncate" title={item.name}>{item.name}</h3>
+                <p className="text-xs text-gray-500 truncate" title={distributorName}>From: {distributorName}</p>
                 <div className="flex justify-between items-center mt-2">
-                    <p className="text-gray-800 font-semibold">₹{item.price.toLocaleString('en-IN')}</p>
+                    <p className="text-gray-500">{item.category}</p>
                     <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${item.quantity > 0 ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
                         {item.quantity > 0 ? `Qty: ${item.quantity}` : 'Sold Out'}
                     </span>
@@ -158,14 +48,22 @@ const ProductCard: React.FC<{ item: JewelryItem; onDelete: (itemId: string, item
 };
 
 const InventoryPage: React.FC = () => {
-    const { inventory, deleteInventoryItem } = useAppContext();
+    const { inventory, deleteInventoryItem } = useDataContext();
+    const { initialInventoryFilter, setInitialInventoryFilter } = useUIContext();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<string>('All');
 
-    const categories = useMemo(() => {
-        const allCategories = inventory.map(item => item.category);
-        return ['All', ...Array.from(new Set(allCategories)).sort()];
-    }, [inventory]);
+    useEffect(() => {
+        if (initialInventoryFilter) {
+            const validCategories = Object.values(JewelryCategory) as string[];
+            if (validCategories.includes(initialInventoryFilter)) {
+                setSelectedCategory(initialInventoryFilter);
+            }
+            setInitialInventoryFilter(null);
+        }
+    }, [initialInventoryFilter, setInitialInventoryFilter]);
+
+    const categories = ['All', ...Object.values(JewelryCategory)];
 
     const filteredInventory = useMemo(() => {
         if (selectedCategory === 'All') {
@@ -176,11 +74,11 @@ const InventoryPage: React.FC = () => {
 
     const inventoryStats = useMemo(() => {
         const totalStock = inventory.reduce((sum, item) => sum + item.quantity, 0);
-        const totalValue = inventory.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        const totalWeight = inventory.reduce((sum, item) => sum + (item.weight * item.quantity), 0);
         return {
             uniqueItemCount: inventory.filter(item => item.quantity > 0).length,
             totalStock,
-            totalValue
+            totalWeight
         };
     }, [inventory]);
     
@@ -209,8 +107,8 @@ const InventoryPage: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <InventoryStatCard title="Unique Items" value={inventoryStats.uniqueItemCount} icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>} />
+            <InventoryStatCard title="Total Weight" value={`${inventoryStats.totalWeight.toFixed(3)} g`} icon={<WeightIcon />} />
             <InventoryStatCard title="Total Stock" value={inventoryStats.totalStock} icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>} />
-            <InventoryStatCard title="Inventory Value" value={`₹${inventoryStats.totalValue.toLocaleString('en-IN')}`} icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>} />
         </div>
 
         {/* Category Filters */}

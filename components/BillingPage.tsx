@@ -1,9 +1,10 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
-import { useAppContext } from '../context/AppContext';
+import { toast } from 'react-hot-toast';
+import { useDataContext } from '../context/DataContext';
 import { BillType, Page } from '../types';
 import type { JewelryItem, BillItem, Customer, Bill } from '../types';
-import { SendIcon } from '../App';
+import { SendIcon } from './common/Icons';
 
 const numberToWords = (num: number): string => {
     const integerPart = Math.floor(num);
@@ -40,12 +41,13 @@ const numberToWords = (num: number): string => {
 // This is the template that will be rendered for PDF generation
 const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, customer}) => {
     const totalGrossWeight = bill.items.reduce((sum, item) => sum + (item.weight * (item.quantity || 1)), 0);
-    const { grandTotal, netWeight, extraChargeAmount, bargainedAmount, finalAmount, amountPaid } = bill;
+    const { grandTotal, netWeight, makingChargeAmount, wastageAmount, bargainedAmount, finalAmount, amountPaid } = bill;
     const logoUrl = "https://ik.imagekit.io/9y4qtxuo0/IMG_20250927_202057_913.png?updatedAt=1758984948163";
 
     const isCompact = bill.items.length > 8;
     const tableCellClasses = isCompact ? 'py-0.5 px-2' : 'py-1 px-2';
     const tableBaseFontSize = isCompact ? 'text-[11px]' : 'text-xs';
+    const isPaid = grandTotal - amountPaid <= 0.01;
 
     return (
         <div className="bg-brand-cream text-brand-charcoal font-sans flex flex-col" style={{ width: '842px', height: '595px', boxSizing: 'border-box' }}>
@@ -68,11 +70,11 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                             <div className="ml-3">
                                 <h2 className="text-3xl font-serif tracking-wider font-bold text-brand-charcoal">DEVAGIRIKAR</h2>
                                 <p className="text-lg text-brand-gold-dark tracking-[0.15em] -mt-1">JEWELLERYS</p>
-                                <p className="text-[10px] tracking-widest text-brand-gray mt-1">EXCLUSIVE JEWELLERY SHOWROOM</p>
+                                <p className="text-[10px] tracking-widest text-brand-gray mt-1">Real Source of Purity</p>
                             </div>
                         </div>
                         <div className="text-right">
-                            <h1 className="text-4xl font-serif font-light text-brand-gold-dark tracking-widest">{bill.type}</h1>
+                            <h1 className="text-5xl font-serif font-light text-brand-gold-dark tracking-widest">{bill.type}</h1>
                             <p className="text-xs mt-1 font-mono"><strong>Bill No:</strong> {bill.id}</p>
                             <p className="text-xs font-mono"><strong>GSTIN:</strong> 29BSWPD7616JZ0</p>
                             <p className="text-xs font-mono"><strong>Date:</strong> {new Date(bill.date).toLocaleDateString()}</p>
@@ -136,7 +138,8 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                                 </div>
                                 <div className="space-y-1 mt-2 pt-2 border-t border-gray-200">
                                     <div className="flex justify-between"><span>Subtotal:</span><span>₹{finalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
-                                    {extraChargeAmount > 0 && <div className="flex justify-between"><span>Charges ({bill.extraChargePercentage}%):</span><span>+ ₹{extraChargeAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
+                                    {makingChargeAmount > 0 && <div className="flex justify-between"><span>Making Charges ({bill.makingChargePercentage}%):</span><span>+ ₹{makingChargeAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
+                                    {wastageAmount > 0 && <div className="flex justify-between"><span>Wastage ({bill.wastagePercentage}%):</span><span>+ ₹{wastageAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
                                     {bargainedAmount > 0 && <div className="flex justify-between text-green-600"><span>Discount:</span><span>- ₹{bargainedAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
                                     <div className="flex justify-between text-base mt-1 pt-1 border-t-2 border-brand-charcoal">
                                         <span className="font-bold">Grand Total:</span>
@@ -148,20 +151,18 @@ const InvoiceTemplate: React.FC<{bill: Bill, customer: Customer}> = ({bill, cust
                                         <span className="font-bold">Paid:</span>
                                         <span>₹{amountPaid.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                                     </div>
-                                    <div className={`flex justify-between ${bill.balance > 0 ? 'text-red-600' : 'text-green-700'}`}>
-                                        <span className="font-bold">{bill.balance > 0 ? 'BALANCE DUE:' : 'Status:'}</span>
-                                        <span className="font-bold">
-                                            {bill.balance > 0 
-                                                ? `₹${bill.balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
-                                                : 'Fully Paid'
-                                            }
-                                        </span>
+                                    <div className={`flex justify-between ${isPaid ? 'text-green-700' : 'text-red-700'}`}>
+                                        <span className="font-bold">Status:</span>
+                                        <span className="font-bold">{isPaid ? 'Fully Paid' : 'Partial Payment'}</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div className="flex justify-between items-end mt-4">
-                            <p className="text-[10px] text-brand-gray">Thank you for your business!</p>
+                            <div className="flex items-center">
+                                <img src="https://ik.imagekit.io/9y4qtxuo0/devagirikar_Social.png?updatedAt=1759337561869" alt="Social Media QR" className="w-16 h-16"/>
+                                <p className="text-[10px] text-brand-gray ml-4">Thank you for your business!</p>
+                            </div>
                             <div className="text-center">
                                 <div className="w-40 border-t border-brand-charcoal pt-1"></div>
                                 <p className="text-[10px]">Authorised Signatory</p>
@@ -254,15 +255,16 @@ const SearchableSelect = <T extends { id: string; name: string; }>({
 
 
 const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurrentPage}) => {
-  const { inventory, customers, createBill, getCustomerById } = useAppContext();
+  const { inventory, customers, createBill, getCustomerById } = useDataContext();
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<BillItem[]>([]);
-  const [amountPaid, setAmountPaid] = useState<string>('');
   const [bargainedAmount, setBargainedAmount] = useState<string>('');
   const [billType, setBillType] = useState<BillType>(BillType.ESTIMATE);
   const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'processing' | 'success'>('idle');
   const [lessWeight, setLessWeight] = useState('');
-  const [extraChargePercentage, setExtraChargePercentage] = useState('');
+  const [makingChargePercentage, setMakingChargePercentage] = useState('');
+  const [wastagePercentage, setWastagePercentage] = useState('');
+  const [amountPaid, setAmountPaid] = useState('');
   
   const selectedCustomer = useMemo(() => {
     return customers.find(c => c.id === selectedCustomerId);
@@ -282,11 +284,13 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
 
     const actualSubtotal = subtotalBeforeLessWeight - lessWeightValue;
 
-    const ecp = parseFloat(extraChargePercentage) || 0;
-    const extraChargeAmount = actualSubtotal * (ecp / 100);
+    const mcp = parseFloat(makingChargePercentage) || 0;
+    const wp = parseFloat(wastagePercentage) || 0;
+    const makingChargeAmount = actualSubtotal * (mcp / 100);
+    const wastageAmount = actualSubtotal * (wp / 100);
 
     const ba = parseFloat(bargainedAmount) || 0;
-    const grandTotal = actualSubtotal + extraChargeAmount - ba;
+    const grandTotal = actualSubtotal + makingChargeAmount + wastageAmount - ba;
 
     const netWeight = totalWeight - lw;
 
@@ -294,15 +298,24 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
         totalAmount: subtotalBeforeLessWeight,
         lessWeightValue,
         actualSubtotal,
-        extraChargeAmount, 
+        makingChargeAmount,
+        wastageAmount,
         grandTotal, 
         totalWeight, 
         netWeight 
     };
-  }, [selectedItems, bargainedAmount, extraChargePercentage, lessWeight]);
+  }, [selectedItems, bargainedAmount, makingChargePercentage, wastagePercentage, lessWeight]);
+
+  useEffect(() => {
+      if (calculations.grandTotal > 0) {
+          setAmountPaid(calculations.grandTotal.toFixed(2));
+      } else {
+          setAmountPaid('');
+      }
+  }, [calculations.grandTotal]);
 
   const handleAddItem = (item: JewelryItem) => {
-      setSelectedItems(prev => [...prev, { itemId: item.id, name: item.name, weight: item.weight, price: item.price, imageUrl: item.imageUrl, quantity: 1 }]);
+      setSelectedItems(prev => [...prev, { itemId: item.id, name: item.name, weight: item.weight, price: 0, quantity: 1 }]);
   };
 
   const handleRemoveItem = (itemId: string) => {
@@ -325,7 +338,7 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
         });
         
         if (adjustments.length > 0) {
-            alert(adjustments.join('\n'));
+            toast.warn(adjustments.join('\n'));
             setSelectedItems(updatedItems);
         }
     }
@@ -338,18 +351,22 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
     if (!inventoryItem) return;
 
     if (isNaN(newQuantity) || newQuantity < 1) {
-        // Allow clearing the input, but don't update state to an invalid number
-        setSelectedItems(prev => prev.map(item => item.itemId === itemId ? { ...item, quantity: 1 } : item)); // or keep it as is
+        setSelectedItems(prev => prev.map(item => item.itemId === itemId ? { ...item, quantity: 1 } : item));
         return;
     }
     
     if (billType === BillType.INVOICE && newQuantity > inventoryItem.quantity) {
-        alert(`Cannot add more than available stock (${inventoryItem.quantity}). Adjusting quantity to max available.`);
+        toast.error(`Cannot add more than available stock (${inventoryItem.quantity}). Adjusting quantity to max available.`);
         setSelectedItems(prev => prev.map(item => item.itemId === itemId ? { ...item, quantity: inventoryItem.quantity } : item));
         return;
     }
 
     setSelectedItems(prev => prev.map(item => item.itemId === itemId ? { ...item, quantity: newQuantity } : item));
+  };
+  
+  const handleItemPriceChange = (itemId: string, newPriceStr: string) => {
+    const newPrice = parseFloat(newPriceStr);
+    setSelectedItems(prev => prev.map(item => item.itemId === itemId ? { ...item, price: isNaN(newPrice) ? 0 : newPrice } : item));
   };
   
     const generatePdfBlob = (componentToRender: React.ReactElement): Promise<Blob | null> => {
@@ -377,15 +394,13 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
                         return;
                     }
                     
-                    // Wait for images to load
                     const images = Array.from(elementToCapture.getElementsByTagName('img'));
                     await Promise.all(images.map(img => new Promise<void>(res => {
                         if (img.complete) return res();
                         img.onload = () => res();
-                        img.onerror = () => res(); // Resolve even on error to not block PDF
+                        img.onerror = () => res();
                     })));
 
-                    // Added delay for fonts and final rendering
                     await new Promise(r => setTimeout(r, 200));
 
                     const canvas = await html2canvas(elementToCapture, { scale: 2, useCORS: true, windowWidth: elementToCapture.scrollWidth, windowHeight: elementToCapture.scrollHeight });
@@ -413,7 +428,6 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
             };
 
             root.render(componentToRender);
-            // Use setTimeout to ensure React has flushed the render to the DOM
             setTimeout(captureAndCleanup, 500);
         });
     };
@@ -421,42 +435,32 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
   const resetForm = () => {
     setSelectedCustomerId(null);
     setSelectedItems([]);
-    setAmountPaid('');
     setBargainedAmount('');
     setLessWeight('');
-    setExtraChargePercentage('');
+    setMakingChargePercentage('');
+    setWastagePercentage('');
+    setAmountPaid('');
     setBillType(BillType.ESTIMATE);
     setSubmissionStatus('idle');
-  };
-  
-  const handleAmountPaidChange = (value: string) => {
-    if (value === '') {
-        setAmountPaid('');
-        return;
-    }
-    const numericValue = parseFloat(value);
-    const grandTotal = calculations.grandTotal;
-
-    if (!isNaN(numericValue) && numericValue > grandTotal) {
-        setAmountPaid(grandTotal.toFixed(2));
-    } else {
-        setAmountPaid(value);
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!selectedCustomerId || selectedItems.length === 0) {
-        alert("Please select a customer and at least one item.");
+        toast.error("Please select a customer and at least one item.");
         return;
     }
 
-    // Safeguard check before submission
+    if (selectedItems.some(item => item.price <= 0)) {
+        toast.error("Please ensure all items have a price greater than zero.");
+        return;
+    }
+
     if (billType === BillType.INVOICE) {
       for (const item of selectedItems) {
         const inventoryItem = inventory.find(i => i.id === item.itemId);
         if (inventoryItem && item.quantity > inventoryItem.quantity) {
-          alert(`Error: Quantity for "${item.name}" (${item.quantity}) exceeds available stock (${inventoryItem.quantity}). Please correct it before submitting.`);
+          toast.error(`Error: Quantity for "${item.name}" (${item.quantity}) exceeds available stock (${inventoryItem.quantity}).`);
           return;
         }
       }
@@ -474,7 +478,8 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
           totalAmount: calculations.totalAmount,
           bargainedAmount: parseFloat(bargainedAmount) || 0,
           lessWeight: parseFloat(lessWeight) || 0,
-          extraChargePercentage: parseFloat(extraChargePercentage) || 0,
+          makingChargePercentage: parseFloat(makingChargePercentage) || 0,
+          wastagePercentage: parseFloat(wastagePercentage) || 0,
           amountPaid: parseFloat(amountPaid) || 0,
         });
         
@@ -485,11 +490,11 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
         if (!blob) throw new Error("Failed to generate PDF.");
 
         setSubmissionStatus('success');
-        alert('Bill created successfully!');
+        toast.success('Bill created successfully!');
 
         if (action === 'send') {
             const itemsSummary = bill.items.map(item => `- ${item.name} (Qty: ${item.quantity})`).join('\n');
-            const textMessage = `*DEVAGIRIKAR JEWELLERYS*\n\nHello ${customer.name},\nHere is your bill summary:\n\n*Bill ID:* ${bill.id}\n*Type:* ${bill.type}\n*Date:* ${new Date(bill.date).toLocaleDateString()}\n\n*Items:*\n${itemsSummary}\n\n*Grand Total:* ${bill.grandTotal.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}\n*Amount Paid:* ${bill.amountPaid.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}\n*Balance Due:* ${bill.balance.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}\n\nThank you!`;
+            const textMessage = `*DEVAGIRIKAR JEWELLERYS*\n\nHello ${customer.name},\nHere is your bill summary:\n\n*Bill ID:* ${bill.id}\n*Type:* ${bill.type}\n*Date:* ${new Date(bill.date).toLocaleDateString()}\n\n*Items:*\n${itemsSummary}\n\n*Grand Total:* ${bill.grandTotal.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}\n\nThank you!`;
             
             const cleanPhone = customer.phone.replace(/\D/g, '');
             const whatsappPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
@@ -513,7 +518,7 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
 
     } catch (error) {
         console.error("Error processing bill:", error);
-        alert(`An error occurred: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        toast.error(`An error occurred: ${error instanceof Error ? error.message : 'Unknown error'}`);
         setSubmissionStatus('idle');
     }
   };
@@ -521,7 +526,6 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
   return (
     <div>
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Side: Customer and Item Selection */}
         <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-md space-y-4">
             <h2 className="text-xl font-bold">1. Customer & Items</h2>
             <div>
@@ -550,30 +554,30 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
                     renderOption={(item) => (
                         <div className="flex justify-between">
                             <span>{item.name} ({item.serialNo})</span>
-                            <span className="font-semibold">₹{item.price.toLocaleString('en-IN')}</span>
+                            <span className="text-sm text-gray-600">{item.weight}g</span>
                         </div>
                     )}
                 />
             </div>
-            <div className="mt-4 max-h-64 overflow-y-auto">
+            <div className="mt-4 max-h-64 overflow-y-auto pr-2">
                  {selectedItems.map(item => (
-                    <div key={item.itemId} className="flex justify-between items-center bg-gray-50 p-2 rounded mb-2">
-                        <div>
-                            <p>{item.name} <span className="text-xs text-gray-500">({item.weight.toFixed(3)}g)</span></p>
-                            <p className="text-xs text-gray-600">Price: ₹{item.price.toLocaleString('en-IN')}</p>
+                    <div key={item.itemId} className="bg-gray-50 p-3 rounded mb-2 border">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <p className="font-semibold">{item.name}</p>
+                                <p className="text-xs text-gray-500">{item.itemId} | {item.weight.toFixed(3)}g</p>
+                            </div>
+                            <button type="button" onClick={() => handleRemoveItem(item.itemId)} className="text-red-500 hover:text-red-700 font-bold text-xl leading-none -mt-1 -mr-1">&times;</button>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <label htmlFor={`qty-${item.itemId}`} className="text-sm">Qty:</label>
-                            <input
-                                id={`qty-${item.itemId}`}
-                                type="number"
-                                value={item.quantity}
-                                onChange={e => handleQuantityChange(item.itemId, e.target.value)}
-                                className="w-16 p-1 border rounded text-center"
-                                min="1"
-                                step="1"
-                            />
-                            <button type="button" onClick={() => handleRemoveItem(item.itemId)} className="text-red-500 hover:text-red-700 font-bold text-lg">&times;</button>
+                        <div className="mt-2 grid grid-cols-2 gap-4">
+                            <div>
+                                <label htmlFor={`price-${item.itemId}`} className="text-xs font-medium text-gray-600">Price (₹)</label>
+                                <input id={`price-${item.itemId}`} type="number" value={item.price} onChange={(e) => handleItemPriceChange(item.itemId, e.target.value)} className="w-full p-1.5 border rounded" placeholder="0.00" step="0.01" min="0" required />
+                            </div>
+                            <div>
+                                <label htmlFor={`qty-${item.itemId}`} className="text-xs font-medium text-gray-600">Quantity</label>
+                                <input id={`qty-${item.itemId}`} type="number" value={item.quantity} onChange={e => handleQuantityChange(item.itemId, e.target.value)} className="w-full p-1.5 border rounded" min="1" step="1" required />
+                            </div>
                         </div>
                     </div>
                  ))}
@@ -595,7 +599,8 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
                         <div className="flex justify-between text-blue-600"><span>Less Weight Value:</span><span>- ₹{calculations.lessWeightValue.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></div>
                     )}
                     <div className="flex justify-between font-semibold border-t pt-1 mt-1"><span>Net Amount:</span><span>₹{calculations.actualSubtotal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></div>
-                    <div className="flex justify-between"><span>Extra Charges ({(parseFloat(extraChargePercentage) || 0)}%):</span><span className="text-orange-600">+ ₹{calculations.extraChargeAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></div>
+                    <div className="flex justify-between"><span>Making Charges ({(parseFloat(makingChargePercentage) || 0)}%):</span><span className="text-orange-600">+ ₹{calculations.makingChargeAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></div>
+                    <div className="flex justify-between"><span>Wastage ({(parseFloat(wastagePercentage) || 0)}%):</span><span className="text-orange-600">+ ₹{calculations.wastageAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></div>
                     <div className="flex justify-between"><span>Discount:</span><span className="text-green-600">- ₹{(parseFloat(bargainedAmount) || 0).toLocaleString('en-IN')}</span></div>
                     <div className="flex justify-between font-bold text-lg border-t-2 border-brand-charcoal pt-2 mt-2"><span>Grand Total:</span><span className="text-brand-gold-dark">₹{calculations.grandTotal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></div>
                 </div>
@@ -604,28 +609,12 @@ const BillingPage: React.FC<{setCurrentPage: (page: Page) => void}> = ({setCurre
                     <div><label className="block text-sm font-medium">Discount (₹)</label><input type="number" value={bargainedAmount} onChange={e => setBargainedAmount(e.target.value)} className="w-full p-2 border rounded" placeholder="0.00"/></div>
                 </div>
                  <div className="grid grid-cols-2 gap-4">
-                    <div><label className="block text-sm font-medium">Extra Charge (%)</label><input type="number" value={extraChargePercentage} onChange={e => setExtraChargePercentage(e.target.value)} className="w-full p-2 border rounded" placeholder="0"/></div>
-                    <div>
-                        <div className="flex justify-between items-center">
-                            <label className="block text-sm font-medium">Amount Paid (₹)</label>
-                            <button
-                                type="button"
-                                onClick={() => setAmountPaid(calculations.grandTotal.toFixed(2))}
-                                disabled={calculations.grandTotal <= 0}
-                                className="text-xs text-blue-600 font-semibold hover:underline disabled:text-gray-400 disabled:no-underline"
-                            >
-                                Pay Full Amount
-                            </button>
-                        </div>
-                        <input
-                            type="number"
-                            value={amountPaid}
-                            onChange={e => handleAmountPaidChange(e.target.value)}
-                            className="w-full p-2 border rounded"
-                            placeholder="0.00"
-                            max={calculations.grandTotal}
-                        />
-                    </div>
+                    <div><label className="block text-sm font-medium">Making Charge (%)</label><input type="number" value={makingChargePercentage} onChange={e => setMakingChargePercentage(e.target.value)} className="w-full p-2 border rounded" placeholder="0"/></div>
+                    <div><label className="block text-sm font-medium">Wastage (%)</label><input type="number" value={wastagePercentage} onChange={e => setWastagePercentage(e.target.value)} className="w-full p-2 border rounded" placeholder="0"/></div>
+                </div>
+                 <div>
+                    <label className="block text-sm font-medium">Amount Paid (₹)</label>
+                    <input type="number" value={amountPaid} onChange={e => setAmountPaid(e.target.value)} className="w-full p-2 border rounded" placeholder="0.00" required />
                 </div>
                 <div>
                     <label className="block text-sm font-medium mb-1">Bill Type</label>

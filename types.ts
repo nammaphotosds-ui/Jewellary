@@ -1,10 +1,7 @@
-// FIX: Removed circular self-import of `JewelryCategory` to resolve declaration conflicts.
 export enum JewelryCategory {
-  RING = 'Ring',
-  NECKLACE = 'Necklace',
-  BRACELET = 'Bracelet',
-  EARRINGS = 'Earrings',
-  OTHER = 'Other',
+  GOLD = 'Gold',
+  SILVER = 'Silver',
+  PLATINUM = 'Platinum',
 }
 
 export interface JewelryItem {
@@ -14,19 +11,19 @@ export interface JewelryItem {
   serialNo: string;
   weight: number;
   purity: number;
-  price: number;
-  imageUrl?: string;
   quantity: number;
   dateAdded: string;
+  distributorId: string;
 }
 
 export interface Customer {
-  id: string;
+  id:string;
   name: string;
   phone: string;
   joinDate: string;
-  pendingBalance: number;
   dob?: string;
+  createdBy: string; // 'admin' or staff ID
+  pendingBalance: number;
 }
 
 export interface BillItem {
@@ -34,7 +31,6 @@ export interface BillItem {
   name: string;
   weight: number;
   price: number;
-  imageUrl?: string;
   quantity: number;
 }
 
@@ -51,29 +47,39 @@ export interface Bill {
   items: BillItem[];
   totalAmount: number; // Subtotal of items
   bargainedAmount: number; // Discount
-  finalAmount: number; // totalAmount - bargainedAmount
+  finalAmount: number; // totalAmount - lessWeightValue
   lessWeight: number;
   netWeight: number;
-  extraChargePercentage: number;
-  extraChargeAmount: number;
-  grandTotal: number; // finalAmount + extraChargeAmount
-  amountPaid: number;
-  balance: number; // grandTotal - amountPaid
+  makingChargePercentage: number;
+  wastagePercentage: number;
+  makingChargeAmount: number;
+  wastageAmount: number;
+  grandTotal: number; // finalAmount + makingChargeAmount + wastageAmount - bargainedAmount
+  amountPaid: number; // Should be equal to grandTotal
   date: string;
+  createdBy: string; // 'admin' or staff ID
+}
+
+export interface Staff {
+  id: string; // User-facing ID, e.g., "staff01"
+  name: string;
+  passwordHash: string; // Store a hash of the password
+}
+
+export interface Distributor {
+  id: string;
+  name: string;
+}
+
+export interface ActivityLog {
+    id: string;
+    timestamp: string;
+    userId: string;
+    message: string;
 }
 
 
-export type Page = 'DASHBOARD' | 'INVENTORY' | 'CUSTOMERS' | 'BILLING' | 'PENDING_PAYMENTS' | 'SETTINGS' | 'REVENUE';
-
-export const pageTitles: Record<Page, string> = {
-  DASHBOARD: 'Dashboard',
-  INVENTORY: 'Inventory',
-  CUSTOMERS: 'Customers',
-  BILLING: 'Create Bill',
-  PENDING_PAYMENTS: 'Pending Payments',
-  SETTINGS: 'Settings',
-  REVENUE: 'Revenue Details',
-};
+export type Page = 'DASHBOARD' | 'INVENTORY' | 'CUSTOMERS' | 'BILLING' | 'SETTINGS' | 'REPORTS' | 'PENDING_PAYMENTS';
 
 export interface GoogleTokenResponse {
   access_token: string;
@@ -82,3 +88,8 @@ export interface GoogleTokenResponse {
   token_type: string;
   expires_at?: number;
 }
+
+export type CurrentUser = {
+  role: 'admin' | 'staff';
+  id: string; // 'admin' for admin, staff ID for staff
+};

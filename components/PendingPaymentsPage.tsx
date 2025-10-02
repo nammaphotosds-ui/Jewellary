@@ -1,91 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useAppContext } from '../context/AppContext';
+import React, { useState } from 'react';
+import { useDataContext } from '../context/DataContext';
 import type { Customer } from '../types';
-
-const Avatar: React.FC<{ name: string; className?: string }> = ({ name, className = '' }) => {
-    const initial = name ? name.charAt(0).toUpperCase() : '?';
-    return (
-        <div className={`flex items-center justify-center rounded-full bg-brand-gold-light text-brand-gold-dark ${className}`}>
-            <span className="font-serif text-xl">{initial}</span>
-        </div>
-    );
-};
-
-const PaymentModal: React.FC<{
-    isOpen: boolean;
-    onClose: () => void;
-    customerName: string;
-    pendingBalance: number;
-    onRecordPayment: (amount: number) => Promise<void>;
-}> = ({ isOpen, onClose, customerName, pendingBalance, onRecordPayment }) => {
-    const [amount, setAmount] = useState(pendingBalance.toString());
-    const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
-
-    useEffect(() => {
-        if (isOpen) {
-            setAmount(pendingBalance.toString());
-            setSubmissionStatus('idle');
-        }
-    }, [pendingBalance, isOpen]);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        const paymentAmount = parseFloat(amount);
-        if (isNaN(paymentAmount) || paymentAmount <= 0 || paymentAmount > pendingBalance) {
-            alert('Please enter a valid amount greater than zero and not exceeding the pending balance.');
-            return;
-        }
-        setSubmissionStatus('saving');
-        try {
-            await onRecordPayment(paymentAmount);
-            setSubmissionStatus('saved');
-            setTimeout(() => {
-                onClose();
-            }, 1000);
-        } catch (error) {
-            console.error("Failed to record payment:", error);
-            alert("An error occurred while recording the payment. Please try again.");
-            setSubmissionStatus('idle');
-        }
-    };
-
-    if (!isOpen) return null;
-
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
-            <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm relative">
-                <h2 className="text-2xl font-bold mb-2">Record Payment</h2>
-                <p className="text-sm text-gray-600 mb-4">For {customerName}</p>
-                <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-                </button>
-                <form onSubmit={handleSubmit}>
-                    <div className="mb-4">
-                        <label htmlFor="paymentAmount" className="block text-sm font-medium text-gray-700">Payment Amount (₹)</label>
-                        <input
-                            type="number"
-                            id="paymentAmount"
-                            value={amount}
-                            onChange={e => setAmount(e.target.value)}
-                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm text-lg"
-                            step="0.01"
-                            max={pendingBalance}
-                            required
-                            autoFocus
-                        />
-                         <p className="text-xs text-gray-500 mt-1">Total pending: ₹{pendingBalance.toLocaleString('en-IN')}</p>
-                    </div>
-                    <div className="flex justify-end gap-3">
-                        <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 rounded-md">Cancel</button>
-                        <button type="submit" disabled={submissionStatus !== 'idle'} className="px-6 py-2 bg-green-600 text-white rounded-md font-semibold hover:bg-green-700 disabled:bg-gray-400 disabled:opacity-70">
-                            {submissionStatus === 'saving' ? 'Saving...' : submissionStatus === 'saved' ? 'Saved!' : 'Submit'}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    );
-};
+import Avatar from './common/Avatar';
+import Modal from './common/Modal';
+import RecordPaymentForm from './forms/RecordPaymentForm';
 
 
 const PendingPaymentDetailsView: React.FC<{
@@ -93,7 +11,7 @@ const PendingPaymentDetailsView: React.FC<{
     onBack: () => void;
     onDelete: () => Promise<void>;
 }> = ({ customer, onBack, onDelete }) => {
-    const { recordPayment } = useAppContext();
+    const { recordPayment } = useDataContext(); 
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     
@@ -134,26 +52,29 @@ const PendingPaymentDetailsView: React.FC<{
                      </button>
                  </div>
             </div>
-             <PaymentModal
+             <Modal
                 isOpen={isPaymentModalOpen}
                 onClose={() => setIsPaymentModalOpen(false)}
-                customerName={customer.name}
-                pendingBalance={customer.pendingBalance}
-                onRecordPayment={async (amount) => {
-                    await recordPayment(customer.id, amount);
-                    const updatedCustomer = { ...customer, pendingBalance: customer.pendingBalance - amount };
-                    if (updatedCustomer.pendingBalance <= 0) {
-                        onBack();
-                    }
-                }}
-            />
+                title={`Record Payment for ${customer.name}`}
+            >
+                <RecordPaymentForm 
+                    customer={customer}
+                    onClose={() => setIsPaymentModalOpen(false)}
+                    onSuccess={() => {
+                        // If balance is cleared, go back to the list
+                        if (customer.pendingBalance <= 0) {
+                            onBack();
+                        }
+                    }}
+                />
+            </Modal>
         </div>
     );
 };
 
 
 const PendingPaymentsPage: React.FC = () => {
-  const { customers, deleteCustomer } = useAppContext();
+  const { customers, deleteCustomer } = useDataContext();
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
   const customersWithPendingBalance = customers

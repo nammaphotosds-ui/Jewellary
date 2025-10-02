@@ -1,6 +1,5 @@
 import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 
-// FIX: Changed React.Dispatch<React.SetStateAction<T>> to Dispatch<SetStateAction<T>> and imported types.
 function useLocalStorage<T,>(key: string, initialValue: T): [T, Dispatch<SetStateAction<T>>] {
   const [storedValue, setStoredValue] = useState<T>(() => {
     try {

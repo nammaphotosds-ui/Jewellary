@@ -1,4 +1,3 @@
-
 const DRIVE_API_URL = 'https://www.googleapis.com/drive/v3/files';
 const DRIVE_UPLOAD_URL = 'https://www.googleapis.com/upload/drive/v3/files';
 const FILE_NAME = 'devagirikar-jewellers-data.json';
@@ -31,7 +30,7 @@ export const getFileContent = async (accessToken: string, fileId: string): Promi
     }
     // Handle cases where the file might be empty on first load
     const text = await response.text();
-    return text ? JSON.parse(text) : {};
+    return text ? JSON.parse(text) : { inventory: [], customers: [], bills: [], staff: [], distributors: [] };
 };
 
 // Create a new data file.
